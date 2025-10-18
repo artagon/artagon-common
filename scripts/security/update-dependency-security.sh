@@ -456,8 +456,21 @@ else
     success "Updated ${CHECKSUM_FILE}"
     success "Updated ${KEYS_FILE}"
 
+    # Generate SHA-256 and SHA-512 checksums for the security files
+    info "Generating SHA-256 and SHA-512 checksums for security files..."
+
+    openssl dgst -sha256 "${CHECKSUM_FILE}" | awk '{print $2}' > "${CHECKSUM_FILE}.sha256"
+    openssl dgst -sha512 "${CHECKSUM_FILE}" | awk '{print $2}' > "${CHECKSUM_FILE}.sha512"
+    success "Updated ${CHECKSUM_FILE}.sha256"
+    success "Updated ${CHECKSUM_FILE}.sha512"
+
+    openssl dgst -sha256 "${KEYS_FILE}" | awk '{print $2}' > "${KEYS_FILE}.sha256"
+    openssl dgst -sha512 "${KEYS_FILE}" | awk '{print $2}' > "${KEYS_FILE}.sha512"
+    success "Updated ${KEYS_FILE}.sha256"
+    success "Updated ${KEYS_FILE}.sha512"
+
     echo ""
-    info "Baseline files have been updated. Review and commit them:"
-    echo "  git add ${CHECKSUM_FILE} ${KEYS_FILE}"
-    echo "  git commit -m \"Update dependency security baselines\""
+    info "Baseline files and checksums have been updated. Review and commit them:"
+    echo "  git add ${CHECKSUM_FILE}* ${KEYS_FILE}*"
+    echo "  git commit -m \"Update dependency security baselines and checksums\""
 fi
