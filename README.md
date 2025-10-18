@@ -125,6 +125,69 @@ Bootstrap script to add artagon-common as a submodule to any project.
 ./scripts/setup-artagon-common.sh .common/artagon-common develop
 ```
 
+### Branch Protection
+
+Protect your `main` branch across all repositories with one command. Three protection levels available:
+
+#### `protect-main-branch.sh` - Solo Development ⭐
+Basic protection for solo developers - blocks accidents but allows direct pushes.
+
+```bash
+./scripts/protect-main-branch.sh
+```
+
+**Protects against:**
+- Force pushes
+- Branch deletion
+
+**Allows:**
+- Direct pushes to main
+- Admin overrides
+
+#### `protect-main-branch-team.sh` - Team Collaboration ⭐
+Balanced protection for teams - requires PR reviews but allows admin emergency access.
+
+```bash
+./scripts/protect-main-branch-team.sh
+```
+
+**Requires:**
+- 1 PR approval before merging
+- Conversation resolution
+
+**Allows:**
+- Admin direct push in emergencies
+- Merge commits
+
+#### `protect-main-branch-strict.sh` - Maximum Protection
+Strict protection for compliance environments - enforced for everyone including admins.
+
+```bash
+./scripts/protect-main-branch-strict.sh
+```
+
+**Requires:**
+- 1 PR approval
+- Status checks (CI/CD)
+- Linear history
+- Enforced for admins
+
+#### `check-branch-protection.sh` - Status Check
+View current protection settings for all repositories.
+
+```bash
+./scripts/check-branch-protection.sh
+```
+
+#### `remove-branch-protection.sh` - Remove Protection
+Remove all branch protection (use with caution).
+
+```bash
+./scripts/remove-branch-protection.sh
+```
+
+**📚 Full Documentation:** See [docs/BRANCH-PROTECTION.md](docs/BRANCH-PROTECTION.md) for detailed guide, comparison table, and workflows.
+
 ## Using in Your Projects
 
 ### Option 1: Submodule (Recommended)
