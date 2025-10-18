@@ -1,0 +1,156 @@
+# Artagon Common - Git Ignore File
+# Common infrastructure and scripts repository
+
+# =============================================================================
+# Operating System Files
+# =============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# =============================================================================
+# IDE and Editor Files
+# =============================================================================
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# Eclipse
+.project
+.classpath
+.settings/
+.metadata/
+bin/
+tmp/
+
+# Vim
+*.swp
+*.swo
+*~
+.netrwhist
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+auto-save-list
+tramp
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# =============================================================================
+# Temporary and Backup Files
+# =============================================================================
+
+*.tmp
+*.bak
+*.backup
+*.old
+*.orig
+*.log
+*.cache
+
+# =============================================================================
+# Test and Development Artifacts
+# =============================================================================
+
+# Test outputs
+test-output/
+.test-*/
+coverage/
+*.test
+
+# Development artifacts
+scratch/
+playground/
+sandbox/
+
+# =============================================================================
+# Build Artifacts (if any scripts generate them)
+# =============================================================================
+
+dist/
+build/
+target/
+*.jar
+*.war
+*.ear
+
+# =============================================================================
+# Secrets and Credentials (extra safety)
+# =============================================================================
+
+*.pem
+*.key
+*.cert
+*.p12
+*.pfx
+.env
+.env.*
+!.env.example
+secrets/
+credentials/
+*.credentials
+
+# =============================================================================
+# Node/NPM (if any JavaScript tooling)
+# =============================================================================
+
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# =============================================================================
+# Python (if any Python scripts)
+# =============================================================================
+
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.egg-info/
+
+# =============================================================================
+# Archives and Compressed Files
+# =============================================================================
+
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
