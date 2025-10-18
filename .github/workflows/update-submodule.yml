@@ -124,8 +124,6 @@ jobs:
           labels: |
             dependencies
             automated
-          reviewers: |
-            devops
 
       - name: Commit directly (no PR)
         if: steps.update.outputs.has-changes == 'true' && !inputs.create-pr
