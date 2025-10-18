@@ -1,0 +1,99 @@
+# Build directories
+build/
+bin/
+obj/
+out/
+dist/
+cmake-build-*/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+
+# Compiled Object files
+*.o
+*.obj
+*.elf
+
+# Compiled Static libraries
+*.a
+*.lib
+
+# Compiled Shared libraries
+*.so
+*.so.*
+*.dylib
+*.dll
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Debug files
+*.dSYM/
+*.pdb
+*.ilk
+*.map
+*.exp
+
+# Editor and IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.clangd/
+
+# Testing
+*.gcda
+*.gcno
+*.gcov
+coverage/
+Testing/
+
+# Catch2
+tests/catch2/
+
+# Google Test
+googletest/
+googlemock/
+
+# Valgrind
+vgcore.*
+*.log
+
+# Core dumps
+core
+core.*
+
+# Generated documentation
+docs/html/
+docs/latex/
+docs/doxygen/
+
+# Nix
+result
+result-*
+.direnv/
+
+# Compilation database
+compile_commands.json
+.cache/
+
+# Conan
+conan.lock
+conanbuildinfo.*
+conaninfo.txt
+graph_info.json
+
+# vcpkg
+vcpkg_installed/
+
+# Package managers
+_deps/

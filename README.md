@@ -9,7 +9,17 @@ This repository serves as a centralized collection of common tooling used across
 ### What's Included
 
 - **Scripts**: Automation for builds, deployments, CI/CD, and development workflows
-- **Templates**: Standardized project files (.gitignore, README, etc.)
+  - 🆕 **setup-repo.sh**: Unified project setup for Java, C, C++, and Rust
+  - Deployment automation for Maven Central and GitHub Packages
+  - Branch protection and CI/CD management
+- **Templates**: Standardized project files for multiple languages
+  - 🆕 **Java**: Maven POM, settings.xml with GitHub Packages
+  - 🆕 **C**: CMake, clang-format, code quality configs
+  - 🆕 **C++**: CMake with C++23, clang-tidy, modern C++ setup
+  - 🆕 **Rust**: Cargo.toml, rustfmt, clippy configurations
+- **Nix Flakes**: 🆕 Reproducible build environments for all languages
+  - Lock down exact versions of compilers, build tools, and dependencies
+  - Consistent development environments across teams and CI/CD
 - **Configs**: Shared configuration files for code quality tools
 - **Workflows**: Reusable GitHub Actions workflows
 
@@ -41,9 +51,9 @@ git clone git@github.com:artagon/artagon-common.git
 ```
 artagon-common/
 ├── scripts/                      # Automation scripts
+│   ├── setup-repo.sh            # 🆕 Unified project setup (all languages)
 │   ├── auto_create_and_push.sh  # GitHub repository creation and setup
 │   ├── setup-artagon-common.sh  # Bootstrap this repo into projects
-│   ├── build/                   # Build-related scripts (future use)
 │   ├── deploy/                  # Deployment automation
 │   │   ├── check-deploy-ready.sh    # Pre-deployment validation
 │   │   ├── deploy-snapshot.sh       # Deploy snapshot to OSSRH
@@ -56,22 +66,98 @@ artagon-common/
 │   │   ├── protect-main-branch-strict.sh # Maximum protection
 │   │   ├── protect-main-branch-team.sh  # Team collaboration
 │   │   └── remove-branch-protection.sh  # Remove protection
+│   ├── build/                   # Build-related scripts (future use)
 │   └── dev/                     # Development tools (future use)
-├── templates/                    # Project templates
-│   ├── .gitignore.template      # Standard .gitignore
-│   ├── .editorconfig           # Code style settings
-│   └── README.template.md       # Project README template
-├── configs/                      # Shared configurations
+├── nix/                         # 🆕 Nix flakes for reproducible builds
+│   └── templates/
+│       ├── java/flake.nix      # Java 25 + Maven
+│       ├── c/flake.nix         # C17 + CMake + GCC/Clang
+│       ├── cpp/flake.nix       # C++23 + CMake + GCC/Clang
+│       └── rust/flake.nix      # Rust stable + Cargo
+├── templates/                   # Project templates
+│   ├── java/
+│   │   ├── settings.xml        # Maven settings with GitHub Packages
+│   │   └── .gitignore.template
+│   ├── c/                      # 🆕 C project templates
+│   │   ├── CMakeLists.txt.template
+│   │   ├── .clang-format
+│   │   └── .gitignore.template
+│   ├── cpp/                    # 🆕 C++ project templates
+│   │   ├── CMakeLists.txt.template
+│   │   ├── .clang-format
+│   │   ├── .clang-tidy
+│   │   └── .gitignore.template
+│   ├── rust/                   # 🆕 Rust project templates
+│   │   ├── Cargo.toml.template
+│   │   ├── rustfmt.toml
+│   │   ├── clippy.toml
+│   │   ├── .cargo/config.toml
+│   │   └── .gitignore.template
+│   ├── .gitignore.template     # Generic .gitignore
+│   ├── .editorconfig          # Code style settings
+│   └── README.template.md      # Project README template
+├── configs/                     # Shared configurations
 │   ├── checkstyle.xml          # Java code style
 │   ├── spotbugs.xml            # Bug detection
 │   └── pmd.xml                 # Code analysis
 ├── .github/
-│   └── workflows/               # Reusable GitHub Actions
-├── .gitignore                   # Git ignore for this repo
-└── README.md                    # This file
+│   └── workflows/              # Reusable GitHub Actions
+├── .gitignore                  # Git ignore for this repo
+└── README.md                   # This file
 ```
 
 ## Available Scripts
+
+### 🆕 Unified Project Setup
+
+#### `setup-repo.sh`
+
+**The recommended way to create new Artagon projects** - automatically sets up a complete project with language-specific templates, Nix integration, and GitHub configuration.
+
+**Supported Languages:**
+- **Java** - Maven with JDK 25, GitHub Packages integration
+- **C** - CMake with C17, GCC/Clang toolchain
+- **C++** - CMake with C++23, modern C++ best practices
+- **Rust** - Cargo with stable Rust toolchain
+
+**Features:**
+- Creates GitHub repository
+- Adds artagon-common as submodule
+- Copies language-specific templates and configs
+- Optional Nix flake for reproducible builds
+- Optional branch protection rules
+- Generates README and LICENSE
+- Creates initial commit
+
+**Usage:**
+
+```bash
+# Java project with Nix
+./scripts/setup-repo.sh --type java --name my-api --with-nix
+
+# Private Rust project
+./scripts/setup-repo.sh --type rust --name secret-lib --private
+
+# C++ project with branch protection
+./scripts/setup-repo.sh --type cpp --name game-engine --branch-protection
+
+# C project for different organization
+./scripts/setup-repo.sh --type c --name firmware --owner embedded-team
+```
+
+**Options:**
+- `--type <java|c|cpp|rust>` - Project language (required)
+- `--name <name>` - Project name (required)
+- `--owner <org|user>` - GitHub owner (default: artagon)
+- `--description <text>` - Project description
+- `--private` - Create private repository
+- `--public` - Create public repository (default)
+- `--with-nix` - Include Nix flake for reproducible builds
+- `--branch-protection` - Apply branch protection rules
+- `--ssh` - Use SSH protocol (default)
+- `--https` - Use HTTPS protocol
+- `--force` - Skip confirmation prompts
+- `-h, --help` - Show help
 
 ### Repository Management
 
@@ -245,6 +331,103 @@ Remove all branch protection (use with caution).
 **📚 Documentation:**
 - [Full Guide](docs/BRANCH-PROTECTION.md) - Detailed comparison table and workflows
 - [Usage Examples](docs/BRANCH-PROTECTION-USAGE.md) - Complete usage reference with all parameters
+
+### 🆕 Nix Integration for Reproducible Builds
+
+Artagon Common provides Nix flakes for all supported languages, ensuring fully reproducible development environments and builds.
+
+#### Why Nix?
+
+- **True reproducibility** - Exact same environment on every machine
+- **Version control** - Lock down JDK, compilers, build tools, and system libraries
+- **Polyglot support** - Manage Java, C/C++, and Rust toolchains seamlessly
+- **Zero conflicts** - No more "works on my machine" issues
+- **CI/CD consistency** - Identical environment locally and in GitHub Actions
+
+#### Quick Start with Nix
+
+```bash
+# Install Nix (if not already installed)
+curl -L https://nixos.org/nix/install | sh
+
+# Enable flakes (add to ~/.config/nix/nix.conf)
+experimental-features = nix-command flakes
+
+# Create a project with Nix support
+./scripts/setup-repo.sh --type rust --name my-project --with-nix
+
+# Enter development shell
+cd my-project
+nix develop
+
+# Or use direnv for automatic activation
+echo "use flake" > .envrc
+direnv allow
+```
+
+#### Available Nix Templates
+
+Each language has a pre-configured Nix flake with:
+
+**Java (nix/templates/java/flake.nix)**
+- JDK 25 (Temurin distribution)
+- Maven 3.x
+- GitHub CLI (`gh`)
+- GPG for artifact signing
+- Pre-configured environment variables for GitHub Packages and OSSRH
+
+**C (nix/templates/c/flake.nix)**
+- GCC 13 and Clang 18
+- CMake and Make/Ninja
+- GDB and Valgrind for debugging
+- clang-format and clang-tidy
+- Doxygen for documentation
+
+**C++ (nix/templates/cpp/flake.nix)**
+- GCC 13 and Clang 18 with C++23 support
+- CMake, Make, Ninja, and Meson
+- GDB and LLDB debuggers
+- clang-format, clang-tidy, and cppcheck
+- Optional Google Test and Catch2
+
+**Rust (nix/templates/rust/flake.nix)**
+- Rust stable toolchain (customizable to nightly/specific version)
+- Cargo with rust-analyzer, clippy, rustfmt
+- cargo-watch, cargo-edit, cargo-audit, cargo-deny
+- Cross-compilation support
+- WASM target support
+
+#### Using Nix in Existing Projects
+
+```bash
+# Copy appropriate flake to your project
+cp .common/artagon-common/nix/templates/java/flake.nix .
+
+# Enter development environment
+nix develop
+
+# Build with Nix (for CI/CD)
+nix build
+```
+
+#### direnv Integration
+
+For automatic environment activation when entering project directories:
+
+```bash
+# Install direnv
+# macOS: brew install direnv
+# Linux: apt-get install direnv
+
+# Add to shell rc file (~/.bashrc, ~/.zshrc)
+eval "$(direnv hook bash)"  # or zsh
+
+# In your project
+echo "use flake" > .envrc
+direnv allow
+
+# Now the Nix environment activates automatically!
+```
 
 ## Using in Your Projects
 
@@ -465,6 +648,13 @@ See [LICENSE](LICENSE) for details.
 
 **Maintainers:**
 - Artagon DevOps Team <devops@artagon.com>
+
+**New in Latest Release:**
+- 🆕 Multi-language support (Java, C, C++, Rust)
+- 🆕 Nix flakes for reproducible builds
+- 🆕 Unified setup-repo.sh script
+- 🆕 Language-specific templates and configs
+- Maven settings.xml with GitHub Packages
 
 ---
 

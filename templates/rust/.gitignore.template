@@ -1,0 +1,46 @@
+# Rust build artifacts
+/target/
+**/*.rs.bk
+*.pdb
+
+# Cargo
+Cargo.lock
+.cargo/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Rust Analyzer
+rust-project.json
+
+# Testing
+*.profraw
+*.profdata
+
+# Benchmarking
+/criterion/
+
+# Coverage
+*.profraw
+coverage/
+lcov.info
+tarpaulin-report.html
+
+# Nix
+result
+result-*
+.direnv/
+
+# OS specific
+Thumbs.db
+.Trashes
+.fuse_hidden*
+
+# WASM
+pkg/
+wasm-pack.log

@@ -1,0 +1,59 @@
+# Artagon Rust Code Formatting Configuration
+# rustfmt configuration for consistent code style
+
+# Edition
+edition = "2021"
+
+# Line width
+max_width = 100
+comment_width = 100
+wrap_comments = true
+
+# Indentation
+tab_spaces = 4
+hard_tabs = false
+
+# Imports
+reorder_imports = true
+reorder_modules = true
+imports_granularity = "Crate"
+group_imports = "StdExternalCrate"
+
+# Functions
+fn_single_line = false
+fn_args_layout = "Tall"
+brace_style = "SameLineWhere"
+
+# Structs and enums
+struct_lit_single_line = false
+enum_discrim_align_threshold = 0
+
+# Control flow
+control_brace_style = "AlwaysSameLine"
+indent_style = "Block"
+
+# Match expressions
+match_arm_blocks = true
+match_block_trailing_comma = true
+
+# Chains
+chain_width = 60
+use_small_heuristics = "Default"
+
+# Misc
+trailing_comma = "Vertical"
+trailing_semicolon = true
+normalize_comments = true
+normalize_doc_attributes = true
+format_strings = true
+format_macro_matchers = true
+format_macro_bodies = true
+hex_literal_case = "Preserve"
+
+# Unstable features (require nightly rustfmt)
+# Uncomment when using nightly:
+# unstable_features = true
+# format_code_in_doc_comments = true
+# overflow_delimited_expr = true
+# struct_field_align_threshold = 20
+# condense_wildcard_suffixes = true

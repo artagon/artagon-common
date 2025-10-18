@@ -1,0 +1,71 @@
+# Artagon Rust Cargo Configuration
+
+[build]
+# Number of parallel jobs (defaults to # of CPUs)
+# jobs = 4
+
+# Target directory for build artifacts
+# target-dir = "target"
+
+# Incremental compilation
+incremental = true
+
+[cargo-new]
+# Default values for new projects
+vcs = "git"
+
+[alias]
+# Custom cargo aliases for common tasks
+b = "build"
+c = "check"
+t = "test"
+r = "run"
+rr = "run --release"
+
+# Extended checks
+check-all = "check --all-targets --all-features"
+clippy-all = "clippy --all-targets --all-features -- -D warnings"
+
+# Coverage with tarpaulin
+cov = "tarpaulin --out Html --output-dir coverage"
+
+# Watch mode
+w = "watch -x check"
+wt = "watch -x test"
+
+# Clean build
+clean-all = "clean && build"
+
+[term]
+# Colored output
+color = "auto"
+verbose = false
+
+# Progress bar
+progress.when = "auto"
+progress.width = 80
+
+[net]
+# Network configuration
+git-fetch-with-cli = false
+retry = 3
+
+# HTTP timeout in seconds
+# timeout = 30
+
+[profile.dev]
+# Development profile optimizations can be set here
+# split-debuginfo = "unpacked"
+
+[profile.release]
+# Release profile optimizations can be set here
+# lto = true
+# codegen-units = 1
+
+# Target-specific configuration
+# [target.x86_64-unknown-linux-gnu]
+# linker = "clang"
+# rustflags = ["-C", "link-arg=-fuse-ld=lld"]
+
+# [target.x86_64-apple-darwin]
+# rustflags = ["-C", "link-arg=-fuse-ld=lld"]

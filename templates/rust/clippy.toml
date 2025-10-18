@@ -1,0 +1,27 @@
+# Artagon Rust Linting Configuration
+# Clippy configuration for strict code quality
+
+# Complexity lints
+cognitive-complexity-threshold = 30
+too-many-arguments-threshold = 7
+type-complexity-threshold = 250
+
+# Documentation
+missing-docs-in-crate-items = true
+
+# Naming
+enum-variant-name-threshold = 3
+
+# Performance
+vec-box-size-threshold = 4096
+trivial-copy-size-limit = 128
+
+# Strictness - Enable these for very strict checking
+# disallowed-methods = [
+#     { path = "std::env::set_var", reason = "Use a safer alternative" },
+#     { path = "std::panic::catch_unwind", reason = "Discouraged unless necessary" },
+# ]
+
+# disallowed-types = [
+#     { path = "std::collections::HashMap", reason = "Use BTreeMap for deterministic ordering" },
+# ]
