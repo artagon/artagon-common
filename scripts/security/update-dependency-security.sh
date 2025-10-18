@@ -97,9 +97,14 @@ OPTIONS:
     -h, --help                   Show this help message
 
 FILES GENERATED:
-    artifact-dependency-checksums.csv         SHA-256 checksums (CSV format)
-    artifact-dependency-checksums.properties  SHA-256 checksums (properties format)
-    pgp-trusted-keys.list                    Trusted PGP fingerprints
+    <groupSuffix>.<artifactSuffix>-dependency-checksums.csv         SHA-256 checksums (CSV format)
+    <groupSuffix>.<artifactSuffix>-dependency-checksums.properties  SHA-256 checksums (properties format)
+    <groupSuffix>.<artifactSuffix>-pgp-trusted-keys.list           Trusted PGP fingerprints
+
+    Where <groupSuffix> and <artifactSuffix> are derived from Maven coordinates.
+    For example, groupId="org.artagon" and artifactId="artagon-parent" generates:
+      - artagon.parent-dependency-checksums.csv
+      - artagon.parent-pgp-trusted-keys.list
 
 EXAMPLES:
     # Update baselines for current project
@@ -226,13 +231,35 @@ info "Maven scopes: ${MAVEN_SCOPES}"
 info "Include transitives: ${TRANSITIVE}"
 info "Mode: ${MODE}"
 
+# Get groupId and artifactId from Maven
+cd "${PROJECT_ROOT}"
+GROUP_ID=$("${MVN_CMD}" help:evaluate -Dexpression=project.groupId -q -DforceStdout 2>/dev/null | grep -v "^WARNING")
+ARTIFACT_ID=$("${MVN_CMD}" help:evaluate -Dexpression=project.artifactId -q -DforceStdout 2>/dev/null | grep -v "^WARNING")
+
+if [[ -z "${GROUP_ID}" || -z "${ARTIFACT_ID}" ]]; then
+    error "Failed to determine Maven coordinates (groupId: ${GROUP_ID}, artifactId: ${ARTIFACT_ID})"
+fi
+
+# Extract last part of groupId (e.g., "org.artagon" -> "artagon")
+GROUP_SUFFIX="${GROUP_ID##*.}"
+
+# Extract suffix from artifactId (e.g., "artagon-parent" -> "parent")
+ARTIFACT_SUFFIX="${ARTIFACT_ID##*-}"
+
+# Build file prefix (e.g., "artagon.parent")
+FILE_PREFIX="${GROUP_SUFFIX}.${ARTIFACT_SUFFIX}"
+
+info "Group ID: ${GROUP_ID}"
+info "Artifact ID: ${ARTIFACT_ID}"
+info "Using file prefix: ${FILE_PREFIX}"
+
 # Determine output files based on format
 if [[ "${CHECKSUM_FORMAT}" == "csv" ]]; then
-    CHECKSUM_FILE="${SECURITY_DIR}/artifact-dependency-checksums.csv"
+    CHECKSUM_FILE="${SECURITY_DIR}/${FILE_PREFIX}-dependency-checksums.csv"
 else
-    CHECKSUM_FILE="${SECURITY_DIR}/artifact-dependency-checksums.properties"
+    CHECKSUM_FILE="${SECURITY_DIR}/${FILE_PREFIX}-dependency-checksums.properties"
 fi
-KEYS_FILE="${SECURITY_DIR}/pgp-trusted-keys.list"
+KEYS_FILE="${SECURITY_DIR}/${FILE_PREFIX}-pgp-trusted-keys.list"
 
 # Create temporary files
 tmp_checks="$(mktemp)"
