@@ -97,14 +97,14 @@ OPTIONS:
     -h, --help                   Show this help message
 
 FILES GENERATED:
-    <groupSuffix>.<artifactSuffix>-dependency-checksums.csv         SHA-256 checksums (CSV format)
-    <groupSuffix>.<artifactSuffix>-dependency-checksums.properties  SHA-256 checksums (properties format)
-    <groupSuffix>.<artifactSuffix>-pgp-trusted-keys.list           Trusted PGP fingerprints
+    {groupId}-{artifactId}-dependency-checksums.csv         SHA-256 checksums (CSV format)
+    {groupId}-{artifactId}-dependency-checksums.properties  SHA-256 checksums (properties format)
+    {groupId}-{artifactId}-pgp-trusted-keys.list           Trusted PGP fingerprints
 
-    Where <groupSuffix> and <artifactSuffix> are derived from Maven coordinates.
-    For example, groupId="org.artagon" and artifactId="artagon-parent" generates:
-      - artagon.parent-dependency-checksums.csv
-      - artagon.parent-pgp-trusted-keys.list
+    Where {groupId} and {artifactId} are the full Maven coordinates.
+    For example, groupId="com.artagon" and artifactId="artagon-parent" generates:
+      - com.artagon-artagon-parent-dependency-checksums.csv
+      - com.artagon-artagon-parent-pgp-trusted-keys.list
 
 EXAMPLES:
     # Update baselines for current project
@@ -240,14 +240,8 @@ if [[ -z "${GROUP_ID}" || -z "${ARTIFACT_ID}" ]]; then
     error "Failed to determine Maven coordinates (groupId: ${GROUP_ID}, artifactId: ${ARTIFACT_ID})"
 fi
 
-# Extract last part of groupId (e.g., "org.artagon" -> "artagon")
-GROUP_SUFFIX="${GROUP_ID##*.}"
-
-# Extract suffix from artifactId (e.g., "artagon-parent" -> "parent")
-ARTIFACT_SUFFIX="${ARTIFACT_ID##*-}"
-
-# Build file prefix (e.g., "artagon.parent")
-FILE_PREFIX="${GROUP_SUFFIX}.${ARTIFACT_SUFFIX}"
+# Build file prefix using full Maven coordinates (e.g., "org.artagon-artagon-parent")
+FILE_PREFIX="${GROUP_ID}-${ARTIFACT_ID}"
 
 info "Group ID: ${GROUP_ID}"
 info "Artifact ID: ${ARTIFACT_ID}"
