@@ -1,7 +1,11 @@
 #!/bin/bash
 #
-# Team Branch Protection Script for Artagon Projects
-# Balanced protection for team collaboration - requires reviews but allows admin override
+# Team Branch Protection Script for GitHub Repositories
+# Balanced protection - requires PR reviews but allows admin override
+#
+# Usage:
+#   ./protect-main-branch-team.sh --repo artagon-common
+#   ./protect-main-branch-team.sh --all
 #
 
 set -e
@@ -13,34 +17,125 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# GitHub organization
-ORG="artagon"
-
-# List of repositories to protect
-REPOS=(
+# Default values
+DEFAULT_OWNER="artagon"
+DEFAULT_BRANCH="main"
+DEFAULT_REPOS=(
     "artagon-common"
     "artagon-license"
     "artagon-bom"
     "artagon-parent"
 )
 
-# Branch to protect
-BRANCH="main"
+# Variables
+OWNER=""
+BRANCH=""
+REPOS=()
+PROCESS_ALL=false
+FORCE=false
 
-echo -e "${BLUE}======================================${NC}"
-echo -e "${BLUE}Team Branch Protection Setup${NC}"
-echo -e "${BLUE}======================================${NC}"
-echo ""
+# Show usage
+usage() {
+    cat << EOF
+Usage: $0 [OPTIONS]
 
-# Function to apply team-level branch protection
-protect_branch_team() {
+Apply team-level branch protection to GitHub repositories.
+
+OPTIONS:
+    -r, --repo REPO         Repository name (can be specified multiple times)
+    -o, --owner OWNER       GitHub owner/organization (default: ${DEFAULT_OWNER})
+    -b, --branch BRANCH     Branch name to protect (default: ${DEFAULT_BRANCH})
+    -a, --all               Process all default repositories
+    -f, --force             Skip confirmation prompt
+    -h, --help              Show this help message
+
+EXAMPLES:
+    # Protect a single repository
+    $0 --repo artagon-common
+
+    # Protect multiple repositories
+    $0 --repo artagon-bom --repo artagon-parent
+
+    # Protect repository in different organization
+    $0 --repo my-project --owner myorg
+
+    # Protect all default repositories
+    $0 --all
+
+PROTECTION SETTINGS:
+    ✅ Require 1 PR approval before merging
+    ✅ Dismiss stale reviews
+    ✅ Require conversation resolution
+    ✅ Block force pushes
+    ✅ Block branch deletion
+    ❌ No status checks required
+    ❌ No linear history requirement
+    ❌ Not enforced for admins (emergency override allowed)
+
+Best for: Team collaboration with code review
+
+EOF
+    exit 0
+}
+
+# Parse command line arguments
+parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -r|--repo)
+                REPOS+=("$2")
+                shift 2
+                ;;
+            -o|--owner)
+                OWNER="$2"
+                shift 2
+                ;;
+            -b|--branch)
+                BRANCH="$2"
+                shift 2
+                ;;
+            -a|--all)
+                PROCESS_ALL=true
+                shift
+                ;;
+            -f|--force)
+                FORCE=true
+                shift
+                ;;
+            -h|--help)
+                usage
+                ;;
+            *)
+                echo -e "${RED}Error: Unknown option: $1${NC}"
+                echo "Use --help for usage information"
+                exit 1
+                ;;
+        esac
+    done
+
+    # Set defaults
+    OWNER=${OWNER:-$DEFAULT_OWNER}
+    BRANCH=${BRANCH:-$DEFAULT_BRANCH}
+
+    # Determine which repos to process
+    if [ "$PROCESS_ALL" = true ]; then
+        REPOS=("${DEFAULT_REPOS[@]}")
+    elif [ ${#REPOS[@]} -eq 0 ]; then
+        echo -e "${RED}Error: No repositories specified${NC}"
+        echo "Use --repo to specify repositories or --all for all default repos"
+        echo "Use --help for more information"
+        exit 1
+    fi
+}
+
+# Function to apply branch protection
+protect_branch() {
     local repo=$1
     local branch=$2
 
-    echo -e "${YELLOW}Applying team protection to '${branch}' in ${ORG}/${repo}...${NC}"
+    echo -e "${YELLOW}Protecting branch '${branch}' in ${OWNER}/${repo}...${NC}"
 
     # Team-level branch protection configuration
-    # Balanced approach: require reviews but allow admin override
     local protection_rules='{
         "required_status_checks": null,
         "enforce_admins": false,
@@ -48,12 +143,7 @@ protect_branch_team() {
             "dismiss_stale_reviews": true,
             "require_code_owner_reviews": false,
             "required_approving_review_count": 1,
-            "require_last_push_approval": false,
-            "bypass_pull_request_allowances": {
-                "users": [],
-                "teams": [],
-                "apps": []
-            }
+            "require_last_push_approval": false
         },
         "restrictions": null,
         "required_linear_history": false,
@@ -69,53 +159,55 @@ protect_branch_team() {
     if gh api \
         --method PUT \
         -H "Accept: application/vnd.github+json" \
-        "/repos/${ORG}/${repo}/branches/${branch}/protection" \
+        "/repos/${OWNER}/${repo}/branches/${branch}/protection" \
         --input - <<< "$protection_rules" > /dev/null 2>&1; then
-        echo -e "${GREEN}✓ Successfully protected ${ORG}/${repo}:${branch}${NC}"
+        echo -e "${GREEN}✓ Successfully protected ${OWNER}/${repo}:${branch}${NC}"
         return 0
     else
-        echo -e "${RED}✗ Failed to protect ${ORG}/${repo}:${branch}${NC}"
+        echo -e "${RED}✗ Failed to protect ${OWNER}/${repo}:${branch}${NC}"
+        echo -e "${YELLOW}  Check that the repository exists and you have admin access${NC}"
         return 1
     fi
 }
 
 # Main execution
 main() {
-    echo "This script will apply TEAM-LEVEL branch protection to the following repositories:"
+    parse_args "$@"
+
+    echo -e "${BLUE}======================================${NC}"
+    echo -e "${BLUE}Team Branch Protection Setup${NC}"
+    echo -e "${BLUE}======================================${NC}"
     echo ""
+    echo "Target repositories:"
     for repo in "${REPOS[@]}"; do
-        echo "  - ${ORG}/${repo}"
+        echo "  - ${OWNER}/${repo}:${BRANCH}"
     done
     echo ""
-    echo -e "${BLUE}Team protection settings:${NC}"
-    echo "  - Require pull request reviews: YES (1 approval required)"
-    echo "  - Dismiss stale reviews: YES"
-    echo "  - Require conversation resolution: YES"
-    echo "  - Allow force pushes: NO"
-    echo "  - Allow branch deletion: NO"
-    echo "  - Enforce for admins: NO (admins can override for emergencies)"
-    echo ""
-    echo -e "${GREEN}✓ Good for: Team collaboration with code review${NC}"
-    echo -e "${GREEN}✓ Admins can still push directly in emergencies${NC}"
-    echo -e "${GREEN}✓ Allows merge commits (no linear history requirement)${NC}"
-    echo -e "${GREEN}✓ No CI/CD requirements (status checks optional)${NC}"
-    echo ""
-    read -p "Continue? (y/n) " -n 1 -r
+    echo "Protection settings:"
+    echo "  - Require pull request reviews: Yes (1 approval)"
+    echo "  - Dismiss stale reviews: Yes"
+    echo "  - Require conversation resolution: Yes"
+    echo "  - Allow force pushes: No"
+    echo "  - Allow branch deletion: No"
+    echo "  - Enforce for admins: No (admins can override for emergencies)"
     echo ""
 
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo "Aborted."
-        exit 0
+    if [ "$FORCE" != true ]; then
+        read -p "Continue? (y/n) " -n 1 -r
+        echo ""
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            echo "Aborted."
+            exit 0
+        fi
+        echo ""
     fi
-
-    echo ""
 
     # Apply protection to each repository
     success_count=0
     fail_count=0
 
     for repo in "${REPOS[@]}"; do
-        if protect_branch_team "$repo" "$BRANCH"; then
+        if protect_branch "$repo" "$BRANCH"; then
             ((success_count++))
         else
             ((fail_count++))
@@ -133,16 +225,12 @@ main() {
 
     if [ $fail_count -eq 0 ]; then
         echo -e "${GREEN}All branches protected successfully with team rules!${NC}"
-        echo ""
-        echo "Next steps:"
-        echo "  1. Team members should create branches for their work"
-        echo "  2. Submit pull requests when ready for review"
-        echo "  3. Get 1 approval before merging"
-        echo "  4. Admins can still push directly if needed for emergencies"
+        exit 0
     else
         echo -e "${YELLOW}Some branches failed to be protected. Check the output above.${NC}"
+        exit 1
     fi
 }
 
 # Run main function
-main
+main "$@"

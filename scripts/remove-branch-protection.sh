@@ -1,109 +1,114 @@
 #!/bin/bash
 #
-# Remove Branch Protection for Artagon Projects
-# Removes branch protection rules from specified repositories
+# Remove Branch Protection from GitHub Repositories
+#
+# Usage:
+#   ./remove-branch-protection.sh --repo artagon-common
+#   ./remove-branch-protection.sh --all --force
 #
 
 set -e
 
-# Colors for output
+# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# GitHub organization
-ORG="artagon"
+# Defaults
+DEFAULT_OWNER="artagon"
+DEFAULT_BRANCH="main"
+DEFAULT_REPOS=("artagon-common" "artagon-license" "artagon-bom" "artagon-parent")
 
-# List of repositories
-REPOS=(
-    "artagon-common"
-    "artagon-license"
-    "artagon-bom"
-    "artagon-parent"
-)
+OWNER=""
+BRANCH=""
+REPOS=()
+PROCESS_ALL=false
+FORCE=false
 
-# Branch to unprotect
-BRANCH="main"
+usage() {
+    cat << EOF
+Usage: $0 [OPTIONS]
 
-echo -e "${BLUE}======================================${NC}"
-echo -e "${BLUE}Remove Branch Protection${NC}"
-echo -e "${BLUE}======================================${NC}"
-echo ""
+Remove branch protection from GitHub repositories.
 
-# Function to remove branch protection
+OPTIONS:
+    -r, --repo REPO         Repository name (repeatable)
+    -o, --owner OWNER       GitHub owner/org (default: ${DEFAULT_OWNER})
+    -b, --branch BRANCH     Branch to unprotect (default: ${DEFAULT_BRANCH})
+    -a, --all               Process all default repositories
+    -f, --force             Skip confirmation
+    -h, --help              Show help
+
+⚠️  WARNING: This will remove ALL protection!
+
+EXAMPLES:
+    $0 --repo artagon-common
+    $0 --all --force
+
+EOF
+    exit 0
+}
+
+parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -r|--repo) REPOS+=("$2"); shift 2;;
+            -o|--owner) OWNER="$2"; shift 2;;
+            -b|--branch) BRANCH="$2"; shift 2;;
+            -a|--all) PROCESS_ALL=true; shift;;
+            -f|--force) FORCE=true; shift;;
+            -h|--help) usage;;
+            *) echo -e "${RED}Error: Unknown option: $1${NC}"; exit 1;;
+        esac
+    done
+    OWNER=${OWNER:-$DEFAULT_OWNER}
+    BRANCH=${BRANCH:-$DEFAULT_BRANCH}
+    if [ "$PROCESS_ALL" = true ]; then
+        REPOS=("${DEFAULT_REPOS[@]}")
+    elif [ ${#REPOS[@]} -eq 0 ]; then
+        echo -e "${RED}Error: No repositories specified${NC}"; exit 1
+    fi
+}
+
 remove_protection() {
-    local repo=$1
-    local branch=$2
-
-    echo -e "${YELLOW}Removing protection from '${branch}' in ${ORG}/${repo}...${NC}"
-
-    # Remove protection using GitHub API
-    if gh api \
-        --method DELETE \
-        -H "Accept: application/vnd.github+json" \
-        "/repos/${ORG}/${repo}/branches/${branch}/protection" > /dev/null 2>&1; then
-        echo -e "${GREEN}✓ Successfully removed protection from ${ORG}/${repo}:${branch}${NC}"
+    local repo=$1 branch=$2
+    echo -e "${YELLOW}Removing protection from '${branch}' in ${OWNER}/${repo}...${NC}"
+    
+    if gh api --method DELETE -H "Accept: application/vnd.github+json" \
+        "/repos/${OWNER}/${repo}/branches/${branch}/protection" > /dev/null 2>&1; then
+        echo -e "${GREEN}✓ Successfully removed protection from ${OWNER}/${repo}:${branch}${NC}"
         return 0
     else
-        echo -e "${RED}✗ Failed to remove protection (may not exist) ${ORG}/${repo}:${branch}${NC}"
+        echo -e "${RED}✗ Failed to remove protection (may not exist)${NC}"
         return 1
     fi
 }
 
-# Main execution
 main() {
-    echo -e "${RED}⚠️  WARNING: This will remove branch protection!${NC}"
+    parse_args "$@"
+    echo -e "${BLUE}======================================${NC}"
+    echo -e "${BLUE}Remove Branch Protection${NC}"
+    echo -e "${BLUE}======================================${NC}"
     echo ""
-    echo "This script will remove branch protection from:"
+    echo -e "${RED}⚠️  WARNING: This will remove ALL protection!${NC}\n"
+    for repo in "${REPOS[@]}"; do echo "  - ${OWNER}/${repo}:${BRANCH}"; done
     echo ""
-    for repo in "${REPOS[@]}"; do
-        echo "  - ${ORG}/${repo}"
-    done
-    echo ""
-    echo -e "${YELLOW}After removal, anyone with write access can:${NC}"
-    echo "  • Push directly to main"
-    echo "  • Force push and rewrite history"
-    echo "  • Delete the branch"
-    echo ""
-    read -p "Are you sure you want to continue? (y/n) " -n 1 -r
-    echo ""
-
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo "Aborted."
-        exit 0
+    
+    if [ "$FORCE" != true ]; then
+        read -p "Are you sure? (y/n) " -r
+        echo; [[ ! $REPLY =~ ^[Yy]$ ]] && exit 0
     fi
-
-    echo ""
-
-    # Remove protection from each repository
-    success_count=0
-    fail_count=0
-
+    
+    success=0 fail=0
     for repo in "${REPOS[@]}"; do
-        if remove_protection "$repo" "$BRANCH"; then
-            ((success_count++))
-        else
-            ((fail_count++))
-        fi
+        remove_protection "$repo" "$BRANCH" && ((success++)) || ((fail++))
         echo ""
     done
-
-    # Summary
-    echo -e "${BLUE}======================================${NC}"
-    echo -e "${BLUE}Summary${NC}"
-    echo -e "${BLUE}======================================${NC}"
-    echo -e "${GREEN}Successful: ${success_count}${NC}"
-    echo -e "${RED}Failed: ${fail_count}${NC}"
-    echo ""
-
-    if [ $fail_count -eq 0 ]; then
-        echo -e "${GREEN}Protection removed from all branches!${NC}"
-    else
-        echo -e "${YELLOW}Some branches failed. Check the output above.${NC}"
-    fi
+    
+    echo -e "${BLUE}Summary: ${GREEN}Success: $success ${RED}Failed: $fail${NC}\n"
+    [ $fail -eq 0 ] && exit 0 || exit 1
 }
 
-# Run main function
-main
+main "$@"

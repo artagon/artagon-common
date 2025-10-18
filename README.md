@@ -127,66 +127,114 @@ Bootstrap script to add artagon-common as a submodule to any project.
 
 ### Branch Protection
 
-Protect your `main` branch across all repositories with one command. Three protection levels available:
+Protect your `main` branch across repositories with flexible, parameterized scripts. Works with any organization, repository, or branch.
 
-#### `protect-main-branch.sh` - Solo Development ⭐
+#### Quick Start
+
+```bash
+# Protect a single repository
+./scripts/protect-main-branch.sh --repo artagon-common
+
+# Protect all default repositories
+./scripts/protect-main-branch.sh --all
+
+# Protect repository in different organization
+./scripts/protect-main-branch.sh --repo my-app --owner mycompany
+
+# Protect custom branch
+./scripts/protect-main-branch.sh --repo my-app --branch develop
+```
+
+#### Common Parameters
+
+All branch protection scripts support:
+
+| Parameter | Short | Description | Default |
+|-----------|-------|-------------|---------|
+| `--repo REPO` | `-r` | Repository name (repeatable) | Required* |
+| `--owner OWNER` | `-o` | GitHub owner/organization | `artagon` |
+| `--branch BRANCH` | `-b` | Branch name to protect | `main` |
+| `--all` | `-a` | Process all default repos | - |
+| `--force` | `-f` | Skip confirmation prompt | - |
+| `--help` | `-h` | Show help message | - |
+
+\* Not required when using `--all`
+
+#### Available Scripts
+
+**`protect-main-branch.sh` - Solo Development ⭐**
 Basic protection for solo developers - blocks accidents but allows direct pushes.
 
 ```bash
-./scripts/protect-main-branch.sh
+# Single repo
+./scripts/protect-main-branch.sh --repo artagon-common
+
+# Multiple repos in your org
+./scripts/protect-main-branch.sh --owner myorg --repo app1 --repo app2
 ```
 
-**Protects against:**
-- Force pushes
-- Branch deletion
+**Protection:** Blocks force pushes & deletions | Allows direct pushes & admin overrides
 
-**Allows:**
-- Direct pushes to main
-- Admin overrides
-
-#### `protect-main-branch-team.sh` - Team Collaboration ⭐
+**`protect-main-branch-team.sh` - Team Collaboration ⭐**
 Balanced protection for teams - requires PR reviews but allows admin emergency access.
 
 ```bash
-./scripts/protect-main-branch-team.sh
+./scripts/protect-main-branch-team.sh --repo artagon-bom
 ```
 
-**Requires:**
-- 1 PR approval before merging
-- Conversation resolution
+**Protection:** Requires 1 PR approval & conversation resolution | Allows admin emergency access
 
-**Allows:**
-- Admin direct push in emergencies
-- Merge commits
-
-#### `protect-main-branch-strict.sh` - Maximum Protection
+**`protect-main-branch-strict.sh` - Maximum Protection**
 Strict protection for compliance environments - enforced for everyone including admins.
 
 ```bash
-./scripts/protect-main-branch-strict.sh
+./scripts/protect-main-branch-strict.sh --all
 ```
 
-**Requires:**
-- 1 PR approval
-- Status checks (CI/CD)
-- Linear history
-- Enforced for admins
+**Protection:** Requires PR approval, status checks & linear history | Enforced for admins
 
-#### `check-branch-protection.sh` - Status Check
+**`check-branch-protection.sh` - Status Check**
 View current protection settings for all repositories.
 
 ```bash
-./scripts/check-branch-protection.sh
+# Check all default repos
+./scripts/check-branch-protection.sh --all
+
+# Check specific repo
+./scripts/check-branch-protection.sh --repo artagon-common
 ```
 
-#### `remove-branch-protection.sh` - Remove Protection
+**`remove-branch-protection.sh` - Remove Protection**
 Remove all branch protection (use with caution).
 
 ```bash
-./scripts/remove-branch-protection.sh
+./scripts/remove-branch-protection.sh --repo artagon-common --force
 ```
 
-**📚 Full Documentation:** See [docs/BRANCH-PROTECTION.md](docs/BRANCH-PROTECTION.md) for detailed guide, comparison table, and workflows.
+#### Advanced Examples
+
+```bash
+# Protect multiple repos at once
+./scripts/protect-main-branch.sh \
+  --repo artagon-common \
+  --repo artagon-license \
+  --repo artagon-bom
+
+# Work across different organizations
+./scripts/protect-main-branch.sh --repo shared-lib --owner org1
+./scripts/protect-main-branch.sh --repo shared-lib --owner org2
+
+# Protect non-main branches
+./scripts/protect-main-branch.sh --repo api-server --branch develop
+./scripts/protect-main-branch.sh --repo api-server --branch release/v1.0
+
+# Automation-friendly (no prompts)
+./scripts/protect-main-branch.sh --all --force
+```
+
+**📚 Documentation:**
+- [Full Guide](docs/BRANCH-PROTECTION.md) - Detailed comparison table and workflows
+- [Usage Examples](docs/BRANCH-PROTECTION-USAGE.md) - Complete usage reference with all parameters
 
 ## Using in Your Projects
 
