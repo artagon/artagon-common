@@ -43,10 +43,20 @@ artagon-common/
 ├── scripts/                      # Automation scripts
 │   ├── auto_create_and_push.sh  # GitHub repository creation and setup
 │   ├── setup-artagon-common.sh  # Bootstrap this repo into projects
-│   ├── build/                   # Build-related scripts
+│   ├── build/                   # Build-related scripts (future use)
 │   ├── deploy/                  # Deployment automation
-│   ├── ci/                      # CI/CD helpers
-│   └── dev/                     # Development tools
+│   │   ├── check-deploy-ready.sh    # Pre-deployment validation
+│   │   ├── deploy-snapshot.sh       # Deploy snapshot to OSSRH
+│   │   ├── nexus-release.sh         # Release from Nexus staging
+│   │   └── release.sh               # Full release automation
+│   ├── ci/                      # CI/CD and branch protection
+│   │   ├── branch-protection-common.sh  # Shared protection functions
+│   │   ├── check-branch-protection.sh   # View protection status
+│   │   ├── protect-main-branch.sh       # Solo developer protection
+│   │   ├── protect-main-branch-strict.sh # Maximum protection
+│   │   ├── protect-main-branch-team.sh  # Team collaboration
+│   │   └── remove-branch-protection.sh  # Remove protection
+│   └── dev/                     # Development tools (future use)
 ├── templates/                    # Project templates
 │   ├── .gitignore.template      # Standard .gitignore
 │   ├── .editorconfig           # Code style settings
@@ -133,16 +143,16 @@ Protect your `main` branch across repositories with flexible, parameterized scri
 
 ```bash
 # Protect a single repository
-./scripts/protect-main-branch.sh --repo artagon-common
+./scripts/ci/protect-main-branch.sh --repo artagon-common
 
 # Protect all default repositories
-./scripts/protect-main-branch.sh --all
+./scripts/ci/protect-main-branch.sh --all
 
 # Protect repository in different organization
-./scripts/protect-main-branch.sh --repo my-app --owner mycompany
+./scripts/ci/protect-main-branch.sh --repo my-app --owner mycompany
 
 # Protect custom branch
-./scripts/protect-main-branch.sh --repo my-app --branch develop
+./scripts/ci/protect-main-branch.sh --repo my-app --branch develop
 ```
 
 #### Common Parameters
@@ -162,74 +172,74 @@ All branch protection scripts support:
 
 #### Available Scripts
 
-**`protect-main-branch.sh` - Solo Development ⭐**
+**`ci/protect-main-branch.sh` - Solo Development ⭐**
 Basic protection for solo developers - blocks accidents but allows direct pushes.
 
 ```bash
 # Single repo
-./scripts/protect-main-branch.sh --repo artagon-common
+./scripts/ci/protect-main-branch.sh --repo artagon-common
 
 # Multiple repos in your org
-./scripts/protect-main-branch.sh --owner myorg --repo app1 --repo app2
+./scripts/ci/protect-main-branch.sh --owner myorg --repo app1 --repo app2
 ```
 
 **Protection:** Blocks force pushes & deletions | Allows direct pushes & admin overrides
 
-**`protect-main-branch-team.sh` - Team Collaboration ⭐**
+**`ci/protect-main-branch-team.sh` - Team Collaboration ⭐**
 Balanced protection for teams - requires PR reviews but allows admin emergency access.
 
 ```bash
-./scripts/protect-main-branch-team.sh --repo artagon-bom
+./scripts/ci/protect-main-branch-team.sh --repo artagon-bom
 ```
 
 **Protection:** Requires 1 PR approval & conversation resolution | Allows admin emergency access
 
-**`protect-main-branch-strict.sh` - Maximum Protection**
+**`ci/protect-main-branch-strict.sh` - Maximum Protection**
 Strict protection for compliance environments - enforced for everyone including admins.
 
 ```bash
-./scripts/protect-main-branch-strict.sh --all
+./scripts/ci/protect-main-branch-strict.sh --all
 ```
 
 **Protection:** Requires PR approval, status checks & linear history | Enforced for admins
 
-**`check-branch-protection.sh` - Status Check**
+**`ci/check-branch-protection.sh` - Status Check**
 View current protection settings for all repositories.
 
 ```bash
 # Check all default repos
-./scripts/check-branch-protection.sh --all
+./scripts/ci/check-branch-protection.sh --all
 
 # Check specific repo
-./scripts/check-branch-protection.sh --repo artagon-common
+./scripts/ci/check-branch-protection.sh --repo artagon-common
 ```
 
 **`remove-branch-protection.sh` - Remove Protection**
 Remove all branch protection (use with caution).
 
 ```bash
-./scripts/remove-branch-protection.sh --repo artagon-common --force
+./scripts/ci/remove-branch-protection.sh --repo artagon-common --force
 ```
 
 #### Advanced Examples
 
 ```bash
 # Protect multiple repos at once
-./scripts/protect-main-branch.sh \
+./scripts/ci/protect-main-branch.sh \
   --repo artagon-common \
   --repo artagon-license \
   --repo artagon-bom
 
 # Work across different organizations
-./scripts/protect-main-branch.sh --repo shared-lib --owner org1
-./scripts/protect-main-branch.sh --repo shared-lib --owner org2
+./scripts/ci/protect-main-branch.sh --repo shared-lib --owner org1
+./scripts/ci/protect-main-branch.sh --repo shared-lib --owner org2
 
 # Protect non-main branches
-./scripts/protect-main-branch.sh --repo api-server --branch develop
-./scripts/protect-main-branch.sh --repo api-server --branch release/v1.0
+./scripts/ci/protect-main-branch.sh --repo api-server --branch develop
+./scripts/ci/protect-main-branch.sh --repo api-server --branch release/v1.0
 
 # Automation-friendly (no prompts)
-./scripts/protect-main-branch.sh --all --force
+./scripts/ci/protect-main-branch.sh --all --force
 ```
 
 **📚 Documentation:**

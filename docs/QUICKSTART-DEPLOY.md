@@ -53,7 +53,7 @@ Create/edit `~/.m2/settings.xml`:
 ### 4. Verify Setup
 
 ```bash
-./artagon-common/scripts/check-deploy-ready.sh
+./artagon-common/scripts/deploy/check-deploy-ready.sh
 ```
 
 ---
@@ -63,7 +63,7 @@ Create/edit `~/.m2/settings.xml`:
 Deploy SNAPSHOT versions for testing:
 
 ```bash
-./artagon-common/scripts/deploy-snapshot.sh
+./artagon-common/scripts/deploy/deploy-snapshot.sh
 ```
 
 **Or manually**:
@@ -96,13 +96,13 @@ mvn clean deploy -Possrh-deploy,artagon-oss-release
 
 ```bash
 # Run the release script
-./artagon-common/scripts/release.sh 1.0.0
+./artagon-common/scripts/deploy/release.sh 1.0.0
 
 # Push to GitHub
 git push origin main --tags
 
 # Release from staging
-./artagon-common/scripts/nexus-release.sh
+./artagon-common/scripts/deploy/nexus-release.sh
 
 # Create GitHub release
 gh release create v1.0.0 --title "Release 1.0.0" --notes "Release notes..."
@@ -164,13 +164,13 @@ git push origin main --tags
 
 ```bash
 # Check deployment readiness
-./artagon-common/scripts/check-deploy-ready.sh
+./artagon-common/scripts/deploy/check-deploy-ready.sh
 
 # Deploy snapshot
-./artagon-common/scripts/deploy-snapshot.sh
+./artagon-common/scripts/deploy/deploy-snapshot.sh
 
 # Release
-./artagon-common/scripts/release.sh 1.0.0
+./artagon-common/scripts/deploy/release.sh 1.0.0
 
 # List staging repositories
 mvn nexus-staging:rc-list -Possrh-deploy
@@ -179,7 +179,7 @@ mvn nexus-staging:rc-list -Possrh-deploy
 mvn nexus-staging:drop -Possrh-deploy
 
 # Release staging
-./artagon-common/scripts/nexus-release.sh
+./artagon-common/scripts/deploy/nexus-release.sh
 ```
 
 ---
@@ -224,7 +224,7 @@ echo "use-agent" >> ~/.gnupg/gpg.conf
 - Check GPG key: `gpg --list-secret-keys`
 
 **"POM incomplete metadata"**
-- Run: `./artagon-common/scripts/check-deploy-ready.sh`
+- Run: `./artagon-common/scripts/deploy/check-deploy-ready.sh`
 - Verify all required fields present
 
 ---

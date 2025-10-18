@@ -1,16 +1,38 @@
-# Artagon Deployment Scripts
+# Artagon Scripts
 
-Helper scripts for deploying artagon-bom and artagon-parent to Maven Central.
+Automation scripts for deployment, CI/CD, and repository management.
 
-## Scripts
+## Structure
 
-### check-deploy-ready.sh
+```
+scripts/
+├── auto_create_and_push.sh      # GitHub repository creation
+├── setup-artagon-common.sh      # Submodule setup
+├── deploy/                      # Deployment automation
+│   ├── check-deploy-ready.sh    # Pre-deployment validation
+│   ├── deploy-snapshot.sh       # Deploy snapshot to OSSRH
+│   ├── nexus-release.sh         # Release from Nexus staging
+│   └── release.sh               # Full release automation
+├── ci/                          # CI/CD and branch protection
+│   ├── branch-protection-common.sh
+│   ├── check-branch-protection.sh
+│   ├── protect-main-branch.sh
+│   ├── protect-main-branch-strict.sh
+│   ├── protect-main-branch-team.sh
+│   └── remove-branch-protection.sh
+├── build/                       # Build-related scripts (future use)
+└── dev/                         # Development tools (future use)
+```
+
+## Deployment Scripts
+
+### deploy/check-deploy-ready.sh
 
 Validates deployment prerequisites and configuration.
 
 **Usage**:
 ```bash
-./scripts/check-deploy-ready.sh
+./scripts/deploy/check-deploy-ready.sh
 ```
 
 **Checks**:
@@ -22,13 +44,13 @@ Validates deployment prerequisites and configuration.
 - Git working directory status
 - Security files
 
-### deploy-snapshot.sh
+### deploy/deploy-snapshot.sh
 
 Deploys SNAPSHOT versions to Sonatype OSSRH snapshots repository.
 
 **Usage**:
 ```bash
-./scripts/deploy-snapshot.sh
+./scripts/deploy/deploy-snapshot.sh
 ```
 
 **Requirements**:
@@ -37,18 +59,18 @@ Deploys SNAPSHOT versions to Sonatype OSSRH snapshots repository.
 - GPG key configured
 - OSSRH credentials in `~/.m2/settings.xml`
 
-### release.sh
+### deploy/release.sh
 
 Creates and deploys a release version to Maven Central.
 
 **Usage**:
 ```bash
-./scripts/release.sh <version>
+./scripts/deploy/release.sh <version>
 ```
 
 **Example**:
 ```bash
-./scripts/release.sh 1.0.0
+./scripts/deploy/release.sh 1.0.0
 ```
 
 **Process**:
@@ -65,19 +87,19 @@ Creates and deploys a release version to Maven Central.
 git push origin main --tags
 
 # Release from staging (see nexus-release.sh)
-./scripts/nexus-release.sh
+./scripts/deploy/nexus-release.sh
 
 # Create GitHub release
 gh release create v1.0.0 --title "Release 1.0.0" --notes "..."
 ```
 
-### nexus-release.sh
+### deploy/nexus-release.sh
 
 Releases staged artifacts from Nexus to Maven Central.
 
 **Usage**:
 ```bash
-./scripts/nexus-release.sh
+./scripts/deploy/nexus-release.sh
 ```
 
 **When to use**:
@@ -86,6 +108,10 @@ Releases staged artifacts from Nexus to Maven Central.
 
 **Alternative**:
 Use the Nexus UI: https://s01.oss.sonatype.org/
+
+## CI/CD Scripts
+
+For branch protection and CI/CD automation, see the `ci/` directory and the main [README](../README.md#branch-protection) for full documentation.
 
 ## Quick Start
 
@@ -132,33 +158,33 @@ Use the Nexus UI: https://s01.oss.sonatype.org/
 
 3. **Verify Setup**:
    ```bash
-   ./scripts/check-deploy-ready.sh
+   ./scripts/deploy/check-deploy-ready.sh
    ```
 
 ### Deploy Snapshot
 
 ```bash
 # Check readiness
-./scripts/check-deploy-ready.sh
+./scripts/deploy/check-deploy-ready.sh
 
 # Deploy
-./scripts/deploy-snapshot.sh
+./scripts/deploy/deploy-snapshot.sh
 ```
 
 ### Release to Maven Central
 
 ```bash
 # Check readiness
-./scripts/check-deploy-ready.sh
+./scripts/deploy/check-deploy-ready.sh
 
 # Release
-./scripts/release.sh 1.0.0
+./scripts/deploy/release.sh 1.0.0
 
 # Push to GitHub
 git push origin main --tags
 
 # Release from Nexus staging
-./scripts/nexus-release.sh
+./scripts/deploy/nexus-release.sh
 
 # Create GitHub release
 gh release create v1.0.0 --title "Release 1.0.0"
