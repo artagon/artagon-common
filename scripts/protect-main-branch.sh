@@ -1,7 +1,12 @@
 #!/bin/bash
 #
-# Branch Protection Script for Artagon Projects
-# Applies consistent branch protection rules to main branches
+# Branch Protection Script for GitHub Repositories
+# Applies basic protection - blocks force pushes and deletions
+#
+# Usage:
+#   ./protect-main-branch.sh --repo artagon-common
+#   ./protect-main-branch.sh --repo artagon-bom --owner myorg
+#   ./protect-main-branch.sh --all
 #
 
 set -e
@@ -13,34 +18,124 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# GitHub organization
-ORG="artagon"
-
-# List of repositories to protect
-REPOS=(
+# Default values
+DEFAULT_OWNER="artagon"
+DEFAULT_BRANCH="main"
+DEFAULT_REPOS=(
     "artagon-common"
     "artagon-license"
     "artagon-bom"
     "artagon-parent"
 )
 
-# Branch to protect
-BRANCH="main"
+# Variables
+OWNER=""
+BRANCH=""
+REPOS=()
+PROCESS_ALL=false
+FORCE=false
 
-echo -e "${BLUE}======================================${NC}"
-echo -e "${BLUE}Branch Protection Setup${NC}"
-echo -e "${BLUE}======================================${NC}"
-echo ""
+# Show usage
+usage() {
+    cat << EOF
+Usage: $0 [OPTIONS]
+
+Apply basic branch protection to GitHub repositories.
+
+OPTIONS:
+    -r, --repo REPO         Repository name (can be specified multiple times)
+    -o, --owner OWNER       GitHub owner/organization (default: ${DEFAULT_OWNER})
+    -b, --branch BRANCH     Branch name to protect (default: ${DEFAULT_BRANCH})
+    -a, --all               Process all default repositories
+    -f, --force             Skip confirmation prompt
+    -h, --help              Show this help message
+
+EXAMPLES:
+    # Protect a single repository
+    $0 --repo artagon-common
+
+    # Protect multiple repositories
+    $0 --repo artagon-bom --repo artagon-parent
+
+    # Protect repository in different organization
+    $0 --repo my-project --owner myorg
+
+    # Protect all default repositories
+    $0 --all
+
+    # Protect with custom branch
+    $0 --repo artagon-common --branch develop
+
+PROTECTION SETTINGS:
+    ✅ Block force pushes
+    ✅ Block branch deletion
+    ❌ No PR reviews required (you can push directly)
+    ❌ Not enforced for admins (you can override if needed)
+
+Best for: Solo development with safety rails
+
+EOF
+    exit 0
+}
+
+# Parse command line arguments
+parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -r|--repo)
+                REPOS+=("$2")
+                shift 2
+                ;;
+            -o|--owner)
+                OWNER="$2"
+                shift 2
+                ;;
+            -b|--branch)
+                BRANCH="$2"
+                shift 2
+                ;;
+            -a|--all)
+                PROCESS_ALL=true
+                shift
+                ;;
+            -f|--force)
+                FORCE=true
+                shift
+                ;;
+            -h|--help)
+                usage
+                ;;
+            *)
+                echo -e "${RED}Error: Unknown option: $1${NC}"
+                echo "Use --help for usage information"
+                exit 1
+                ;;
+        esac
+    done
+
+    # Set defaults
+    OWNER=${OWNER:-$DEFAULT_OWNER}
+    BRANCH=${BRANCH:-$DEFAULT_BRANCH}
+
+    # Determine which repos to process
+    if [ "$PROCESS_ALL" = true ]; then
+        REPOS=("${DEFAULT_REPOS[@]}")
+    elif [ ${#REPOS[@]} -eq 0 ]; then
+        echo -e "${RED}Error: No repositories specified${NC}"
+        echo "Use --repo to specify repositories or --all for all default repos"
+        echo "Use --help for more information"
+        exit 1
+    fi
+}
 
 # Function to apply branch protection
 protect_branch() {
     local repo=$1
     local branch=$2
 
-    echo -e "${YELLOW}Protecting branch '${branch}' in ${ORG}/${repo}...${NC}"
+    echo -e "${YELLOW}Protecting branch '${branch}' in ${OWNER}/${repo}...${NC}"
 
     # Branch protection configuration
-    # Customize these settings based on your needs
     local protection_rules='{
         "required_status_checks": null,
         "enforce_admins": false,
@@ -64,37 +159,28 @@ protect_branch() {
     if gh api \
         --method PUT \
         -H "Accept: application/vnd.github+json" \
-        "/repos/${ORG}/${repo}/branches/${branch}/protection" \
+        "/repos/${OWNER}/${repo}/branches/${branch}/protection" \
         --input - <<< "$protection_rules" > /dev/null 2>&1; then
-        echo -e "${GREEN}✓ Successfully protected ${ORG}/${repo}:${branch}${NC}"
+        echo -e "${GREEN}✓ Successfully protected ${OWNER}/${repo}:${branch}${NC}"
         return 0
     else
-        echo -e "${RED}✗ Failed to protect ${ORG}/${repo}:${branch}${NC}"
+        echo -e "${RED}✗ Failed to protect ${OWNER}/${repo}:${branch}${NC}"
+        echo -e "${YELLOW}  Check that the repository exists and you have admin access${NC}"
         return 1
-    fi
-}
-
-# Function to show current protection status
-show_protection_status() {
-    local repo=$1
-    local branch=$2
-
-    echo -e "${BLUE}Current protection for ${ORG}/${repo}:${branch}${NC}"
-
-    if gh api "/repos/${ORG}/${repo}/branches/${branch}/protection" 2>/dev/null; then
-        echo ""
-    else
-        echo -e "${YELLOW}No protection currently enabled${NC}"
-        echo ""
     fi
 }
 
 # Main execution
 main() {
-    echo "This script will apply branch protection to the following repositories:"
+    parse_args "$@"
+
+    echo -e "${BLUE}======================================${NC}"
+    echo -e "${BLUE}Basic Branch Protection Setup${NC}"
+    echo -e "${BLUE}======================================${NC}"
     echo ""
+    echo "Target repositories:"
     for repo in "${REPOS[@]}"; do
-        echo "  - ${ORG}/${repo}"
+        echo "  - ${OWNER}/${repo}:${BRANCH}"
     done
     echo ""
     echo "Protection settings:"
@@ -103,15 +189,16 @@ main() {
     echo "  - Allow branch deletion: No"
     echo "  - Enforce for admins: No (you can still override)"
     echo ""
-    read -p "Continue? (y/n) " -n 1 -r
-    echo ""
 
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo "Aborted."
-        exit 0
+    if [ "$FORCE" != true ]; then
+        read -p "Continue? (y/n) " -n 1 -r
+        echo ""
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            echo "Aborted."
+            exit 0
+        fi
+        echo ""
     fi
-
-    echo ""
 
     # Apply protection to each repository
     success_count=0
@@ -136,10 +223,12 @@ main() {
 
     if [ $fail_count -eq 0 ]; then
         echo -e "${GREEN}All branches protected successfully!${NC}"
+        exit 0
     else
         echo -e "${YELLOW}Some branches failed to be protected. Check the output above.${NC}"
+        exit 1
     fi
 }
 
 # Run main function
-main
+main "$@"
