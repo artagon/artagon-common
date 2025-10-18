@@ -1,0 +1,173 @@
+name: Maven Release (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      java-version:
+        description: 'Java version to use'
+        required: false
+        type: string
+        default: '25'
+      java-distribution:
+        description: 'Java distribution'
+        required: false
+        type: string
+        default: 'temurin'
+      release-version:
+        description: 'Release version (e.g., 1.0.0)'
+        required: true
+        type: string
+      next-snapshot-version:
+        description: 'Next snapshot version (leave empty for auto-increment)'
+        required: false
+        type: string
+        default: ''
+      deploy-profile:
+        description: 'Maven profile for deployment'
+        required: false
+        type: string
+        default: 'ossrh-deploy,artagon-oss-release'
+      auto-release-nexus:
+        description: 'Automatically release from Nexus staging'
+        required: false
+        type: boolean
+        default: false
+      create-github-release:
+        description: 'Create GitHub release'
+        required: false
+        type: boolean
+        default: true
+    secrets:
+      OSSRH_USERNAME:
+        description: 'Sonatype OSSRH username'
+        required: true
+      OSSRH_PASSWORD:
+        description: 'Sonatype OSSRH password'
+        required: true
+      GPG_PRIVATE_KEY:
+        description: 'GPG private key for signing'
+        required: true
+      GPG_PASSPHRASE:
+        description: 'GPG passphrase'
+        required: true
+      GITHUB_TOKEN:
+        description: 'GitHub token for creating releases'
+        required: false
+    outputs:
+      release-tag:
+        description: 'The git tag created for the release'
+        value: ${{ jobs.release.outputs.tag }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: v${{ inputs.release-version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK ${{ inputs.java-version }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ inputs.java-version }}
+          distribution: ${{ inputs.java-distribution }}
+          cache: 'maven'
+          server-id: ossrh
+          server-username: OSSRH_USERNAME
+          server-password: OSSRH_PASSWORD
+
+      - name: Import GPG key
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+        run: |
+          echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+          gpg --list-secret-keys --keyid-format LONG
+
+      - name: Configure Git
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+      - name: Calculate next snapshot version
+        id: next-version
+        run: |
+          if [ -n "${{ inputs.next-snapshot-version }}" ]; then
+            NEXT_VERSION="${{ inputs.next-snapshot-version }}"
+          else
+            RELEASE_VERSION="${{ inputs.release-version }}"
+            IFS='.' read -ra VERSION_PARTS <<< "$RELEASE_VERSION"
+            PATCH=$((${VERSION_PARTS[2]} + 1))
+            NEXT_VERSION="${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.$PATCH-SNAPSHOT"
+          fi
+          echo "next-version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+          echo "Next snapshot version: $NEXT_VERSION"
+
+      - name: Set release version
+        run: |
+          mvn versions:set -DnewVersion=${{ inputs.release-version }} -DgenerateBackupPoms=false
+          git add .
+          git commit -m "chore: release version ${{ inputs.release-version }}"
+
+      - name: Build and deploy release
+        env:
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          mvn clean deploy -P${{ inputs.deploy-profile }} -DskipTests \
+            -Dgpg.passphrase="$GPG_PASSPHRASE" \
+            --batch-mode --no-transfer-progress
+
+      - name: Create git tag
+        run: |
+          git tag -a "v${{ inputs.release-version }}" -m "Release ${{ inputs.release-version }}"
+
+      - name: Set next snapshot version
+        run: |
+          mvn versions:set -DnewVersion=${{ steps.next-version.outputs.next-version }} -DgenerateBackupPoms=false
+          git add .
+          git commit -m "chore: prepare for next development iteration"
+
+      - name: Push changes and tags
+        run: |
+          git push origin main
+          git push origin "v${{ inputs.release-version }}"
+
+      - name: Release from Nexus staging
+        if: inputs.auto-release-nexus
+        env:
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+        run: |
+          mvn nexus-staging:release -P${{ inputs.deploy-profile }} \
+            --batch-mode --no-transfer-progress
+
+      - name: Create GitHub Release
+        if: inputs.create-github-release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN || github.token }}
+        with:
+          tag_name: v${{ inputs.release-version }}
+          release_name: Release ${{ inputs.release-version }}
+          body: |
+            ## Release ${{ inputs.release-version }}
+
+            Maven Central coordinates:
+            ```xml
+            <dependency>
+                <groupId>org.artagon</groupId>
+                <artifactId>artagon-bom</artifactId>
+                <version>${{ inputs.release-version }}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            ```
+
+            Artifacts will sync to Maven Central in 2-4 hours.
+          draft: false
+          prerelease: false

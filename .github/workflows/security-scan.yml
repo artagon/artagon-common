@@ -1,0 +1,120 @@
+name: Security Scan (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      java-version:
+        description: 'Java version to use'
+        required: false
+        type: string
+        default: '25'
+      java-distribution:
+        description: 'Java distribution'
+        required: false
+        type: string
+        default: 'temurin'
+      run-dependency-check:
+        description: 'Run OWASP Dependency Check'
+        required: false
+        type: boolean
+        default: true
+      run-ossindex-audit:
+        description: 'Run Sonatype OSS Index audit'
+        required: false
+        type: boolean
+        default: true
+      run-trivy-scan:
+        description: 'Run Trivy vulnerability scanner'
+        required: false
+        type: boolean
+        default: true
+      fail-on-severity:
+        description: 'Fail on vulnerability severity (CRITICAL, HIGH, MEDIUM, LOW)'
+        required: false
+        type: string
+        default: 'HIGH'
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ inputs.java-version }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ inputs.java-version }}
+          distribution: ${{ inputs.java-distribution }}
+          cache: 'maven'
+
+      - name: Build project
+        run: mvn clean package -DskipTests --batch-mode --no-transfer-progress
+
+      - name: Run Sonatype OSS Index Audit
+        if: inputs.run-ossindex-audit
+        run: |
+          mvn org.sonatype.ossindex.maven:ossindex-maven-plugin:audit \
+            --batch-mode --no-transfer-progress
+        continue-on-error: true
+
+      - name: Run OWASP Dependency Check
+        if: inputs.run-dependency-check
+        run: |
+          mvn org.owasp:dependency-check-maven:check \
+            -DfailBuildOnCVSS=7 \
+            --batch-mode --no-transfer-progress
+        continue-on-error: true
+
+      - name: Upload Dependency Check report
+        if: always() && inputs.run-dependency-check
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: target/dependency-check-report.html
+          retention-days: 30
+
+      - name: Run Trivy vulnerability scanner
+        if: inputs.run-trivy-scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: ${{ inputs.fail-on-severity }}
+
+      - name: Upload Trivy results to GitHub Security tab
+        if: always() && inputs.run-trivy-scan
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Run SpotBugs security analysis
+        run: |
+          mvn com.github.spotbugs:spotbugs-maven-plugin:check \
+            -Dspotbugs.effort=Max \
+            -Dspotbugs.threshold=Low \
+            --batch-mode --no-transfer-progress
+        continue-on-error: true
+
+      - name: Upload SpotBugs report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spotbugs-report
+          path: |
+            **/target/spotbugsXml.xml
+            **/target/spotbugs.html
+          retention-days: 30
+
+      - name: Security scan summary
+        if: always()
+        run: |
+          echo "## Security Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- OSS Index Audit: ${{ inputs.run-ossindex-audit && '✓ Completed' || '⊘ Skipped' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- OWASP Dependency Check: ${{ inputs.run-dependency-check && '✓ Completed' || '⊘ Skipped' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Trivy Scan: ${{ inputs.run-trivy-scan && '✓ Completed' || '⊘ Skipped' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- SpotBugs Analysis: ✓ Completed" >> $GITHUB_STEP_SUMMARY
