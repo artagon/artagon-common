@@ -1,0 +1,156 @@
+# Reusable GitHub Packages Release Workflow
+#
+# Usage in your project's .github/workflows/release-github.yml:
+#
+# name: Release to GitHub Packages
+# on:
+#   push:
+#     tags: ['v*']
+# jobs:
+#   release:
+#     uses: artagon/artagon-common/.github/workflows/maven-github-release.yml@main
+#     secrets: inherit
+
+name: GitHub Packages Release (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      java-version:
+        description: 'Java version to use'
+        required: false
+        type: string
+        default: '25'
+      java-distribution:
+        description: 'Java distribution'
+        required: false
+        type: string
+        default: 'temurin'
+      maven-profile:
+        description: 'Maven profile for release'
+        required: false
+        type: string
+        default: 'github-deploy'
+      maven-args:
+        description: 'Additional Maven arguments'
+        required: false
+        type: string
+        default: ''
+      create-github-release:
+        description: 'Create GitHub release'
+        required: false
+        type: boolean
+        default: true
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  release:
+    name: Release to GitHub Packages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK ${{ inputs.java-version }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ inputs.java-version }}
+          distribution: ${{ inputs.java-distribution }}
+          cache: 'maven'
+          server-id: github
+          server-username: GITHUB_ACTOR
+          server-password: GITHUB_TOKEN
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: maven-github-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            maven-github-${{ runner.os }}-
+
+      - name: Get version from tag
+        id: get-version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Release version: $VERSION"
+
+      - name: Get project version
+        id: get-project-version
+        run: |
+          PROJECT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "project_version=$PROJECT_VERSION" >> $GITHUB_OUTPUT
+          echo "Project POM version: $PROJECT_VERSION"
+
+      - name: Configure settings.xml from template
+        run: |
+          mkdir -p ~/.m2
+          if [ -f ".common/artagon-common/templates/settings.xml" ]; then
+            cp .common/artagon-common/templates/settings.xml ~/.m2/settings.xml
+            echo "✓ Copied settings.xml from artagon-common template"
+          elif [ -f "settings.xml" ]; then
+            cp settings.xml ~/.m2/settings.xml
+            echo "✓ Copied local settings.xml"
+          else
+            echo "⚠ No settings.xml found, using default Maven settings"
+          fi
+
+      - name: Configure Git
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+      - name: Build and Deploy to GitHub Packages
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mvn clean deploy \
+            -P${{ inputs.maven-profile }} \
+            -DskipTests \
+            -Dregistry=https://maven.pkg.github.com/${{ github.repository_owner }} \
+            -Dtoken=${{ secrets.GITHUB_TOKEN }} \
+            ${{ inputs.maven-args }}
+
+      - name: Create GitHub Release
+        if: inputs.create-github-release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref }}
+          name: Release ${{ steps.get-version.outputs.version }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            **/target/*.jar
+            **/target/*.pom
+
+      - name: Summary
+        run: |
+          echo "## 🚀 GitHub Packages Release Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ steps.get-version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Profile:** ${{ inputs.maven-profile }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Java:** ${{ inputs.java-version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📦 Deployment Details" >> $GITHUB_STEP_SUMMARY
+          echo "- Repository: GitHub Packages" >> $GITHUB_STEP_SUMMARY
+          echo "- URL: https://github.com/${{ github.repository }}/packages" >> $GITHUB_STEP_SUMMARY
+          echo "- Package: https://maven.pkg.github.com/${{ github.repository_owner }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📥 Using this Package" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`xml" >> $GITHUB_STEP_SUMMARY
+          echo "<repository>" >> $GITHUB_STEP_SUMMARY
+          echo "  <id>github</id>" >> $GITHUB_STEP_SUMMARY
+          echo "  <url>https://maven.pkg.github.com/${{ github.repository_owner }}</url>" >> $GITHUB_STEP_SUMMARY
+          echo "</repository>" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
