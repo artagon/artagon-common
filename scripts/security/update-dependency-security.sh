@@ -97,9 +97,9 @@ OPTIONS:
     -h, --help                   Show this help message
 
 FILES GENERATED:
-    dependency-checksums.csv         SHA-256 checksums (CSV format)
-    dependency-checksums.properties  SHA-256 checksums (properties format)
-    pgp-trusted-keys.list           Trusted PGP fingerprints
+    artifact-dependency-checksums.csv         SHA-256 checksums (CSV format)
+    artifact-dependency-checksums.properties  SHA-256 checksums (properties format)
+    pgp-trusted-keys.list                    Trusted PGP fingerprints
 
 EXAMPLES:
     # Update baselines for current project
@@ -228,9 +228,9 @@ info "Mode: ${MODE}"
 
 # Determine output files based on format
 if [[ "${CHECKSUM_FORMAT}" == "csv" ]]; then
-    CHECKSUM_FILE="${SECURITY_DIR}/dependency-checksums.csv"
+    CHECKSUM_FILE="${SECURITY_DIR}/artifact-dependency-checksums.csv"
 else
-    CHECKSUM_FILE="${SECURITY_DIR}/dependency-checksums.properties"
+    CHECKSUM_FILE="${SECURITY_DIR}/artifact-dependency-checksums.properties"
 fi
 KEYS_FILE="${SECURITY_DIR}/pgp-trusted-keys.list"
 
