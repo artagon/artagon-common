@@ -58,6 +58,8 @@ jobs:
     permissions:
       contents: write
       packages: write
+      id-token: write
+      attestations: write
 
     steps:
       - name: Checkout code
@@ -115,6 +117,13 @@ jobs:
             -P${{ inputs.maven-profile }} \
             -DskipTests \
             ${{ inputs.maven-args }}
+
+      - name: Attest Build Provenance
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: |
+            **/target/*.jar
+            **/target/*.pom
 
       - name: Create GitHub Release
         if: inputs.create-github-release
