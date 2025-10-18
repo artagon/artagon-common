@@ -124,6 +124,10 @@ jobs:
           git config user.email "actions@github.com"
 
       - name: Build and Deploy to Maven Central
+        env:
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           mvn clean deploy \
             -P${{ inputs.maven-profile }} \
