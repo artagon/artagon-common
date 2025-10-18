@@ -39,18 +39,44 @@ Comprehensive deployment guide:
 - Nexus staging repository
 - CI/CD integration
 
+### 🔒 Security & Dependency Verification
+**→ [SECURITY-SCRIPTS.md](SECURITY-SCRIPTS.md)**
+
+Security scripts documentation:
+- `update-dependency-security.sh` - Generate security baselines
+- `verify-checksums.sh` - Verify security file checksums
+- Maven plugin integration
+- Security workflow and best practices
+- Troubleshooting
+
+### 📜 Licensing & Legal
+**→ [licensing/IMPLEMENTATION-GUIDE.md](licensing/IMPLEMENTATION-GUIDE.md)**
+
+Dual licensing implementation:
+- File structure and repository setup
+- Package manager metadata
+- Source file headers
+- CLA configuration
+
 ---
 
 ## Documentation Structure
 
 ```
 docs/
-├── README.md                 # This file - documentation index
-├── QUICK-RELEASE.md          # Quick release reference
-├── RELEASE-GUIDE.md          # Complete release process
-├── GITHUB-PACKAGES.md        # Using GitHub Maven Packages
-├── DEPLOYMENT.md             # Maven Central deployment
-└── QUICKSTART-DEPLOY.md      # Quick deployment reference
+├── README.md                     # This file - documentation index
+├── QUICK-RELEASE.md              # Quick release reference
+├── RELEASE-GUIDE.md              # Complete release process
+├── GITHUB-PACKAGES.md            # Using GitHub Maven Packages
+├── DEPLOYMENT.md                 # Maven Central deployment
+├── QUICKSTART-DEPLOY.md          # Quick deployment reference
+├── SECURITY-SCRIPTS.md           # Security scripts documentation
+├── BRANCH-PROTECTION.md          # Branch protection setup
+├── BRANCH-PROTECTION-USAGE.md    # Using branch protection scripts
+└── licensing/
+    ├── IMPLEMENTATION-GUIDE.md   # Dual licensing implementation
+    ├── README-LICENSE-SECTION.md # License section template
+    └── SOURCE-FILE-HEADER.txt    # Source file header template
 ```
 
 ---
@@ -85,8 +111,16 @@ Available workflows:
 ### I'm Setting Up a New Artagon Project
 
 1. [QUICKSTART-DEPLOY.md](QUICKSTART-DEPLOY.md) - Quick setup reference
-2. Copy workflows from `../.github/workflows/examples/`
-3. Configure GitHub secrets (see [DEPLOYMENT.md](DEPLOYMENT.md))
+2. [licensing/IMPLEMENTATION-GUIDE.md](licensing/IMPLEMENTATION-GUIDE.md) - License setup
+3. [SECURITY-SCRIPTS.md](SECURITY-SCRIPTS.md) - Security baseline setup
+4. Copy workflows from `../.github/workflows/examples/`
+5. Configure GitHub secrets (see [DEPLOYMENT.md](DEPLOYMENT.md))
+
+### I'm Managing Dependency Security
+
+1. [SECURITY-SCRIPTS.md](SECURITY-SCRIPTS.md) - Security scripts guide
+2. Update baselines: `./scripts/update-dependency-security.sh --update`
+3. Verify before release: `mvn -P artagon-oss-security verify`
 
 ---
 
