@@ -291,6 +291,21 @@ git submodule add git@github.com:artagon/artagon-common.git .common/artagon-comm
     git submodule add https://github.com/artagon/artagon-common.git .common/artagon-common
 git submodule update --init --recursive
 
+# Add artagon-license as submodule
+info "Adding artagon-license submodule"
+git submodule add git@github.com:artagon/artagon-license.git .legal/artagon-license || \
+    git submodule add https://github.com/artagon/artagon-license.git .legal/artagon-license
+git submodule update --init --recursive
+
+# Export license files from artagon-license
+info "Exporting license files from artagon-license"
+.legal/artagon-license/scripts/export-license-assets.sh
+
+# Configure git hooks to use shared hooks from artagon-common
+info "Configuring git hooks"
+git config core.hooksPath .common/artagon-common/git-hooks
+success "Git hooks configured for automatic license management"
+
 # Copy language-specific templates
 info "Copying $PROJECT_TYPE templates"
 
@@ -610,39 +625,25 @@ EOF
 fi
 
 cat >> README.md << 'EOF'
-## License
+## Licensing
 
-Copyright (C) 2025 Artagon LLC. All rights reserved.
+This project uses a dual licensing model:
+
+- **GNU Affero General Public License v3.0 (AGPL-3.0)** for open source
+  use. See [`licenses/LICENSE-AGPL.txt`](licenses/LICENSE-AGPL.txt) for the full text.
+- **Commercial License** for proprietary use, available from Artagon LLC
+  with expanded rights, warranties, and support. Review
+  [`licenses/LICENSE-COMMERCIAL.txt`](licenses/LICENSE-COMMERCIAL.txt) or
+  contact `sales@artagon.com`.
+
+Need help choosing? Read [`licenses/LICENSING.md`](licenses/LICENSING.md) for
+a decision guide. Commercial pricing is available at
+https://www.artagon.com/pricing.
 
 EOF
 
-# Create LICENSE
-if [[ "$VISIBILITY" == "public" ]]; then
-    info "Creating LICENSE file"
-    cat > LICENSE << 'EOF'
-MIT License
-
-Copyright (c) 2025 Artagon LLC
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-EOF
-fi
+# LICENSE file is already exported from artagon-license submodule
+# No need to create it separately
 
 # Initial commit
 info "Creating initial commit"
@@ -651,10 +652,11 @@ git commit -m "Initial commit: ${PROJECT_TYPE} project setup
 
 - Project structure initialized
 - artagon-common submodule added
+- artagon-license submodule added
+- Dual licensing (AGPL-3.0 / Commercial) configured
+- Git hooks enabled for automatic license management
 - Build configuration added${WITH_NIX:+
-- Nix flake for reproducible builds}
-
-🤖 Generated with Artagon setup-repo.sh"
+- Nix flake for reproducible builds}"
 
 # Push to GitHub
 info "Pushing to GitHub"

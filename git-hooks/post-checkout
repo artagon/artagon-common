@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# post-checkout hook
+# Automatically initializes and syncs the artagon-license submodule
+# after git checkout or git clone operations.
+
+set -euo pipefail
+
+LEGAL_SUBMODULE=".legal/artagon-license"
+EXPORT_SCRIPT="${LEGAL_SUBMODULE}/scripts/export-license-assets.sh"
+
+# Exit silently if this is a file checkout (not branch switch)
+# $3 is 1 for branch checkout, 0 for file checkout
+if [[ "${3:-0}" == "0" ]]; then
+    exit 0
+fi
+
+# Check if artagon-license submodule exists and is initialized
+if [[ ! -f "${LEGAL_SUBMODULE}/.git" ]] && [[ ! -d "${LEGAL_SUBMODULE}/.git" ]]; then
+    echo "🔧 Initializing artagon-license submodule..."
+    if git submodule update --init --recursive "${LEGAL_SUBMODULE}" 2>/dev/null; then
+        echo "✅ artagon-license submodule initialized"
+    else
+        # Submodule might not be configured in .gitmodules yet
+        # This is expected for repos that haven't added it yet
+        exit 0
+    fi
+fi
+
+# Export license files if the export script exists
+if [[ -x "${EXPORT_SCRIPT}" ]]; then
+    echo "📄 Exporting license files..."
+    if "${EXPORT_SCRIPT}" > /dev/null 2>&1; then
+        echo "✅ License files exported successfully"
+    else
+        echo "⚠️  Warning: Failed to export license files" >&2
+    fi
+fi
+
+exit 0

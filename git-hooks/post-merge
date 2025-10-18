@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# post-merge hook
+# Automatically updates the artagon-license submodule and re-exports
+# license files after git pull or git merge operations.
+
+set -euo pipefail
+
+LEGAL_SUBMODULE=".legal/artagon-license"
+EXPORT_SCRIPT="${LEGAL_SUBMODULE}/scripts/export-license-assets.sh"
+
+# Check if artagon-license submodule exists
+if [[ ! -f "${LEGAL_SUBMODULE}/.git" ]] && [[ ! -d "${LEGAL_SUBMODULE}/.git" ]]; then
+    # Submodule not configured, nothing to update
+    exit 0
+fi
+
+# Update the submodule to the commit referenced in the parent repo
+echo "🔄 Updating artagon-license submodule..."
+if git submodule update --init --recursive "${LEGAL_SUBMODULE}" 2>/dev/null; then
+    echo "✅ artagon-license submodule updated"
+else
+    echo "⚠️  Warning: Failed to update artagon-license submodule" >&2
+    exit 0
+fi
+
+# Re-export license files to catch any updates
+if [[ -x "${EXPORT_SCRIPT}" ]]; then
+    echo "📄 Re-exporting license files..."
+    if "${EXPORT_SCRIPT}" > /dev/null 2>&1; then
+        echo "✅ License files synchronized"
+    else
+        echo "⚠️  Warning: Failed to export license files" >&2
+    fi
+fi
+
+exit 0

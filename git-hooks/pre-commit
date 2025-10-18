@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+# pre-commit hook
+# Verifies that required license files exist before allowing a commit.
+# This prevents accidental commits without proper licensing.
+
+set -euo pipefail
+
+REQUIRED_FILES=(
+    "LICENSE"
+)
+
+REQUIRED_DIRS=(
+    "licenses"
+)
+
+MISSING_FILES=()
+MISSING_DIRS=()
+
+# Check for required files
+for file in "${REQUIRED_FILES[@]}"; do
+    if [[ ! -f "${file}" ]]; then
+        MISSING_FILES+=("${file}")
+    fi
+done
+
+# Check for required directories
+for dir in "${REQUIRED_DIRS[@]}"; do
+    if [[ ! -d "${dir}" ]]; then
+        MISSING_DIRS+=("${dir}")
+    fi
+done
+
+# Report any missing items
+if [[ ${#MISSING_FILES[@]} -gt 0 ]] || [[ ${#MISSING_DIRS[@]} -gt 0 ]]; then
+    echo "❌ ERROR: Missing required license files/directories:" >&2
+    echo "" >&2
+
+    if [[ ${#MISSING_FILES[@]} -gt 0 ]]; then
+        echo "Missing files:" >&2
+        for file in "${MISSING_FILES[@]}"; do
+            echo "  - ${file}" >&2
+        done
+        echo "" >&2
+    fi
+
+    if [[ ${#MISSING_DIRS[@]} -gt 0 ]]; then
+        echo "Missing directories:" >&2
+        for dir in "${MISSING_DIRS[@]}"; do
+            echo "  - ${dir}/" >&2
+        done
+        echo "" >&2
+    fi
+
+    echo "To fix this issue:" >&2
+    echo "  1. Ensure artagon-license submodule is initialized:" >&2
+    echo "     git submodule update --init --recursive .legal/artagon-license" >&2
+    echo "" >&2
+    echo "  2. Export license files:" >&2
+    echo "     .legal/artagon-license/scripts/export-license-assets.sh" >&2
+    echo "" >&2
+    echo "To bypass this check (NOT recommended):" >&2
+    echo "  git commit --no-verify" >&2
+    echo "" >&2
+
+    exit 1
+fi
+
+# Check if license files might be stale (optional warning)
+LEGAL_SUBMODULE=".legal/artagon-license"
+if [[ -d "${LEGAL_SUBMODULE}" ]]; then
+    # Check if any source license file is newer than the exported one
+    STALE_WARNING=false
+
+    if [[ -f "${LEGAL_SUBMODULE}/LICENSE" ]] && [[ -f "LICENSE" ]]; then
+        if [[ "${LEGAL_SUBMODULE}/LICENSE" -nt "LICENSE" ]]; then
+            STALE_WARNING=true
+        fi
+    fi
+
+    if [[ "$STALE_WARNING" == "true" ]]; then
+        echo "⚠️  WARNING: License files may be out of sync with artagon-license submodule" >&2
+        echo "Consider running: .legal/artagon-license/scripts/export-license-assets.sh" >&2
+        echo "" >&2
+    fi
+fi
+
+exit 0
