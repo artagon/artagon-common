@@ -1,0 +1,28 @@
+# Example Release workflow for C projects
+# Copy this to .github/workflows/release.yml in your project
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  release:
+    uses: artagon/artagon-common/.github/workflows/c-release.yml@main
+    with:
+      # project-name: my-project  # Optional: defaults to repository name
+      c-standard: '17'
+      build-deb: true
+      build-rpm: true
+      build-appimage: true
+      build-macos: true
+      build-windows: true
+    secrets: inherit

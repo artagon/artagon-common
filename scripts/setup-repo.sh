@@ -336,7 +336,7 @@ EOF
 
     c)
         # C project structure
-        mkdir -p src include tests docs
+        mkdir -p src include tests docs .github/workflows
 
         # Copy templates
         cp .common/artagon-common/templates/c/CMakeLists.txt.template CMakeLists.txt
@@ -344,6 +344,11 @@ EOF
 
         cp .common/artagon-common/templates/c/.clang-format .
         cp .common/artagon-common/templates/c/.gitignore.template .gitignore
+
+        # Copy GitHub Actions workflows
+        if [ -d .common/artagon-common/templates/c/.github-workflows-examples ]; then
+            cp .common/artagon-common/templates/c/.github-workflows-examples/*.yml .github/workflows/
+        fi
 
         # Create basic main.c
         cat > src/main.c << EOF
@@ -368,7 +373,7 @@ EOF
 
     cpp)
         # C++ project structure
-        mkdir -p src include tests docs
+        mkdir -p src include tests docs .github/workflows
 
         # Copy templates
         cp .common/artagon-common/templates/cpp/CMakeLists.txt.template CMakeLists.txt
@@ -377,6 +382,11 @@ EOF
         cp .common/artagon-common/templates/cpp/.clang-format .
         cp .common/artagon-common/templates/cpp/.clang-tidy .
         cp .common/artagon-common/templates/cpp/.gitignore.template .gitignore
+
+        # Copy GitHub Actions workflows
+        if [ -d .common/artagon-common/templates/cpp/.github-workflows-examples ]; then
+            cp .common/artagon-common/templates/cpp/.github-workflows-examples/*.yml .github/workflows/
+        fi
 
         # Create basic main.cpp
         cat > src/main.cpp << EOF

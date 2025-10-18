@@ -1,0 +1,22 @@
+# Example CI workflow for C++ projects
+# Copy this to .github/workflows/ci.yml in your project
+
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  ci:
+    uses: artagon/artagon-common/.github/workflows/cpp-ci.yml@main
+    with:
+      cxx-standard: '23'
+      # test-standards: '17,20,23'  # Test multiple standards
+      enable-coverage: true
+      enable-sanitizers: true
+      # cmake-options: '-DENABLE_TESTS=ON -DBUILD_EXAMPLES=ON'
+    secrets: inherit

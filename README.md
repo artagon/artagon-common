@@ -101,7 +101,11 @@ artagon-common/
 │   ├── spotbugs.xml            # Bug detection
 │   └── pmd.xml                 # Code analysis
 ├── .github/
-│   └── workflows/              # Reusable GitHub Actions
+│   └── workflows/              # 🆕 Reusable GitHub Actions workflows
+│       ├── c-ci.yml           # C project CI (build, test, coverage, sanitizers)
+│       ├── c-release.yml      # C project releases (DEB, RPM, AppImage, DMG, ZIP)
+│       ├── cpp-ci.yml         # C++ project CI (multi-std, sanitizers, coverage)
+│       └── cpp-release.yml    # C++ project releases (all distribution formats)
 ├── .gitignore                  # Git ignore for this repo
 └── README.md                   # This file
 ```
@@ -331,6 +335,126 @@ Remove all branch protection (use with caution).
 **📚 Documentation:**
 - [Full Guide](docs/BRANCH-PROTECTION.md) - Detailed comparison table and workflows
 - [Usage Examples](docs/BRANCH-PROTECTION-USAGE.md) - Complete usage reference with all parameters
+
+### 🆕 GitHub Actions Workflows for C/C++ Projects
+
+Artagon Common provides production-ready, reusable GitHub Actions workflows for C and C++ projects with comprehensive CI/CD and multi-platform packaging.
+
+#### Features
+
+**CI Workflows:**
+- ✅ Multi-platform builds (Linux, macOS, Windows)
+- ✅ Multiple compilers (GCC, Clang, MSVC)
+- ✅ Code coverage with Codecov integration
+- ✅ Sanitizers (Address, Undefined, Thread, Memory)
+- ✅ Static analysis (clang-tidy, cppcheck)
+- ✅ Memory checks (Valgrind)
+- ✅ Format validation (clang-format)
+- ✅ Automatic Nix detection and usage
+- ✅ C++: Multi-standard testing (C++17/20/23)
+
+**Release Workflows:**
+- 📦 Debian packages (.deb)
+- 📦 RPM packages (.rpm)
+- 📦 AppImage (universal Linux)
+- 📦 macOS DMG
+- 📦 Windows ZIP
+- 📦 Source tarballs
+
+#### Quick Start
+
+Projects using `setup-repo.sh` automatically get example workflows configured. To use manually:
+
+**C Project CI** (`.github/workflows/ci.yml`):
+```yaml
+name: CI
+on: [push, pull_request]
+jobs:
+  ci:
+    uses: artagon/artagon-common/.github/workflows/c-ci.yml@main
+    with:
+      c-standard: '17'
+      enable-coverage: true
+      enable-sanitizers: true
+    secrets: inherit
+```
+
+**C++ Project CI** (`.github/workflows/ci.yml`):
+```yaml
+name: CI
+on: [push, pull_request]
+jobs:
+  ci:
+    uses: artagon/artagon-common/.github/workflows/cpp-ci.yml@main
+    with:
+      cxx-standard: '23'
+      test-standards: '17,20,23'  # Test multiple standards
+      enable-coverage: true
+      enable-sanitizers: true
+    secrets: inherit
+```
+
+**Release Workflow** (`.github/workflows/release.yml`):
+```yaml
+name: Release
+on:
+  push:
+    tags: ['v*']
+jobs:
+  release:
+    uses: artagon/artagon-common/.github/workflows/cpp-release.yml@main
+    with:
+      cxx-standard: '23'
+      build-deb: true
+      build-rpm: true
+      build-appimage: true
+      build-macos: true
+      build-windows: true
+    secrets: inherit
+```
+
+#### Workflow Inputs
+
+**CI Workflows:**
+- `cmake-options` - Additional CMake configuration options
+- `c-standard` / `cxx-standard` - Language standard version
+- `test-standards` - (C++ only) Comma-separated standards to test
+- `enable-coverage` - Enable code coverage reporting (default: true)
+- `enable-sanitizers` - Enable sanitizer builds (default: true)
+
+**Release Workflows:**
+- `project-name` - Project name (defaults to repository name)
+- `cmake-options` - Additional CMake options
+- `c-standard` / `cxx-standard` - Language standard version
+- `build-deb` - Build Debian package (default: true)
+- `build-rpm` - Build RPM package (default: true)
+- `build-appimage` - Build AppImage (default: true)
+- `build-macos` - Build macOS DMG (default: true)
+- `build-windows` - Build Windows ZIP (default: true)
+
+#### Nix Integration
+
+Workflows automatically detect and use Nix if `flake.nix` exists in your project:
+- Installs Nix on CI runners
+- Runs builds within `nix develop` environment
+- Ensures reproducibility across all platforms
+- Falls back to traditional tooling if Nix not present
+
+#### Creating Releases
+
+1. **Tag your release:**
+   ```bash
+   git tag v1.0.0
+   git push origin v1.0.0
+   ```
+
+2. **Workflow automatically:**
+   - Creates GitHub release
+   - Builds all package formats
+   - Uploads artifacts to release
+   - Generates release notes
+
+3. **Download packages** from GitHub Releases page
 
 ### 🆕 Nix Integration for Reproducible Builds
 
@@ -654,6 +778,9 @@ See [LICENSE](LICENSE) for details.
 - 🆕 Nix flakes for reproducible builds
 - 🆕 Unified setup-repo.sh script
 - 🆕 Language-specific templates and configs
+- 🆕 Reusable GitHub Actions workflows for C/C++
+- 🆕 Multi-platform packaging (DEB, RPM, AppImage, DMG, ZIP)
+- 🆕 Comprehensive CI with coverage, sanitizers, static analysis
 - Maven settings.xml with GitHub Packages
 
 ---

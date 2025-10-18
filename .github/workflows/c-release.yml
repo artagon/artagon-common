@@ -1,0 +1,403 @@
+# Reusable Release Workflow for C Projects
+#
+# Usage in your project's .github/workflows/release.yml:
+#
+# name: Release
+# on:
+#   push:
+#     tags: ['v*']
+# jobs:
+#   release:
+#     uses: artagon/artagon-common/.github/workflows/c-release.yml@main
+#     with:
+#       project-name: my-project
+#     secrets: inherit
+
+name: C Project Release
+
+on:
+  workflow_call:
+    inputs:
+      project-name:
+        description: 'Project name (defaults to repository name)'
+        required: false
+        type: string
+      cmake-options:
+        description: 'Additional CMake options'
+        required: false
+        type: string
+        default: ''
+      c-standard:
+        description: 'C standard version'
+        required: false
+        type: string
+        default: '17'
+      build-deb:
+        description: 'Build Debian package'
+        required: false
+        type: boolean
+        default: true
+      build-rpm:
+        description: 'Build RPM package'
+        required: false
+        type: boolean
+        default: true
+      build-appimage:
+        description: 'Build AppImage'
+        required: false
+        type: boolean
+        default: true
+      build-macos:
+        description: 'Build macOS DMG'
+        required: false
+        type: boolean
+        default: true
+      build-windows:
+        description: 'Build Windows ZIP'
+        required: false
+        type: boolean
+        default: true
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      version: ${{ steps.get_version.outputs.version }}
+      project_name: ${{ steps.get_project.outputs.name }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get version
+        id: get_version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Get project name
+        id: get_project
+        run: |
+          if [ -n "${{ inputs.project-name }}" ]; then
+            NAME="${{ inputs.project-name }}"
+          else
+            NAME="${GITHUB_REPOSITORY#*/}"
+          fi
+          echo "name=$NAME" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref }}
+          name: Release ${{ steps.get_version.outputs.version }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+
+  build-deb:
+    name: Build DEB Package
+    needs: create-release
+    runs-on: ubuntu-latest
+    if: inputs.build-deb
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Check for Nix
+        id: check-nix
+        run: echo "has_nix=${{ hashFiles('flake.nix') != '' }}" >> $GITHUB_OUTPUT
+
+      - name: Install Nix
+        if: steps.check-nix.outputs.has_nix == 'true'
+        uses: cachix/install-nix-action@v24
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Install dependencies (non-Nix)
+        if: steps.check-nix.outputs.has_nix == 'false'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build gcc-13
+
+      - name: Build with Nix
+        if: steps.check-nix.outputs.has_nix == 'true'
+        run: |
+          nix develop --command bash -c "
+            cmake -B build -G Ninja \
+              -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+              -DCMAKE_INSTALL_PREFIX=/usr \
+              -DCMAKE_C_STANDARD=${{ inputs.c-standard }} \
+              ${{ inputs.cmake-options }}
+            cmake --build build -j \$(nproc)
+            DESTDIR=\$PWD/debian-root cmake --install build
+          "
+
+      - name: Build (non-Nix)
+        if: steps.check-nix.outputs.has_nix == 'false'
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_INSTALL_PREFIX=/usr \
+            -DCMAKE_C_STANDARD=${{ inputs.c-standard }} \
+            ${{ inputs.cmake-options }}
+          cmake --build build -j $(nproc)
+          DESTDIR=$PWD/debian-root cmake --install build
+
+      - name: Create DEB package
+        run: |
+          PROJECT="${{ needs.create-release.outputs.project_name }}"
+          VERSION="${{ needs.create-release.outputs.version }}"
+
+          mkdir -p debian-root/DEBIAN
+          cat > debian-root/DEBIAN/control << EOF
+          Package: ${PROJECT}
+          Version: ${VERSION}
+          Section: utils
+          Priority: optional
+          Architecture: amd64
+          Maintainer: Artagon LLC <info@artagon.com>
+          Description: ${PROJECT}
+           Built with Artagon Common Infrastructure
+          EOF
+
+          dpkg-deb --build --root-owner-group debian-root ${PROJECT}_${VERSION}_amd64.deb
+
+      - name: Upload DEB
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "*.deb"
+
+  build-rpm:
+    name: Build RPM Package
+    needs: create-release
+    runs-on: ubuntu-latest
+    if: inputs.build-rpm
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build gcc-13 rpm
+
+      - name: Build
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_INSTALL_PREFIX=/usr \
+            -DCMAKE_C_STANDARD=${{ inputs.c-standard }} \
+            ${{ inputs.cmake-options }}
+          cmake --build build -j $(nproc)
+          DESTDIR=$PWD/rpm-root cmake --install build
+
+      - name: Create RPM package
+        run: |
+          PROJECT="${{ needs.create-release.outputs.project_name }}"
+          VERSION="${{ needs.create-release.outputs.version }}"
+
+          mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+
+          cat > ~/rpmbuild/SPECS/${PROJECT}.spec << EOF
+          Name:           ${PROJECT}
+          Version:        ${VERSION}
+          Release:        1%{?dist}
+          Summary:        ${PROJECT} Application
+          License:        MIT
+          URL:            https://github.com/${{ github.repository }}
+
+          %description
+          ${PROJECT} built with Artagon Common Infrastructure
+
+          %install
+          rm -rf \$RPM_BUILD_ROOT
+          cp -a $PWD/rpm-root/* \$RPM_BUILD_ROOT/
+
+          %files
+          /usr/bin/*
+
+          %changelog
+          * $(date '+%a %b %d %Y') Artagon DevOps <devops@artagon.com> - ${VERSION}-1
+          - Release ${VERSION}
+          EOF
+
+          rpmbuild -bb ~/rpmbuild/SPECS/${PROJECT}.spec
+          cp ~/rpmbuild/RPMS/x86_64/*.rpm .
+
+      - name: Upload RPM
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "*.rpm"
+
+  build-appimage:
+    name: Build AppImage
+    needs: create-release
+    runs-on: ubuntu-20.04  # Use older Ubuntu for better compatibility
+    if: inputs.build-appimage
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build gcc file wget fuse libfuse2
+          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          chmod +x linuxdeploy-x86_64.AppImage
+
+      - name: Build
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_INSTALL_PREFIX=/usr \
+            -DCMAKE_C_STANDARD=${{ inputs.c-standard }} \
+            ${{ inputs.cmake-options }}
+          cmake --build build -j $(nproc)
+          DESTDIR=$PWD/AppDir cmake --install build
+
+      - name: Create AppImage
+        run: |
+          PROJECT="${{ needs.create-release.outputs.project_name }}"
+
+          # Create desktop entry
+          mkdir -p AppDir/usr/share/applications
+          cat > AppDir/usr/share/applications/${PROJECT}.desktop << EOF
+          [Desktop Entry]
+          Type=Application
+          Name=${PROJECT}
+          Exec=${PROJECT}
+          Icon=${PROJECT}
+          Categories=Utility;
+          EOF
+
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage
+          mv *.AppImage ${PROJECT}-${{ needs.create-release.outputs.version }}-x86_64.AppImage
+
+      - name: Upload AppImage
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "*.AppImage"
+
+  build-macos:
+    name: Build macOS DMG
+    needs: create-release
+    runs-on: macos-latest
+    if: inputs.build-macos
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: brew install cmake ninja create-dmg
+
+      - name: Build
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_C_STANDARD=${{ inputs.c-standard }} \
+            ${{ inputs.cmake-options }}
+          cmake --build build -j $(sysctl -n hw.ncpu)
+
+      - name: Create DMG
+        run: |
+          PROJECT="${{ needs.create-release.outputs.project_name }}"
+          VERSION="${{ needs.create-release.outputs.version }}"
+
+          mkdir -p dmg-staging
+          cp -r build/bin/* dmg-staging/
+
+          create-dmg \
+            --volname "${PROJECT}" \
+            --window-pos 200 120 \
+            --window-size 600 400 \
+            --hide-extension "${PROJECT}" \
+            "${PROJECT}-${VERSION}-macos.dmg" \
+            "dmg-staging/" || true
+
+          # Fallback if create-dmg fails
+          if [ ! -f "${PROJECT}-${VERSION}-macos.dmg" ]; then
+            hdiutil create -volname "${PROJECT}" \
+              -srcfolder dmg-staging \
+              -ov -format UDZO \
+              "${PROJECT}-${VERSION}-macos.dmg"
+          fi
+
+      - name: Upload DMG
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "*.dmg"
+
+  build-windows:
+    name: Build Windows ZIP
+    needs: create-release
+    runs-on: windows-latest
+    if: inputs.build-windows
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Build
+        run: |
+          cmake -B build -G "Visual Studio 17 2022" -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+          cmake --build build --config ${{ env.BUILD_TYPE }} -j $env:NUMBER_OF_PROCESSORS
+
+      - name: Create ZIP
+        run: |
+          $PROJECT = "${{ needs.create-release.outputs.project_name }}"
+          $VERSION = "${{ needs.create-release.outputs.version }}"
+
+          Compress-Archive -Path build\${{ env.BUILD_TYPE }}\* -DestinationPath "${PROJECT}-${VERSION}-windows-x64.zip"
+
+      - name: Upload ZIP
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "*.zip"
+
+  build-source:
+    name: Build Source Tarball
+    needs: create-release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Create source tarball
+        run: |
+          PROJECT="${{ needs.create-release.outputs.project_name }}"
+          VERSION="${{ needs.create-release.outputs.version }}"
+
+          tar --exclude='.git' --exclude='.github' \
+              -czf ${PROJECT}-${VERSION}-source.tar.gz .
+
+      - name: Upload source tarball
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "*-source.tar.gz"

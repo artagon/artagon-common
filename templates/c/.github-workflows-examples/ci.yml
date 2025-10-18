@@ -1,0 +1,21 @@
+# Example CI workflow for C projects
+# Copy this to .github/workflows/ci.yml in your project
+
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  ci:
+    uses: artagon/artagon-common/.github/workflows/c-ci.yml@main
+    with:
+      c-standard: '17'
+      enable-coverage: true
+      enable-sanitizers: true
+      # cmake-options: '-DENABLE_TESTS=ON'
+    secrets: inherit
