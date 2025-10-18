@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                              http://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+  <!--
+    Artagon Maven Settings Template
+
+    Installation: Copy to ~/.m2/settings.xml
+
+    Features:
+    - GitHub Packages repositories for all Artagon projects
+    - Maven Central (primary repository)
+    - Popular secure third-party repositories
+    - OSSRH Snapshots for development builds
+    - Encrypted credential support
+
+    Setup Instructions:
+    1. Replace YOUR_GITHUB_USERNAME with your GitHub username
+    2. Replace YOUR_GITHUB_TOKEN with your Personal Access Token (PAT)
+       - Generate at: https://github.com/settings/tokens
+       - Required scope: read:packages
+    3. If deploying to OSSRH, add your Sonatype credentials
+    4. If using GPG signing, add your GPG passphrase
+    5. Consider encrypting passwords with: mvn -emp <password>
+  -->
+
+  <servers>
+    <!-- GitHub Packages - Artagon BOM -->
+    <server>
+      <id>github-artagon-bom</id>
+      <username>${env.GITHUB_USERNAME}</username>
+      <password>${env.GITHUB_TOKEN}</password>
+    </server>
+
+    <!-- GitHub Packages - Artagon Parent -->
+    <server>
+      <id>github-artagon-parent</id>
+      <username>${env.GITHUB_USERNAME}</username>
+      <password>${env.GITHUB_TOKEN}</password>
+    </server>
+
+    <!-- GitHub Packages - Generic (for wildcards) -->
+    <server>
+      <id>github</id>
+      <username>${env.GITHUB_USERNAME}</username>
+      <password>${env.GITHUB_TOKEN}</password>
+    </server>
+
+    <!-- Sonatype OSSRH - For publishing to Maven Central -->
+    <server>
+      <id>ossrh</id>
+      <username>${env.OSSRH_USERNAME}</username>
+      <password>${env.OSSRH_PASSWORD}</password>
+    </server>
+
+    <!-- GPG Signing Configuration -->
+    <server>
+      <id>gpg.passphrase</id>
+      <passphrase>${env.GPG_PASSPHRASE}</passphrase>
+    </server>
+  </servers>
+
+  <mirrors>
+    <!--
+      Maven Central Mirror (HTTPS)
+      Secure, official mirror for Maven Central
+    -->
+    <mirror>
+      <id>maven-central-https</id>
+      <name>Maven Central (HTTPS)</name>
+      <url>https://repo.maven.apache.org/maven2</url>
+      <mirrorOf>central</mirrorOf>
+    </mirror>
+  </mirrors>
+
+  <profiles>
+    <!-- Artagon GitHub Packages Profile -->
+    <profile>
+      <id>artagon-github</id>
+      <repositories>
+        <!-- Artagon BOM from GitHub Packages -->
+        <repository>
+          <id>github-artagon-bom</id>
+          <name>Artagon BOM - GitHub Packages</name>
+          <url>https://maven.pkg.github.com/artagon/artagon-bom</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </repository>
+
+        <!-- Artagon Parent from GitHub Packages -->
+        <repository>
+          <id>github-artagon-parent</id>
+          <name>Artagon Parent - GitHub Packages</name>
+          <url>https://maven.pkg.github.com/artagon/artagon-parent</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </repository>
+
+        <!-- GitHub Packages - Wildcard (for other Artagon packages) -->
+        <repository>
+          <id>github-artagon-wildcard</id>
+          <name>Artagon - GitHub Packages</name>
+          <url>https://maven.pkg.github.com/artagon/*</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </repository>
+      </repositories>
+
+      <pluginRepositories>
+        <!-- Maven plugins from GitHub Packages if any -->
+        <pluginRepository>
+          <id>github-artagon-plugins</id>
+          <name>Artagon Maven Plugins - GitHub Packages</name>
+          <url>https://maven.pkg.github.com/artagon/*</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </pluginRepository>
+      </pluginRepositories>
+    </profile>
+
+    <!-- Maven Central Profile -->
+    <profile>
+      <id>maven-central</id>
+      <repositories>
+        <!-- Maven Central - Primary repository -->
+        <repository>
+          <id>central</id>
+          <name>Maven Central Repository</name>
+          <url>https://repo.maven.apache.org/maven2</url>
+          <releases>
+            <enabled>true</enabled>
+            <updatePolicy>never</updatePolicy>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+
+        <!-- OSSRH Snapshots - For development builds -->
+        <repository>
+          <id>ossrh-snapshots</id>
+          <name>Sonatype OSSRH Snapshots</name>
+          <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+          <releases>
+            <enabled>false</enabled>
+          </releases>
+          <snapshots>
+            <enabled>true</enabled>
+            <updatePolicy>always</updatePolicy>
+          </snapshots>
+        </repository>
+      </repositories>
+
+      <pluginRepositories>
+        <!-- Maven Central - For Maven plugins -->
+        <pluginRepository>
+          <id>central-plugins</id>
+          <name>Maven Central Plugin Repository</name>
+          <url>https://repo.maven.apache.org/maven2</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </pluginRepository>
+      </pluginRepositories>
+    </profile>
+
+    <!-- Popular Secure Repositories Profile -->
+    <profile>
+      <id>secure-repos</id>
+      <repositories>
+        <!-- Spring Releases -->
+        <repository>
+          <id>spring-releases</id>
+          <name>Spring Releases</name>
+          <url>https://repo.spring.io/release</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+
+        <!-- Spring Milestones -->
+        <repository>
+          <id>spring-milestones</id>
+          <name>Spring Milestones</name>
+          <url>https://repo.spring.io/milestone</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+
+        <!-- JBoss Public Repository -->
+        <repository>
+          <id>jboss-public</id>
+          <name>JBoss Public Repository</name>
+          <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+
+        <!-- Atlassian Public Repository -->
+        <repository>
+          <id>atlassian-public</id>
+          <name>Atlassian Public Repository</name>
+          <url>https://packages.atlassian.com/maven-public/</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+
+        <!-- Eclipse Repository -->
+        <repository>
+          <id>eclipse-releases</id>
+          <name>Eclipse Releases</name>
+          <url>https://repo.eclipse.org/content/repositories/releases/</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+
+        <!-- Apache Snapshots (optional) -->
+        <repository>
+          <id>apache-snapshots</id>
+          <name>Apache Snapshots</name>
+          <url>https://repository.apache.org/content/repositories/snapshots/</url>
+          <releases>
+            <enabled>false</enabled>
+          </releases>
+          <snapshots>
+            <enabled>true</enabled>
+            <updatePolicy>daily</updatePolicy>
+          </snapshots>
+        </repository>
+
+        <!-- Google Maven Repository -->
+        <repository>
+          <id>google-maven</id>
+          <name>Google Maven Repository</name>
+          <url>https://maven.google.com/</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+
+        <!-- Clojars (for Clojure libraries) -->
+        <repository>
+          <id>clojars</id>
+          <name>Clojars Repository</name>
+          <url>https://repo.clojars.org</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+      </repositories>
+    </profile>
+
+    <!-- OSSRH Deployment Profile -->
+    <profile>
+      <id>ossrh-deploy</id>
+      <properties>
+        <gpg.executable>gpg</gpg.executable>
+        <gpg.keyname>${env.GPG_KEYNAME}</gpg.keyname>
+        <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
+      </properties>
+    </profile>
+
+    <!-- Development Profile with All Repositories -->
+    <profile>
+      <id>artagon-dev</id>
+      <repositories>
+        <!-- Include all repositories for development -->
+        <repository>
+          <id>maven-central-dev</id>
+          <url>https://repo.maven.apache.org/maven2</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>false</enabled></snapshots>
+        </repository>
+        <repository>
+          <id>ossrh-snapshots-dev</id>
+          <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+          <releases><enabled>false</enabled></releases>
+          <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+        <repository>
+          <id>github-artagon-dev</id>
+          <url>https://maven.pkg.github.com/artagon/*</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+      </repositories>
+    </profile>
+  </profiles>
+
+  <!-- Active Profiles -->
+  <activeProfiles>
+    <!-- Always activate these profiles -->
+    <activeProfile>artagon-github</activeProfile>
+    <activeProfile>maven-central</activeProfile>
+    <!-- Uncomment to enable additional repositories -->
+    <!-- <activeProfile>secure-repos</activeProfile> -->
+  </activeProfiles>
+
+</settings>
