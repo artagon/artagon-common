@@ -137,7 +137,7 @@ Actual:   ${actual}"
         fi
 
         echo "  SHA-256: OK"
-        ((verified++))
+        verified=$((verified + 1))
     else
         warn "  No SHA-256 checksum file found (${file}.sha256)"
     fi
@@ -154,7 +154,7 @@ Actual:   ${actual}"
         fi
 
         echo "  SHA-512: OK"
-        ((verified++))
+        verified=$((verified + 1))
     else
         warn "  No SHA-512 checksum file found (${file}.sha512)"
     fi
