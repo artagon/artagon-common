@@ -1,0 +1,22 @@
+# Artagon C++ Project - Bazel Module Configuration
+# Using Bzlmod (Bazel 6.0+)
+
+module(
+    name = "PROJECT_NAME",
+    version = "0.1.0",
+)
+
+# Rules for C/C++
+bazel_dep(name = "rules_cc", version = "0.0.9")
+
+# Toolchains
+bazel_dep(name = "platforms", version = "0.0.8")
+
+# Testing
+bazel_dep(name = "googletest", version = "1.14.0", dev_dependency = True)
+
+# Benchmark (optional)
+bazel_dep(name = "google_benchmark", version = "1.8.3", dev_dependency = True)
+
+# Abseil (modern C++ utilities)
+bazel_dep(name = "abseil-cpp", version = "20240116.1", repo_name = "com_google_absl")

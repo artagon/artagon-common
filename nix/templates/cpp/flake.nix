@@ -21,6 +21,8 @@
           cmake              # CMake build system
           ninja              # Fast build tool
           meson              # Alternative build system
+          bazel_7            # Bazel build system
+          bazelisk           # Bazel version manager
 
           # Development tools
           gdb                # Debugger
@@ -75,28 +77,27 @@
             echo "GCC:    $(g++ --version | head -n 1)"
             echo "Clang:  $(clang++ --version | head -n 1)"
             echo "CMake:  $(cmake --version | head -n 1)"
+            echo "Bazel:  $(bazel --version)"
             echo "Standard: C++23"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo ""
-            echo "Quick commands:"
+            echo "Build with CMake:"
             echo "  mkdir build && cd build"
-            echo "  cmake -GNinja -DCMAKE_BUILD_TYPE=Debug .."
-            echo "  ninja"
-            echo "  ninja test"
-            echo ""
-            echo "Release build:"
             echo "  cmake -GNinja -DCMAKE_BUILD_TYPE=Release .."
             echo "  ninja"
             echo ""
-            echo "Code formatting:"
-            echo "  clang-format -i src/**/*.cpp include/**/*.hpp"
+            echo "Build with Bazel:"
+            echo "  bazel build //..."
+            echo "  bazel test //..."
+            echo "  bazel run //:main"
             echo ""
-            echo "Static analysis:"
+            echo "Code quality:"
+            echo "  clang-format -i src/**/*.cpp include/**/*.hpp"
             echo "  clang-tidy src/*.cpp"
             echo "  cppcheck --enable=all --std=c++23 src/"
             echo ""
             echo "Memory checking:"
-            echo "  valgrind --leak-check=full ./build/your_binary"
+            echo "  valgrind --leak-check=full ./bazel-bin/main"
             echo ""
           '';
         };

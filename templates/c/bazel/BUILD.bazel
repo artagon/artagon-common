@@ -1,0 +1,35 @@
+# Artagon C Project - Main BUILD file
+
+package(default_visibility = ["//visibility:public"])
+
+# C library
+cc_library(
+    name = "PROJECT_NAME_lib",
+    srcs = glob(["src/**/*.c"]),
+    hdrs = glob(["include/**/*.h"]),
+    includes = ["include"],
+    copts = [
+        "-std=c17",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+    ],
+)
+
+# Main binary
+cc_binary(
+    name = "PROJECT_NAME",
+    srcs = ["src/main.c"],
+    deps = [":PROJECT_NAME_lib"],
+)
+
+# Tests
+cc_test(
+    name = "PROJECT_NAME_test",
+    srcs = glob(["tests/**/*_test.c"]),
+    deps = [
+        ":PROJECT_NAME_lib",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)

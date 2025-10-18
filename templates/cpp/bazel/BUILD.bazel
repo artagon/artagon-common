@@ -1,0 +1,51 @@
+# Artagon C++ Project - Main BUILD file
+
+package(default_visibility = ["//visibility:public"])
+
+# C++ library
+cc_library(
+    name = "PROJECT_NAME_lib",
+    srcs = glob(["src/**/*.cpp"]),
+    hdrs = glob(["include/**/*.hpp"]),
+    includes = ["include"],
+    copts = [
+        "-std=c++23",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+    ],
+    deps = [
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+    ],
+)
+
+# Main binary
+cc_binary(
+    name = "PROJECT_NAME",
+    srcs = ["src/main.cpp"],
+    deps = [":PROJECT_NAME_lib"],
+)
+
+# Tests
+cc_test(
+    name = "PROJECT_NAME_test",
+    srcs = glob(["tests/**/*_test.cpp"]),
+    deps = [
+        ":PROJECT_NAME_lib",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+# Benchmarks (optional)
+cc_binary(
+    name = "PROJECT_NAME_benchmark",
+    srcs = glob(["benchmarks/**/*_benchmark.cpp"]),
+    deps = [
+        ":PROJECT_NAME_lib",
+        "@com_google_benchmark//:benchmark",
+        "@com_google_benchmark//:benchmark_main",
+    ],
+)

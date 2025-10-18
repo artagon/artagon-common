@@ -19,6 +19,8 @@
           cmake              # Build system
           gnumake            # GNU Make
           ninja              # Fast build tool
+          bazel_7            # Bazel build system
+          bazelisk           # Bazel version manager
 
           # Development tools
           gdb                # Debugger
@@ -59,23 +61,21 @@
             echo "GCC:    $(gcc --version | head -n 1)"
             echo "Clang:  $(clang --version | head -n 1)"
             echo "CMake:  $(cmake --version | head -n 1)"
-            echo "Make:   $(make --version | head -n 1)"
+            echo "Bazel:  $(bazel --version)"
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo ""
-            echo "Quick commands:"
+            echo "Build with CMake:"
             echo "  mkdir build && cd build"
             echo "  cmake .."
             echo "  make"
-            echo "  make test"
             echo ""
-            echo "Or with Ninja:"
-            echo "  cmake -GNinja .."
-            echo "  ninja"
+            echo "Build with Bazel:"
+            echo "  bazel build //..."
+            echo "  bazel test //..."
+            echo "  bazel run //:main"
             echo ""
-            echo "Code formatting:"
+            echo "Code quality:"
             echo "  clang-format -i **/*.c **/*.h"
-            echo ""
-            echo "Static analysis:"
             echo "  clang-tidy src/*.c"
             echo "  cppcheck --enable=all src/"
             echo ""

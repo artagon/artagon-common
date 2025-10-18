@@ -1,0 +1,332 @@
+# Reusable Bazel Release Workflow
+#
+# Usage in your project's .github/workflows/release.yml:
+#
+# name: Release
+# on:
+#   push:
+#     tags: ['v*']
+# jobs:
+#   release:
+#     uses: artagon/artagon-common/.github/workflows/bazel-release.yml@main
+#     with:
+#       binary-targets: '//:main //cmd:cli'
+#     secrets: inherit
+
+name: Bazel Project Release
+
+on:
+  workflow_call:
+    inputs:
+      project-name:
+        description: 'Project name (defaults to repository name)'
+        required: false
+        type: string
+      binary-targets:
+        description: 'Bazel binary targets to build (space-separated)'
+        required: false
+        type: string
+        default: '//:main'
+      bazel-config:
+        description: 'Bazel config for release builds'
+        required: false
+        type: string
+        default: 'release'
+      create-packages:
+        description: 'Create distribution packages (DEB, RPM, etc.)'
+        required: false
+        type: boolean
+        default: true
+
+env:
+  BAZELISK_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      version: ${{ steps.get_version.outputs.version }}
+      project_name: ${{ steps.get_project.outputs.name }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get version
+        id: get_version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Get project name
+        id: get_project
+        run: |
+          if [ -n "${{ inputs.project-name }}" ]; then
+            NAME="${{ inputs.project-name }}"
+          else
+            NAME="${GITHUB_REPOSITORY#*/}"
+          fi
+          echo "name=$NAME" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref }}
+          name: Release ${{ steps.get_version.outputs.version }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+
+  build-linux:
+    name: Build Linux Binaries
+    needs: create-release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Check for Nix
+        id: check-nix
+        run: echo "has_nix=${{ hashFiles('flake.nix') != '' }}" >> $GITHUB_OUTPUT
+
+      - name: Install Nix
+        if: steps.check-nix.outputs.has_nix == 'true'
+        uses: cachix/install-nix-action@v24
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Setup Bazelisk (non-Nix)
+        if: steps.check-nix.outputs.has_nix == 'false'
+        uses: bazelbuild/setup-bazelisk@v2
+
+      - name: Build with Nix
+        if: steps.check-nix.outputs.has_nix == 'true'
+        run: |
+          for target in ${{ inputs.binary-targets }}; do
+            nix develop --command bazel build --config=${{ inputs.bazel-config }} $target
+          done
+
+      - name: Build (non-Nix)
+        if: steps.check-nix.outputs.has_nix == 'false'
+        run: |
+          for target in ${{ inputs.binary-targets }}; do
+            bazel build --config=${{ inputs.bazel-config }} $target
+          done
+
+      - name: Package binaries
+        run: |
+          PROJECT="${{ needs.create-release.outputs.project_name }}"
+          VERSION="${{ needs.create-release.outputs.version }}"
+
+          mkdir -p dist/linux-x64/bin
+
+          # Copy built binaries
+          for target in ${{ inputs.binary-targets }}; do
+            # Extract binary name from target
+            BINARY_NAME=$(basename $target)
+            # Find the binary in bazel-bin
+            find bazel-bin -name "$BINARY_NAME" -type f -executable -exec cp {} dist/linux-x64/bin/ \;
+          done
+
+          # Create tarball
+          cd dist/linux-x64
+          tar czf ../../${PROJECT}-${VERSION}-linux-x64.tar.gz *
+
+      - name: Upload tarball
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "*.tar.gz"
+
+      - name: Create DEB package
+        if: inputs.create-packages
+        run: |
+          PROJECT="${{ needs.create-release.outputs.project_name }}"
+          VERSION="${{ needs.create-release.outputs.version }}"
+
+          mkdir -p deb-pkg/DEBIAN
+          mkdir -p deb-pkg/usr/bin
+
+          cp dist/linux-x64/bin/* deb-pkg/usr/bin/
+
+          cat > deb-pkg/DEBIAN/control << EOF
+          Package: ${PROJECT}
+          Version: ${VERSION}
+          Section: utils
+          Priority: optional
+          Architecture: amd64
+          Maintainer: Artagon LLC <info@artagon.com>
+          Description: ${PROJECT}
+           Built with Bazel
+          EOF
+
+          dpkg-deb --build --root-owner-group deb-pkg ${PROJECT}_${VERSION}_amd64.deb
+
+      - name: Upload DEB
+        if: inputs.create-packages
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "*.deb"
+
+  build-macos:
+    name: Build macOS Binaries
+    needs: create-release
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Check for Nix
+        id: check-nix
+        run: echo "has_nix=${{ hashFiles('flake.nix') != '' }}" >> $GITHUB_OUTPUT
+
+      - name: Install Nix
+        if: steps.check-nix.outputs.has_nix == 'true'
+        uses: cachix/install-nix-action@v24
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Setup Bazelisk (non-Nix)
+        if: steps.check-nix.outputs.has_nix == 'false'
+        uses: bazelbuild/setup-bazelisk@v2
+
+      - name: Build with Nix
+        if: steps.check-nix.outputs.has_nix == 'true'
+        run: |
+          for target in ${{ inputs.binary-targets }}; do
+            nix develop --command bazel build --config=${{ inputs.bazel-config }} $target
+          done
+
+      - name: Build (non-Nix)
+        if: steps.check-nix.outputs.has_nix == 'false'
+        run: |
+          for target in ${{ inputs.binary-targets }}; do
+            bazel build --config=${{ inputs.bazel-config }} $target
+          done
+
+      - name: Package binaries
+        run: |
+          PROJECT="${{ needs.create-release.outputs.project_name }}"
+          VERSION="${{ needs.create-release.outputs.version }}"
+
+          mkdir -p dist/macos/bin
+
+          # Copy built binaries
+          for target in ${{ inputs.binary-targets }}; do
+            BINARY_NAME=$(basename $target)
+            find bazel-bin -name "$BINARY_NAME" -type f -perm +111 -exec cp {} dist/macos/bin/ \;
+          done
+
+          # Create tarball
+          cd dist/macos
+          tar czf ../../${PROJECT}-${VERSION}-macos-universal.tar.gz *
+
+      - name: Upload tarball
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "*.tar.gz"
+
+  build-windows:
+    name: Build Windows Binaries
+    needs: create-release
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Bazelisk
+        uses: bazelbuild/setup-bazelisk@v2
+
+      - name: Build
+        run: |
+          $targets = "${{ inputs.binary-targets }}" -split ' '
+          foreach ($target in $targets) {
+            bazel build --config=${{ inputs.bazel-config }} $target
+          }
+
+      - name: Package binaries
+        run: |
+          $PROJECT = "${{ needs.create-release.outputs.project_name }}"
+          $VERSION = "${{ needs.create-release.outputs.version }}"
+
+          New-Item -ItemType Directory -Force -Path dist\windows\bin
+
+          # Copy built binaries
+          Get-ChildItem -Path bazel-bin -Recurse -Include *.exe | Copy-Item -Destination dist\windows\bin\
+
+          # Create ZIP
+          Compress-Archive -Path dist\windows\* -DestinationPath "${PROJECT}-${VERSION}-windows-x64.zip"
+
+      - name: Upload ZIP
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "*.zip"
+
+  build-container:
+    name: Build Container Image
+    needs: create-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Bazelisk
+        uses: bazelbuild/setup-bazelisk@v2
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build container with Bazel
+        run: |
+          # If using rules_oci or rules_docker
+          if bazel query 'kind("oci_image", //...)' &>/dev/null; then
+            bazel build --config=${{ inputs.bazel-config }} //...
+            # Additional container publishing logic here
+          fi
+
+  build-source:
+    name: Build Source Archive
+    needs: create-release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Create source archive
+        run: |
+          PROJECT="${{ needs.create-release.outputs.project_name }}"
+          VERSION="${{ needs.create-release.outputs.version }}"
+
+          tar --exclude='.git' --exclude='bazel-*' \
+              -czf ${PROJECT}-${VERSION}-source.tar.gz .
+
+      - name: Upload source archive
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "*-source.tar.gz"

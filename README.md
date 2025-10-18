@@ -105,7 +105,9 @@ artagon-common/
 │       ├── c-ci.yml           # C project CI (build, test, coverage, sanitizers)
 │       ├── c-release.yml      # C project releases (DEB, RPM, AppImage, DMG, ZIP)
 │       ├── cpp-ci.yml         # C++ project CI (multi-std, sanitizers, coverage)
-│       └── cpp-release.yml    # C++ project releases (all distribution formats)
+│       ├── cpp-release.yml    # C++ project releases (all distribution formats)
+│       ├── bazel-ci.yml       # 🆕 Bazel project CI (Nix-aware, multi-platform)
+│       └── bazel-release.yml  # 🆕 Bazel project releases (multi-platform packaging)
 ├── .gitignore                  # Git ignore for this repo
 └── README.md                   # This file
 ```
@@ -156,6 +158,7 @@ artagon-common/
 - `--description <text>` - Project description
 - `--private` - Create private repository
 - `--public` - Create public repository (default)
+- `--build-system <cmake|bazel>` - Build system (default: cmake, for C/C++ only)
 - `--with-nix` - Include Nix flake for reproducible builds
 - `--branch-protection` - Apply branch protection rules
 - `--ssh` - Use SSH protocol (default)
@@ -455,6 +458,163 @@ Workflows automatically detect and use Nix if `flake.nix` exists in your project
    - Generates release notes
 
 3. **Download packages** from GitHub Releases page
+
+### 🆕 Bazel Build System Support
+
+Artagon Common now supports Bazel as an alternative build system for C and C++ projects, with full Nix integration and reusable workflows.
+
+#### Why Bazel?
+
+- **Fast builds** - Incremental builds and remote caching
+- **Hermetic** - Reproducible builds guaranteed
+- **Scalable** - Handles monorepos with thousands of targets
+- **Multi-language** - Single build system for polyglot projects
+- **Remote execution** - Optional distributed builds
+
+#### Quick Start with Bazel
+
+```bash
+# Create C++ project with Bazel
+./scripts/setup-repo.sh --type cpp --name my-app --build-system bazel --with-nix
+
+cd my-app
+
+# Build everything
+bazel build //...
+
+# Run tests
+bazel test //...
+
+# Run binary
+bazel run //:main
+
+# Build with sanitizers
+bazel build --config=asan //...
+```
+
+#### Bazel Configurations
+
+All Bazel projects include pre-configured `.bazelrc` with:
+
+**Build Configs:**
+- `release` - Optimized release build (-O3, LTO, stripped)
+- `debug` - Debug build with symbols
+- `coverage` - Code coverage with lcov
+
+**Sanitizers:**
+- `asan` - Address Sanitizer
+- `ubsan` - Undefined Behavior Sanitizer
+- `tsan` - Thread Sanitizer
+- `msan` - Memory Sanitizer (C++ only)
+
+**Features:**
+- Hermetic C++ toolchain resolution
+- Disk caching enabled
+- Color output
+- Verbose failures
+- Keep-going mode
+
+#### Bazel CI/CD Workflows
+
+**CI Workflow** (`.github/workflows/ci.yml`):
+```yaml
+name: CI
+on: [push, pull_request]
+jobs:
+  ci:
+    uses: artagon/artagon-common/.github/workflows/bazel-ci.yml@main
+    with:
+      bazel-configs: 'release debug asan ubsan'
+      enable-coverage: true
+      targets: '//...'
+    secrets: inherit
+```
+
+**Release Workflow** (`.github/workflows/release.yml`):
+```yaml
+name: Release
+on:
+  push:
+    tags: ['v*']
+jobs:
+  release:
+    uses: artagon/artagon-common/.github/workflows/bazel-release.yml@main
+    with:
+      binary-targets: '//:main //cmd:cli'
+      create-packages: true
+    secrets: inherit
+```
+
+#### Workflow Features
+
+**CI:**
+- Multi-platform builds (Linux, macOS, Windows)
+- Multiple Bazel configurations tested
+- Code coverage with Codecov
+- Buildifier format checking
+- Dependency graph analysis
+- Automatic Nix detection and usage
+
+**Release:**
+- Linux tarballs and DEB packages
+- macOS universal binaries
+- Windows ZIP archives
+- Source code archives
+- Optional container images
+
+#### Nix + Bazel Integration
+
+Workflows automatically detect and use Nix:
+```yaml
+- name: Build with Nix (if available)
+  run: nix develop --command bazel build //...
+```
+
+Projects with `flake.nix` get:
+- Bazel 7.0 pre-installed
+- Bazelisk for version management
+- All build tools hermetically managed
+- Reproducible builds guaranteed
+
+#### Bazel Project Templates
+
+Templates include:
+
+**Modern Bzlmod (Bazel 6.0+):**
+- `MODULE.bazel` - Dependency management
+- `.bazelversion` - Pin Bazel version
+- `.bazelrc` - Configuration presets
+- `BUILD.bazel` - Build targets
+
+**Legacy Support:**
+- `WORKSPACE.bazel` - For Bazel <6.0
+- Compatible with existing workflows
+
+**Example BUILD.bazel:**
+```python
+cc_library(
+    name = "mylib",
+    srcs = glob(["src/**/*.cpp"]),
+    hdrs = glob(["include/**/*.hpp"]),
+    includes = ["include"],
+    deps = ["@com_google_absl//absl/strings"],
+)
+
+cc_binary(
+    name = "main",
+    srcs = ["src/main.cpp"],
+    deps = [":mylib"],
+)
+
+cc_test(
+    name = "mylib_test",
+    srcs = glob(["tests/**/*_test.cpp"]),
+    deps = [
+        ":mylib",
+        "@googletest//:gtest_main",
+    ],
+)
+```
 
 ### 🆕 Nix Integration for Reproducible Builds
 
@@ -775,9 +935,11 @@ See [LICENSE](LICENSE) for details.
 
 **New in Latest Release:**
 - 🆕 Multi-language support (Java, C, C++, Rust)
-- 🆕 Nix flakes for reproducible builds
-- 🆕 Unified setup-repo.sh script
-- 🆕 Language-specific templates and configs
+- 🆕 Nix flakes for reproducible builds with Bazel support
+- 🆕 Bazel build system support for C/C++ projects
+- 🆕 Reusable Bazel CI/CD workflows with Nix integration
+- 🆕 Unified setup-repo.sh script with build system selection
+- 🆕 Language-specific templates and configs (CMake + Bazel)
 - 🆕 Reusable GitHub Actions workflows for C/C++
 - 🆕 Multi-platform packaging (DEB, RPM, AppImage, DMG, ZIP)
 - 🆕 Comprehensive CI with coverage, sanitizers, static analysis

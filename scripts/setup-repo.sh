@@ -37,6 +37,7 @@ WITH_NIX="false"
 BRANCH_PROTECTION="false"
 PROTOCOL="ssh"
 FORCE="false"
+BUILD_SYSTEM="cmake"  # cmake or bazel
 
 # Colors for output
 RED='\033[0;31m'
@@ -164,6 +165,10 @@ while [[ $# -gt 0 ]]; do
             WITH_NIX="true"
             shift
             ;;
+        --build-system)
+            BUILD_SYSTEM="$2"
+            shift 2
+            ;;
         --branch-protection)
             BRANCH_PROTECTION="true"
             shift
@@ -208,6 +213,15 @@ case "$PROJECT_TYPE" in
         ;;
 esac
 
+# Validate build system
+case "$BUILD_SYSTEM" in
+    cmake|bazel)
+        ;;
+    *)
+        error "Invalid build system: $BUILD_SYSTEM\nSupported systems: cmake, bazel"
+        ;;
+esac
+
 # Check prerequisites
 if ! command -v git &> /dev/null; then
     error "git is not installed"
@@ -232,6 +246,7 @@ echo "Project Name:        $PROJECT_NAME"
 echo "Owner:               $OWNER"
 echo "Visibility:          $VISIBILITY"
 echo "Description:         ${DESCRIPTION:-<none>}"
+echo "Build System:        $BUILD_SYSTEM"
 echo "With Nix:            $WITH_NIX"
 echo "Branch Protection:   $BRANCH_PROTECTION"
 echo "Protocol:            $PROTOCOL"
@@ -338,9 +353,21 @@ EOF
         # C project structure
         mkdir -p src include tests docs .github/workflows
 
-        # Copy templates
-        cp .common/artagon-common/templates/c/CMakeLists.txt.template CMakeLists.txt
-        sed -i.bak "s/PROJECT_NAME/${PROJECT_NAME}/g" CMakeLists.txt && rm CMakeLists.txt.bak
+        # Build system specific setup
+        if [[ "$BUILD_SYSTEM" == "bazel" ]]; then
+            # Copy Bazel templates
+            cp .common/artagon-common/templates/c/bazel/.bazelversion .
+            cp .common/artagon-common/templates/c/bazel/.bazelrc .
+            cp .common/artagon-common/templates/c/bazel/MODULE.bazel .
+            cp .common/artagon-common/templates/c/bazel/WORKSPACE.bazel .
+            cp .common/artagon-common/templates/c/bazel/BUILD.bazel .
+            sed -i.bak "s/PROJECT_NAME/${PROJECT_NAME}/g" MODULE.bazel WORKSPACE.bazel BUILD.bazel && \
+                rm -f MODULE.bazel.bak WORKSPACE.bazel.bak BUILD.bazel.bak
+        else
+            # Copy CMake templates
+            cp .common/artagon-common/templates/c/CMakeLists.txt.template CMakeLists.txt
+            sed -i.bak "s/PROJECT_NAME/${PROJECT_NAME}/g" CMakeLists.txt && rm CMakeLists.txt.bak
+        fi
 
         cp .common/artagon-common/templates/c/.clang-format .
         cp .common/artagon-common/templates/c/.gitignore.template .gitignore
@@ -375,9 +402,21 @@ EOF
         # C++ project structure
         mkdir -p src include tests docs .github/workflows
 
-        # Copy templates
-        cp .common/artagon-common/templates/cpp/CMakeLists.txt.template CMakeLists.txt
-        sed -i.bak "s/PROJECT_NAME/${PROJECT_NAME}/g" CMakeLists.txt && rm CMakeLists.txt.bak
+        # Build system specific setup
+        if [[ "$BUILD_SYSTEM" == "bazel" ]]; then
+            # Copy Bazel templates
+            cp .common/artagon-common/templates/cpp/bazel/.bazelversion .
+            cp .common/artagon-common/templates/cpp/bazel/.bazelrc .
+            cp .common/artagon-common/templates/cpp/bazel/MODULE.bazel .
+            cp .common/artagon-common/templates/cpp/bazel/WORKSPACE.bazel .
+            cp .common/artagon-common/templates/cpp/bazel/BUILD.bazel .
+            sed -i.bak "s/PROJECT_NAME/${PROJECT_NAME}/g" MODULE.bazel WORKSPACE.bazel BUILD.bazel && \
+                rm -f MODULE.bazel.bak WORKSPACE.bazel.bak BUILD.bazel.bak
+        else
+            # Copy CMake templates
+            cp .common/artagon-common/templates/cpp/CMakeLists.txt.template CMakeLists.txt
+            sed -i.bak "s/PROJECT_NAME/${PROJECT_NAME}/g" CMakeLists.txt && rm CMakeLists.txt.bak
+        fi
 
         cp .common/artagon-common/templates/cpp/.clang-format .
         cp .common/artagon-common/templates/cpp/.clang-tidy .
@@ -493,7 +532,35 @@ Copy \`settings.xml\` to \`~/.m2/settings.xml\` and configure your credentials.
 EOF
         ;;
     c|cpp)
-        cat >> README.md << 'EOF'
+        if [[ "$BUILD_SYSTEM" == "bazel" ]]; then
+            cat >> README.md << 'EOF'
+```bash
+# Build
+bazel build //...
+
+# Run tests
+bazel test //...
+
+# Run
+bazel run //:main
+
+# Build with specific config
+bazel build --config=release //...
+```
+
+## Bazel Configurations
+
+Available configs (see `.bazelrc`):
+- `release` - Optimized release build
+- `debug` - Debug build with symbols
+- `asan` - Address sanitizer
+- `ubsan` - Undefined behavior sanitizer
+- `tsan` - Thread sanitizer
+- `coverage` - Code coverage
+
+EOF
+        else
+            cat >> README.md << 'EOF'
 ```bash
 # Build
 mkdir build && cd build
@@ -508,6 +575,7 @@ make test
 ```
 
 EOF
+        fi
         ;;
     rust)
         cat >> README.md << 'EOF'
