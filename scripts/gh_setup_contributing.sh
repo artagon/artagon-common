@@ -113,10 +113,16 @@ substitute_variables() {
   local repo_owner="$3"
   local repo_desc="$4"
 
+  # Escape replacement values for sed
+  local repo_name_escaped repo_owner_escaped repo_desc_escaped
+  repo_name_escaped=$(printf '%s' "$repo_name" | sed -e 's/[&|\\/]/\\&/g')
+  repo_owner_escaped=$(printf '%s' "$repo_owner" | sed -e 's/[&|\\/]/\\&/g')
+  repo_desc_escaped=$(printf '%s' "$repo_desc" | sed -e 's/[&|\\/]/\\&/g')
+
   # Read template and substitute variables
-  sed -e "s|{{ repository.name }}|$repo_name|g" \
-      -e "s|{{ repository.owner }}|$repo_owner|g" \
-      -e "s|{{ repository.description }}|$repo_desc|g" \
+  sed -e "s|{{ repository.name }}|$repo_name_escaped|g" \
+      -e "s|{{ repository.owner }}|$repo_owner_escaped|g" \
+      -e "s|{{ repository.description }}|$repo_desc_escaped|g" \
       "$template"
 }
 
