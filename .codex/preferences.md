@@ -1,1 +1,0 @@
-../codex/preferences.md

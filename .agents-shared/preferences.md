@@ -1,18 +1,23 @@
-# Claude Code Preferences for Artagon Projects
+---
+# Shared Agent Preferences for Artagon Projects
+# This file is the canonical source for both Claude and Codex agents
+model_overrides:
+  claude: "../.agents-claude/project.md"
+  codex: "../.agents-codex/project.md"
+---
 
-## Git Commit Attribution
+# Agent Preferences for Artagon Projects
 
-**DO NOT** include Claude attribution in git commits.
+## Attribution Policy
+
+**DO NOT** include AI attribution in commits or pull requests.
 
 Specifically:
 - ❌ Do NOT add "🤖 Generated with [Claude Code](https://claude.com/claude-code)"
 - ❌ Do NOT add "Co-Authored-By: Claude <noreply@anthropic.com>"
+- ❌ Do NOT add "Co-Authored-By: Copilot" or other AI metadata
 
-All commits should show only the human author only.
-
-## Pull Request Attribution
-
-**DO NOT** include Claude attribution in pull request descriptions.
+All commits should show the human author only. These are professional open source projects where code contributions should be attributed to human authors only, not AI assistants.
 
 ## Issue-Driven Development Workflow
 
@@ -23,6 +28,7 @@ All commits should show only the human author only.
 1. **Create or Find Issue**
    - Every change MUST start with a GitHub issue
    - Use `gh issue create` with appropriate labels
+   - Issue templates available: feature_request, bug_report, chore
    - Label types map to commit types:
      - `enhancement` → feat
      - `bug` → fix
@@ -82,7 +88,7 @@ All commits should show only the human author only.
 - `chore` - Maintenance
 
 **Optional Scopes:**
-- `workflows`, `scripts`, `docs`, `bazel`, `cmake`, `maven`, `nix`, `ci`, `deploy`
+- `workflows`, `scripts`, `docs`, `bazel`, `cmake`, `maven`, `nix`, `ci`, `deploy`, `templates`, `hooks`
 
 **Breaking Changes:**
 - Add `!` after type/scope: `feat(api)!:`
@@ -129,8 +135,8 @@ Fixes #38
 ### Automation Scripts
 
 Available tools:
-- `./scripts/gh_create_issue_branch.sh <issue>` - Create semantic branch
-- `./scripts/gh_create_pr.sh` - Create PR with template
+- `./scripts/gh_create_issue_branch.sh <issue>` - Create semantic branch from issue
+- `./scripts/gh_create_pr.sh` - Create PR with auto-filled template
 
 ### Commit Validation
 
@@ -178,6 +184,12 @@ When making any code or configuration changes:
 6. Follow semantic commit for all changes
 7. Link commits to issues
 
+## Context Memory
+
+- Record meaningful repository patterns, workflows, or pitfalls in `project-context.md` after significant changes
+- Note structural shifts (new directories, renamed templates, etc.) so future sessions stay aligned
+- Document workflow changes and new automation tools
+
 ## Example Complete Workflow
 
 ```bash
@@ -215,25 +227,44 @@ git push -u origin feat/42-add-cpp26-bazel-support
 # Issue closes on merge
 ```
 
+## Coding Style
+
+- Follow repository conventions defined in `configs/` and language-specific tooling (formatters, linters, etc.)
+- Opt for clarity over clever optimizations; comment only when intent may be non-obvious
+- Scripts must use `#!/usr/bin/env bash` and `set -euo pipefail`
+- Pass shellcheck validation for all shell scripts
+- Prefer small, well-scoped commits with clear intent and context
+
 ## Quality Standards
 
-- **Scripts**: Must pass shellcheck, use `set -euo pipefail`
-- **Workflows**: Nix detection, proper matrix, caching
-- **Documentation**: Examples, clear explanations, cross-references
+- **Scripts**: Must pass shellcheck, use `set -euo pipefail`, proper error handling
+- **Workflows**: Nix detection, proper matrix configuration, caching
+- **Documentation**: Examples, clear explanations, cross-references, maintain accuracy
 - **Tests**: All existing pass, add tests for new functionality
-- **Security**: No secrets, proper validation, secure defaults
+- **Security**: No secrets committed, proper input validation, secure defaults
+
+## Tooling Expectations
+
+- Run available formatters/linters/tests relevant to your changes
+- Add or update tests when fixing bugs or changing behaviour
+- Validate `scripts/repo_setup.sh` or other bootstrap scripts using a temporary repo when touched
+- Use automation scripts for branch/PR creation to ensure consistency
 
 ## References
 
 - **Full Guide**: [docs/CONTRIBUTING.md](../../docs/CONTRIBUTING.md)
 - **Commit Format**: [docs/SEMANTIC-COMMITS.md](../../docs/SEMANTIC-COMMITS.md)
+- **API Reference**: [docs/API.md](../../docs/API.md)
 - **Troubleshooting**: [docs/TROUBLESHOOTING.md](../../docs/TROUBLESHOOTING.md)
-- **Workflow Preferences**: [.claude/preferences](../../.claude/preferences)
+- **Issue Templates**: [.github/ISSUE_TEMPLATE/](../../.github/ISSUE_TEMPLATE/)
+- **PR Template**: [.github/PULL_REQUEST_TEMPLATE.md](../../.github/PULL_REQUEST_TEMPLATE.md)
 
-## General Principle
+## Guiding Principles
 
-These are professional open source projects. All code contributions should be attributed to human authors only, not AI assistants.
+1. **Human Accountability**: Treat Artagon repositories as professional, human-run projects. Automation assists delivery, but human accountability, thorough docs, and reproducible workflows take precedence.
 
-All development must follow the issue-driven workflow with semantic commits. This is not optional.
+2. **Mandatory Issue-Driven Workflow**: All development must follow the issue-driven workflow with semantic commits. This is not optional. It ensures traceability, proper review process, and maintains project quality standards.
 
-Documentation must be kept accurate and up-to-date with every change to maintain project quality and usability.
+3. **Documentation Excellence**: Documentation must be kept accurate and up-to-date with every change to maintain project quality and usability.
+
+4. **Quality First**: Prioritize code quality, testing, and maintainability over speed of delivery.
