@@ -320,6 +320,19 @@ else
     warn "Codex sync script not found; skipping Codex setup"
 fi
 
+# Setup CONTRIBUTING.md from template
+CONTRIBUTING_SETUP_SCRIPT=".common/artagon-common/scripts/gh_setup_contributing.sh"
+if [[ -x "${CONTRIBUTING_SETUP_SCRIPT}" ]]; then
+    info "Setting up CONTRIBUTING.md from template"
+    if "${CONTRIBUTING_SETUP_SCRIPT}" --repo-name "$PROJECT_NAME" --repo-owner "$OWNER" --repo-desc "${DESCRIPTION:-Artagon ${PROJECT_TYPE} project}" --force; then
+        success "CONTRIBUTING.md generated from template"
+    else
+        warn "Failed to generate CONTRIBUTING.md from template"
+    fi
+else
+    warn "CONTRIBUTING.md setup script not found; skipping"
+fi
+
 # Copy language-specific templates
 info "Copying $PROJECT_TYPE templates"
 

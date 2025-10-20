@@ -1,0 +1,372 @@
+# Contributing to {{ repository.name }}
+
+Thank you for your interest in contributing to **{{ repository.name }}**! This project follows Artagon's standardized development workflow and coding standards.
+
+> {{ repository.description }}
+
+## Quick Links
+
+- **Shared Standards**: See [artagon-common](https://github.com/artagon/artagon-common) for detailed Artagon guidelines
+- **Semantic Commits**: [SEMANTIC-COMMITS.md](https://github.com/artagon/artagon-common/blob/main/docs/SEMANTIC-COMMITS.md)
+- **API Documentation**: [API.md](./docs/API.md) _(if applicable)_
+- **Issue Templates**: [.github/ISSUE_TEMPLATE/](.github/ISSUE_TEMPLATE/)
+
+## Table of Contents
+
+- [Getting Started](#getting-started)
+- [Development Workflow](#development-workflow)
+- [Semantic Commits](#semantic-commits)
+- [Branch Naming](#branch-naming)
+- [Pull Requests](#pull-requests)
+- [Code Standards](#code-standards)
+- [Testing](#testing)
+- [Documentation](#documentation)
+
+## Getting Started
+
+### Prerequisites
+
+- Git 2.30+
+- GitHub CLI (`gh`)
+- Bash 4.0+
+- **Project-specific tools**: _(add your requirements here)_
+
+### Initial Setup
+
+1. **Fork and Clone**
+
+```bash
+# Fork via GitHub UI or CLI
+gh repo fork {{ repository.owner }}/{{ repository.name }} --clone
+
+cd {{ repository.name }}
+```
+
+2. **Initialize Repository**
+
+```bash
+# If using artagon-common submodule
+git submodule update --init --recursive
+
+# Bootstrap agent configuration
+./scripts/gh_sync_agents.sh  # if available
+
+# Install git hooks (if provided)
+./scripts/repo_setup.sh  # or similar
+```
+
+3. **Install Dependencies**
+
+```bash
+# Add project-specific installation commands
+# Examples:
+# npm install
+# pip install -r requirements.txt
+# cargo build
+# mvn install
+```
+
+## Development Workflow
+
+**MANDATORY**: All development must follow the issue-driven workflow.
+
+### 1. Create or Find an Issue
+
+Every change starts with a GitHub issue:
+
+```bash
+# Create a new issue
+gh issue create \
+  --title "Add feature X" \
+  --label "enhancement" \
+  --body "Description of the feature..."
+```
+
+### 2. Create Semantic Branch
+
+Use automation for consistency:
+
+```bash
+# If script available:
+./scripts/gh_create_issue_branch.sh <issue-number>
+
+# Or manually:
+git checkout -b feat/42-add-feature-x
+```
+
+**Branch format**: `<type>/<issue>-<short-description>`
+
+Valid types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`
+
+### 3. Make Changes with Semantic Commits
+
+```bash
+# Stage changes
+git add <files>
+
+# Commit with semantic format
+git commit -m "feat(scope): add feature X
+
+Detailed explanation of the change.
+
+Closes #42"
+```
+
+### 4. Push and Create PR
+
+```bash
+# Push branch
+git push -u origin feat/42-add-feature-x
+
+# Create PR (if script available)
+./scripts/gh_create_pr.sh
+
+# Or manually
+gh pr create --fill
+```
+
+### 5. Never Push Directly to Main
+
+- All changes via feature branches
+- All changes via pull requests
+- All PRs require review before merge
+
+## Semantic Commits
+
+Commit messages must follow the Conventional Commits format:
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+### Required Types
+
+- `feat` - New feature (MINOR semver)
+- `fix` - Bug fix (PATCH semver)
+- `docs` - Documentation only
+- `style` - Code formatting (no logic change)
+- `refactor` - Code refactoring
+- `perf` - Performance improvement
+- `test` - Add or update tests
+- `build` - Build system/dependencies
+- `ci` - CI/CD changes
+- `chore` - Maintenance tasks
+
+### Breaking Changes
+
+- Add `!` after type: `feat(api)!: breaking change`
+- Include `BREAKING CHANGE:` in footer with migration guide
+
+### Examples
+
+```
+feat(api): add user authentication endpoint
+
+Add JWT-based authentication for API access.
+Includes token generation and validation.
+
+Closes #42
+```
+
+```
+fix(database): resolve connection pool leak
+
+Connection pool was not releasing connections
+properly after failed transactions.
+
+Fixes #38
+```
+
+## Branch Naming
+
+**Format**: `<type>/<issue>-<description>`
+
+**Rules**:
+- Lowercase only
+- Hyphens (not underscores/spaces)
+- Always include issue number
+- 3-5 words max for description
+
+**Valid Examples**:
+- `feat/42-add-user-auth` ✓
+- `fix/38-connection-leak` ✓
+- `docs/45-api-examples` ✓
+
+**Invalid Examples**:
+- `feature/42-add-auth` ✗ (wrong type)
+- `feat_42_add_auth` ✗ (wrong separator)
+- `feat/add-auth` ✗ (no issue number)
+
+## Pull Requests
+
+### Creating a PR
+
+1. Ensure all commits follow semantic format
+2. Update relevant documentation
+3. Add tests for new functionality
+4. Run all tests and linters
+5. Fill out PR template completely
+
+### PR Requirements
+
+- [ ] Title follows semantic commit format
+- [ ] Links to related issue(s)
+- [ ] Description explains changes clearly
+- [ ] Tests added/updated
+- [ ] Documentation updated
+- [ ] All CI checks passing
+- [ ] Code reviewed by maintainer
+
+### PR Template
+
+The PR template includes:
+- Description of changes
+- Type of change checklist
+- Linked issues
+- Testing checklist
+- Documentation checklist
+
+## Code Standards
+
+### General Principles
+
+1. **Clarity over cleverness** - Write readable, maintainable code
+2. **Test coverage** - Add tests for new functionality
+3. **Documentation** - Update docs with code changes
+4. **No secrets** - Never commit credentials or sensitive data
+
+### Language-Specific Standards
+
+_(Customize based on your project)_
+
+#### Shell Scripts
+
+- Use `#!/usr/bin/env bash`
+- Use `set -euo pipefail`
+- Pass `shellcheck` validation
+- Proper error handling
+
+#### Python
+
+- Follow PEP 8
+- Use type hints
+- Write docstrings
+- Run `black` formatter
+
+#### JavaScript/TypeScript
+
+- Follow ESLint config
+- Use Prettier formatter
+- Write JSDoc comments
+- Use TypeScript types
+
+#### Rust
+
+- Follow `rustfmt` style
+- Pass `clippy` lints
+- Write doc comments
+- Handle errors explicitly
+
+## Testing
+
+### Running Tests
+
+```bash
+# Add project-specific test commands
+# Examples:
+# npm test
+# cargo test
+# pytest
+# mvn test
+```
+
+### Test Requirements
+
+- All existing tests must pass
+- Add tests for new features
+- Add tests for bug fixes
+- Maintain or improve coverage
+
+### Test Organization
+
+_(Customize based on your project structure)_
+
+```
+tests/
+  unit/           # Unit tests
+  integration/    # Integration tests
+  e2e/           # End-to-end tests
+```
+
+## Documentation
+
+### Required Documentation
+
+When making changes, update:
+
+- [ ] README.md (if user-facing changes)
+- [ ] API.md (if API changes)
+- [ ] Code comments (for complex logic)
+- [ ] CHANGELOG.md (for releases)
+
+### Documentation Standards
+
+- Clear, concise language
+- Code examples where helpful
+- Cross-references to related docs
+- Keep in sync with code
+
+## AI Attribution Policy
+
+**DO NOT** include AI attribution in commits or pull requests.
+
+Specifically:
+- ❌ Do NOT add "🤖 Generated with [Claude Code](https://claude.com/claude-code)"
+- ❌ Do NOT add "Co-Authored-By: Claude" or similar
+- ❌ Do NOT add "Co-Authored-By: Copilot" or similar
+- ❌ Do NOT add "Co-Authored-By: Gemini" or similar
+
+All commits should show the human author only.
+
+## Project-Specific Guidelines
+
+_(Add your project-specific contribution guidelines below)_
+
+### Architecture
+
+<!-- Describe your project architecture -->
+
+### Design Decisions
+
+<!-- Document key design decisions and rationale -->
+
+### Common Pitfalls
+
+<!-- List common mistakes to avoid -->
+
+### Development Tips
+
+<!-- Share helpful tips for contributors -->
+
+## Getting Help
+
+- **Questions**: Open a [discussion](https://github.com/{{ repository.owner }}/{{ repository.name }}/discussions)
+- **Bugs**: Open an [issue](https://github.com/{{ repository.owner }}/{{ repository.name }}/issues/new?template=bug_report.md)
+- **Features**: Open an [issue](https://github.com/{{ repository.owner }}/{{ repository.name }}/issues/new?template=feature_request.md)
+- **Slack/Discord**: _(add if applicable)_
+
+## Code of Conduct
+
+This project follows the [Contributor Covenant Code of Conduct](https://www.contributor-covenant.org/version/2/1/code_of_conduct/).
+
+## License
+
+By contributing to {{ repository.name }}, you agree that your contributions will be licensed under the project's license.
+
+---
+
+**Thank you for contributing to {{ repository.name }}!** 🎉
