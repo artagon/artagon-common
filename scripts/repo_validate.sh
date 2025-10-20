@@ -165,8 +165,18 @@ detect_project_type() {
     elif [[ -f "Cargo.toml" ]]; then
         echo "rust"
     elif [[ -f "CMakeLists.txt" ]] || [[ -f "WORKSPACE.bazel" ]] || [[ -f "BUILD.bazel" ]]; then
-        # Check for C vs C++ based on file extensions
-        if find src include -name "*.cpp" -o -name "*.hpp" 2>/dev/null | grep -q .; then
+        # Check for C vs C++ based on file extensions (only search existing dirs)
+        local search_dirs=()
+        [[ -d src ]] && search_dirs+=("src")
+        [[ -d include ]] && search_dirs+=("include")
+
+        local cpp_indicator=""
+        if [[ ${#search_dirs[@]} -gt 0 ]]; then
+            cpp_indicator="$(find "${search_dirs[@]}" \
+                \( -name "*.cpp" -o -name "*.hpp" \) -print -quit 2>/dev/null || true)"
+        fi
+
+        if [[ -n "$cpp_indicator" ]]; then
             echo "cpp"
         else
             echo "c"

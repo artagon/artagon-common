@@ -25,42 +25,56 @@ test_script_exists() {
 
   if [[ -x "$ROOT_DIR/scripts/repo_setup.sh" ]]; then
     echo "✓ Script is executable"
-    ((PASSED_TESTS++))
+    PASSED_TESTS=$((PASSED_TESTS + 1))
   else
     echo "✗ Script is not executable"
-    ((FAILED_TESTS++))
+    FAILED_TESTS=$((FAILED_TESTS + 1))
   fi
 }
 
-# Test 2: Help output works
+# Test 2: Help output documents build-system flag
+test_help_mentions_build_system() {
+  echo ""
+  echo "Test: Help output documents build-system flag"
+
+  if "$ROOT_DIR/scripts/repo_setup.sh" --help 2>&1 | grep -q -- "--build-system <cmake|bazel>"; then
+    echo "✓ Help lists --build-system flag"
+    PASSED_TESTS=$((PASSED_TESTS + 1))
+  else
+    echo "✗ Help missing --build-system flag"
+    FAILED_TESTS=$((FAILED_TESTS + 1))
+  fi
+}
+
+# Test 3: Help output works
 test_help_output() {
   echo ""
   echo "Test: Help output displays"
 
-  if "$ROOT_DIR/scripts/repo_setup.sh" --help 2>&1 | grep -q "Usage:"; then
+  if "$ROOT_DIR/scripts/repo_setup.sh" --help 2>&1 | grep -qi "usage:"; then
     echo "✓ Help output works"
-    ((PASSED_TESTS++))
+    PASSED_TESTS=$((PASSED_TESTS + 1))
   else
     echo "✗ Help output missing or broken"
-    ((FAILED_TESTS++))
+    FAILED_TESTS=$((FAILED_TESTS + 1))
   fi
 }
 
-# Test 3: Syntax check
+# Test 4: Syntax check
 test_syntax() {
   echo ""
   echo "Test: Script syntax is valid"
 
   if bash -n "$ROOT_DIR/scripts/repo_setup.sh"; then
     echo "✓ Syntax is valid"
-    ((PASSED_TESTS++))
+    PASSED_TESTS=$((PASSED_TESTS + 1))
   else
     echo "✗ Syntax errors found"
-    ((FAILED_TESTS++))
+    FAILED_TESTS=$((FAILED_TESTS + 1))
   fi
 }
 
-# Test 4: Parameter validation
+# Test 5: Parameter validation
 test_parameter_validation() {
   echo ""
   echo "Test: Parameter validation"
@@ -68,48 +82,66 @@ test_parameter_validation() {
   # Should fail without required parameters
   if ! "$ROOT_DIR/scripts/repo_setup.sh" >/dev/null 2>&1; then
     echo "✓ Rejects missing parameters"
-    ((PASSED_TESTS++))
+    PASSED_TESTS=$((PASSED_TESTS + 1))
   else
     echo "✗ Should reject missing parameters"
-    ((FAILED_TESTS++))
+    FAILED_TESTS=$((FAILED_TESTS + 1))
   fi
 }
 
-# Test 5: Invalid project type rejection
+# Test 6: Invalid project type rejection
 test_invalid_type() {
   echo ""
   echo "Test: Invalid project type rejection"
 
+  set +o pipefail
   if "$ROOT_DIR/scripts/repo_setup.sh" --type invalid --name test 2>&1 | grep -iq "invalid"; then
     echo "✓ Rejects invalid project type"
-    ((PASSED_TESTS++))
+    PASSED_TESTS=$((PASSED_TESTS + 1))
   else
     echo "✗ Should reject invalid project type"
-    ((FAILED_TESTS++))
+    FAILED_TESTS=$((FAILED_TESTS + 1))
+  fi
+  set -o pipefail
+}
+
+# Test 7: README run command uses project name placeholder
+test_readme_run_command_placeholder() {
+  echo ""
+  echo "Test: README run command uses project name placeholder"
+
+  if grep -q '\./bin/${PROJECT_NAME}' "$ROOT_DIR/scripts/repo_setup.sh"; then
+    echo "✓ README run command template uses project name"
+    PASSED_TESTS=$((PASSED_TESTS + 1))
+  else
+    echo "✗ README run command template does not use project name"
+    FAILED_TESTS=$((FAILED_TESTS + 1))
   fi
 }
 
-# Test 6: CONTRIBUTING.md integration exists
+# Test 8: CONTRIBUTING.md integration exists
 test_contributing_integration() {
   echo ""
   echo "Test: CONTRIBUTING.md setup integration exists"
 
   if grep -q "gh_setup_contributing" "$ROOT_DIR/scripts/repo_setup.sh"; then
     echo "✓ CONTRIBUTING.md setup is integrated"
-    ((PASSED_TESTS++))
+    PASSED_TESTS=$((PASSED_TESTS + 1))
   else
     echo "✗ CONTRIBUTING.md setup not found in repo_setup.sh"
-    ((FAILED_TESTS++))
+    FAILED_TESTS=$((FAILED_TESTS + 1))
   fi
 }
 
 # Run all tests
 main() {
   test_script_exists
+  test_help_mentions_build_system
   test_help_output
   test_syntax
   test_parameter_validation
   test_invalid_type
+  test_readme_run_command_placeholder
   test_contributing_integration
 
   print_test_summary
