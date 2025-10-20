@@ -272,6 +272,6 @@ For issues related to:
 
 ## See Also
 
-- [MAVEN_DEPLOYMENT.md](MAVEN_DEPLOYMENT.md) - How to deploy to Maven Central (OSSRH)
-- [MAVEN_QUICKSTART-DEPLOY.md](MAVEN_QUICKSTART-DEPLOY.md) - Quick deployment guide
+- [MAVEN_RELEASE_GUIDE.md#deployment-reference](MAVEN_RELEASE_GUIDE.md#deployment-reference) - How to deploy to Maven Central (OSSRH)
+- [MAVEN_RELEASE_GUIDE.md#quick-start-checklist](MAVEN_RELEASE_GUIDE.md#quick-start-checklist) - Quick deployment guide
 - [GitHub Packages Documentation](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry)

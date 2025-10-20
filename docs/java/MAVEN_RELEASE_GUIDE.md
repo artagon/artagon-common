@@ -382,15 +382,15 @@ This guide covers deploying artagon-bom and artagon-parent to Maven Central via 
 
 ### Table of Contents
 
-1. [Prerequisites](#prerequisites)
-2. [Initial Setup](#initial-setup)
+1. [Deployment Prerequisites](#deployment-prerequisites)
+2. [Deployment Initial Setup](#deployment-initial-setup)
 3. [Deployment Process](#deployment-process)
 4. [Release Workflow](#release-workflow)
-5. [Troubleshooting](#troubleshooting)
+5. [Deployment Troubleshooting](#deployment-troubleshooting)
 
 ---
 
-### Prerequisites
+### Deployment Prerequisites
 
 #### 1. Sonatype OSSRH Account
 
@@ -454,7 +454,7 @@ mvn --encrypt-password YOUR_SONATYPE_PASSWORD
 
 ---
 
-### Initial Setup
+### Deployment Initial Setup
 
 #### 1. Verify POM Completeness
 
@@ -655,7 +655,7 @@ curl -I https://repo1.maven.org/maven2/org/artagon/artagon-bom/1.0.0/
 
 ---
 
-### Troubleshooting
+### Deployment Troubleshooting
 
 #### GPG Signing Issues
 
@@ -1074,7 +1074,7 @@ exec "${COMMON_SCRIPT}" --project-root "${PROJECT_ROOT}" "$@"
 
 ### Security Workflow
 
-#### Initial Setup
+#### Deployment Initial Setup
 
 1. **Initialize submodule**:
    ```bash
@@ -1279,7 +1279,7 @@ warn()    # Prints yellow warning message
 - [Maven Checksum Plugin Documentation](https://github.com/nicoulaj/checksum-maven-plugin)
 - [PGP Verify Plugin Documentation](https://github.com/s4u/pgpverify-maven-plugin)
 - [MAVEN_RELEASE_GUIDE.md](MAVEN_RELEASE_GUIDE.md) - Complete release process guide
-- [MAVEN_DEPLOYMENT.md](MAVEN_DEPLOYMENT.md) - Deployment to Maven Central
+- [MAVEN_RELEASE_GUIDE.md#deployment-reference](MAVEN_RELEASE_GUIDE.md#deployment-reference) - Deployment to Maven Central
 
 
 ## Release to Maven Central
@@ -1519,8 +1519,8 @@ shasum -a 512 pom.xml
 
 ## See Also
 
-- [MAVEN_DEPLOYMENT.md](MAVEN_DEPLOYMENT.md) - Full deployment guide for Maven Central
-- [MAVEN_QUICKSTART-DEPLOY.md](MAVEN_QUICKSTART-DEPLOY.md) - Quick deployment reference
+- [MAVEN_RELEASE_GUIDE.md#deployment-reference](MAVEN_RELEASE_GUIDE.md#deployment-reference) - Full deployment guide for Maven Central
+- [Quick Start Checklist](#quick-start-checklist) - Quick deployment reference
 - [MAVEN_GITHUB-PACKAGES.md](MAVEN_GITHUB-PACKAGES.md) - Using packages from GitHub
 - [CHANGELOG.md](CHANGELOG.md) - Version history
 
