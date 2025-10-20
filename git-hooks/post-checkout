@@ -37,8 +37,8 @@ if [[ -x "${EXPORT_SCRIPT}" ]]; then
 fi
 
 # Keep Codex overlays synchronized with shared preferences
-if [[ -x scripts/sync-codex.sh ]]; then
-    scripts/sync-codex.sh --ensure --quiet || \
+if [[ -x scripts/gh_sync_codex.sh ]]; then
+    scripts/gh_sync_codex.sh --ensure --quiet || \
         echo "⚠️  Warning: Codex sync reported an issue" >&2
 fi
 

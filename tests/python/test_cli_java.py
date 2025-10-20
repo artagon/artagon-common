@@ -52,7 +52,7 @@ def test_snapshot_publish_dry_run():
 def test_security_update_dry_run():
     result = run_cli("java", "security", "update")
     assert result.returncode == 0
-    assert "security/mvn-update-dep-security.sh --update" in result.stdout
+    assert "security/mvn_update_security.sh --update" in result.stdout
 
 
 def test_unknown_command():

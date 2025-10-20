@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# verify-checksums.sh
+# mvn_verify_checksums.sh
 #
 # Verifies SHA-256 and SHA-512 checksums for security baseline files.
 #
 # Usage:
-#   verify-checksums.sh [OPTIONS] FILE [FILE...]
+#   mvn_verify_checksums.sh [OPTIONS] FILE [FILE...]
 #
 # Options:
 #   --security-dir PATH    Path to security directory (default: current directory)
@@ -12,10 +12,10 @@
 #
 # Examples:
 #   # Verify files in current directory
-#   verify-checksums.sh file1.csv file2.list
+#   mvn_verify_checksums.sh file1.csv file2.list
 #
 #   # Verify files in specific directory
-#   verify-checksums.sh --security-dir /path/to/security file1.csv file2.list
+#   mvn_verify_checksums.sh --security-dir /path/to/security file1.csv file2.list
 
 set -euo pipefail
 
@@ -46,12 +46,12 @@ warn() {
 
 show_help() {
     cat << 'EOF'
-verify-checksums.sh - Verify SHA checksums for security baseline files
+mvn_verify_checksums.sh - Verify SHA checksums for security baseline files
 
 Verifies SHA-256 and SHA-512 checksums against corresponding .sha256 and .sha512 files.
 
 USAGE:
-    verify-checksums.sh [OPTIONS] FILE [FILE...]
+    mvn_verify_checksums.sh [OPTIONS] FILE [FILE...]
 
 OPTIONS:
     -d, --security-dir PATH    Path to security directory (default: current directory)
@@ -63,10 +63,10 @@ FILES:
 
 EXAMPLES:
     # Verify files in current directory
-    verify-checksums.sh file1.csv file2.list
+    mvn_verify_checksums.sh file1.csv file2.list
 
     # Verify files in specific directory
-    verify-checksums.sh --security-dir /path/to/security file1.csv file2.list
+    mvn_verify_checksums.sh --security-dir /path/to/security file1.csv file2.list
 
 EXIT CODES:
     0   All checksums verified successfully

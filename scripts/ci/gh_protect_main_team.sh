@@ -4,8 +4,8 @@
 # Balanced protection - requires PR reviews but allows admin override
 #
 # Usage:
-#   ./protect-main-branch-team.sh --repo artagon-common
-#   ./protect-main-branch-team.sh --all
+#   ./gh_protect_main_team.sh --repo artagon-common
+#   ./gh_protect_main_team.sh --all
 #
 
 set -euo pipefail

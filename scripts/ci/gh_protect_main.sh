@@ -4,9 +4,9 @@
 # Applies basic protection - blocks force pushes and deletions
 #
 # Usage:
-#   ./protect-main-branch.sh --repo artagon-common
-#   ./protect-main-branch.sh --repo artagon-bom --owner myorg
-#   ./protect-main-branch.sh --all
+#   ./gh_protect_main.sh --repo artagon-common
+#   ./gh_protect_main.sh --repo artagon-bom --owner myorg
+#   ./gh_protect_main.sh --all
 #
 
 set -euo pipefail

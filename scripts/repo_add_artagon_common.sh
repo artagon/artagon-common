@@ -4,16 +4,16 @@ set -euo pipefail
 # Setup script to add artagon-common as a submodule to your project
 #
 # Usage:
-#   ./setup-artagon-common.sh [submodule-path] [branch]
+#   ./repo_add_artagon_common.sh [submodule-path] [branch]
 #
 # Arguments:
 #   submodule-path  Path where submodule will be added (default: .common/artagon-common)
 #   branch          Branch to checkout (default: main)
 #
 # Examples:
-#   ./setup-artagon-common.sh
-#   ./setup-artagon-common.sh .common/artagon-common main
-#   ./setup-artagon-common.sh tools/common
+#   ./repo_add_artagon_common.sh
+#   ./repo_add_artagon_common.sh .common/artagon-common main
+#   ./repo_add_artagon_common.sh tools/common
 
 SUBMODULE_PATH="${1:-.common/artagon-common}"
 BRANCH="${2:-main}"

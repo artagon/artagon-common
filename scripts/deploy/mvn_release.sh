@@ -2,8 +2,8 @@
 set -euo pipefail
 
 # Release Artagon BOM and Parent to Maven Central
-# Usage: ./artagon-common/scripts/release.sh <version>
-# Example: ./artagon-common/scripts/release.sh 1.0.0
+# Usage: ./artagon-common/scripts/deploy/mvn_release.sh <version>
+# Example: ./artagon-common/scripts/deploy/mvn_release.sh 1.0.0
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"

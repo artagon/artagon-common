@@ -54,34 +54,34 @@ point at a different file.
 
 ```
 scripts/
-├── auto_create_and_push.sh      # GitHub repository creation
-├── setup-artagon-common.sh      # Submodule setup
-├── sync-codex.sh                # Sync Codex overlays with shared guidance
+├── gh_auto_create_and_push.sh      # GitHub repository creation
+├── repo_add_artagon_common.sh      # Submodule setup
+├── gh_sync_codex.sh                # Sync Codex overlays with shared guidance
 ├── deploy/                      # Deployment automation
 │   ├── check-deploy-ready.sh    # Pre-deployment validation
-│   ├── deploy-snapshot.sh       # Deploy snapshot to OSSRH
-│   ├── nexus-release.sh         # Release from Nexus staging
-│   └── release.sh               # Full release automation
+│   ├── mvn_deploy_snapshot.sh       # Deploy snapshot to OSSRH
+│   ├── nexus-mvn_release.sh         # Release from Nexus staging
+│   └── mvn_release.sh               # Full release automation
 ├── ci/                          # CI/CD and branch protection
-│   ├── branch-protection-common.sh
-│   ├── check-branch-protection.sh
-│   ├── protect-main-branch.sh
-│   ├── protect-main-branch-strict.sh
-│   ├── protect-main-branch-team.sh
-│   └── remove-branch-protection.sh
+│   ├── gh_branch_protection_common.sh
+│   ├── gh_check_branch_protection.sh
+│   ├── gh_protect_main.sh
+│   ├── gh_protect_main_strict.sh
+│   ├── gh_protect_main_team.sh
+│   └── gh_remove_branch_protection.sh
 ├── build/                       # Build-related scripts (future use)
 └── dev/                         # Development tools (future use)
 ```
 
 ## Deployment Scripts
 
-### deploy/check-deploy-ready.sh *(invoked via `artagon java release branch stage`)*
+### deploy/mvn_check_ready.sh *(invoked via `artagon java release branch stage`)*
 
 Validates deployment prerequisites and configuration.
 
 **Usage**:
 ```bash
-./scripts/deploy/check-deploy-ready.sh
+./scripts/deploy/mvn_check_ready.sh
 ```
 
 **Checks**:
@@ -93,13 +93,13 @@ Validates deployment prerequisites and configuration.
 - Git working directory status
 - Security files
 
-### deploy/deploy-snapshot.sh *(invoked via `artagon java snapshot publish`)*
+### deploy/mvn_deploy_snapshot.sh *(invoked via `artagon java snapshot publish`)*
 
 Deploys SNAPSHOT versions to Sonatype OSSRH snapshots repository.
 
 **Usage**:
 ```bash
-./scripts/deploy/deploy-snapshot.sh
+./scripts/deploy/mvn_deploy_snapshot.sh
 ```
 
 **Requirements**:
@@ -108,18 +108,18 @@ Deploys SNAPSHOT versions to Sonatype OSSRH snapshots repository.
 - GPG key configured
 - OSSRH credentials in `~/.m2/settings.xml`
 
-### deploy/release.sh *(invoked via `artagon java release run`)*
+### deploy/mvn_mvn_release.sh *(invoked via `artagon java release run`)*
 
 Creates and deploys a release version to Maven Central.
 
 **Usage**:
 ```bash
-./scripts/deploy/release.sh <version>
+./scripts/deploy/mvn_mvn_release.sh <version>
 ```
 
 **Example**:
 ```bash
-./scripts/deploy/release.sh 1.0.0
+./scripts/deploy/mvn_mvn_release.sh 1.0.0
 ```
 
 **Process**:
@@ -135,24 +135,24 @@ Creates and deploys a release version to Maven Central.
 # Push to remote
 git push origin main --tags
 
-# Release from staging (see nexus-release.sh)
-./scripts/deploy/nexus-release.sh
+# Release from staging (see nexus-mvn_release.sh)
+./scripts/deploy/mvn_release_nexus.sh
 
 # Create GitHub release
 gh release create v1.0.0 --title "Release 1.0.0" --notes "..."
 ```
 
-### deploy/nexus-release.sh
+### deploy/mvn_release_nexus.sh
 
 Releases staged artifacts from Nexus to Maven Central.
 
 **Usage**:
 ```bash
-./scripts/deploy/nexus-release.sh
+./scripts/deploy/mvn_release_nexus.sh
 ```
 
 **When to use**:
-- After running `release.sh` or `deploy-snapshot.sh -Possrh-deploy`
+- After running `mvn_release.sh` or `mvn_deploy_snapshot.sh -Possrh-deploy`
 - When you want to promote staged artifacts to Maven Central
 
 **Alternative**:
@@ -164,14 +164,14 @@ For branch protection and CI/CD automation, see the `ci/` directory and the main
 
 ## Repository Tooling
 
-### sync-codex.sh
+### gh_sync_codex.sh
 
 Keeps `codex/` and `.codex/` overlays aligned with the shared guidance shipped in `.common/artagon-common/.agents/codex`. The script creates symlinks, scaffolds project-specific overlays, and validates that local files still reference the shared defaults.
 
 **Usage**:
 ```bash
-./scripts/sync-codex.sh --ensure   # repair links and stub overlays (default)
-./scripts/sync-codex.sh --check    # verify structure only
+./scripts/gh_sync_codex.sh --ensure   # repair links and stub overlays (default)
+./scripts/gh_sync_codex.sh --check    # verify structure only
 ```
 
 The git hooks (`pre-commit`, `post-checkout`, `post-merge`) invoke the script automatically so Codex preferences stay synchronized after branch switches or merges.

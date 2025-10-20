@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Deploy Artagon BOM and Parent to OSSRH Snapshots
-# Usage: ./artagon-common/scripts/deploy-snapshot.sh
+# Usage: ./artagon-common/scripts/deploy/mvn_deploy_snapshot.sh
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"

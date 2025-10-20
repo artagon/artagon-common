@@ -78,8 +78,8 @@
               echo "  mvn -P artagon-oss-release verify       # Release build"
               echo ""
               echo "Security scripts:"
-              echo "  ./scripts/mvn-update-dep-security.sh -u"
-              echo "  ./scripts/mvn-update-dep-security.sh -v"
+              echo "  ./scripts/security/mvn_update_security.sh -u"
+              echo "  ./scripts/security/mvn_update_security.sh -v"
               echo ""
               echo "Environment:"
               echo "  JAVA_HOME=$JAVA_HOME"
@@ -167,7 +167,7 @@
           let
             hasPom = builtins.pathExists ./pom.xml;
             hasSecurityScript =
-              builtins.pathExists ./scripts/mvn-update-dep-security.sh;
+              builtins.pathExists ./scripts/security/mvn_update_security.sh;
           in
             (pkgs.lib.optionalAttrs hasPom {
               # Verify Maven project compiles
@@ -187,8 +187,8 @@
               # Verify security scripts are executable
               scripts-executable = pkgs.runCommand "scripts-check" {} ''
                 cd ${./.}
-                if [ ! -x scripts/mvn-update-dep-security.sh ]; then
-                  echo "Error: mvn-update-dep-security.sh not executable"
+                if [ ! -x scripts/security/mvn_update_security.sh ]; then
+                  echo "Error: mvn_update_security.sh not executable"
                   exit 1
                 fi
                 touch $out

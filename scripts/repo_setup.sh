@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# setup-repo.sh - Artagon Project Repository Setup Script
+# repo_setup.sh - Artagon Project Repository Setup Script
 #
 # Creates and configures a new project repository with language-specific
 # templates, Nix integration, and GitHub configurations.
 #
 # Usage:
-#   ./setup-repo.sh --type <java|c|cpp|rust> --name <project-name> [options]
+#   ./repo_setup.sh --type <java|c|cpp|rust> --name <project-name> [options]
 #
 # Options:
 #   --type <lang>          Project language: java, c, cpp, rust (required)
@@ -76,7 +76,7 @@ Creates and configures a new project repository with language-specific
 templates, Nix integration, and GitHub configurations.
 
 USAGE:
-    ./setup-repo.sh --type <lang> --name <name> [options]
+    ./repo_setup.sh --type <lang> --name <name> [options]
 
 REQUIRED OPTIONS:
     --type <java|c|cpp|rust>
@@ -118,16 +118,16 @@ OPTIONS:
 
 EXAMPLES:
     # Create a Java project with Nix
-    ./setup-repo.sh --type java --name my-api --with-nix
+    ./repo_setup.sh --type java --name my-api --with-nix
 
     # Create a private Rust project
-    ./setup-repo.sh --type rust --name secret-tool --private
+    ./repo_setup.sh --type rust --name secret-tool --private
 
     # Create a C++ project with branch protection
-    ./setup-repo.sh --type cpp --name graphics-engine --branch-protection
+    ./repo_setup.sh --type cpp --name graphics-engine --branch-protection
 
     # Create a C project for different organization
-    ./setup-repo.sh --type c --name embedded-driver --owner myorg
+    ./repo_setup.sh --type c --name embedded-driver --owner myorg
 
 SUPPORTED LANGUAGES:
     java   - Java project with Maven, JDK 25
@@ -308,7 +308,7 @@ git config core.hooksPath .common/artagon-common/git-hooks
 success "Git hooks configured for automatic license management"
 
 # Publish Codex agent references for tooling
-CODEX_SYNC_SCRIPT=".common/artagon-common/scripts/sync-codex.sh"
+CODEX_SYNC_SCRIPT=".common/artagon-common/scripts/gh_sync_codex.sh"
 if [[ -x "${CODEX_SYNC_SCRIPT}" ]]; then
     info "Syncing Codex preferences"
     if "${CODEX_SYNC_SCRIPT}" --ensure --quiet; then
@@ -710,8 +710,8 @@ git push -u origin main
 # Apply branch protection if requested
 if [[ "$BRANCH_PROTECTION" == "true" ]]; then
     info "Applying branch protection rules"
-    TEAM_PROTECT_SCRIPT=".common/artagon-common/scripts/ci/protect-main-branch-team.sh"
-    BASIC_PROTECT_SCRIPT=".common/artagon-common/scripts/ci/protect-main-branch.sh"
+    TEAM_PROTECT_SCRIPT=".common/artagon-common/scripts/ci/gh_protect_main_team.sh"
+    BASIC_PROTECT_SCRIPT=".common/artagon-common/scripts/ci/gh_protect_main.sh"
 
     if [[ -x "$TEAM_PROTECT_SCRIPT" ]]; then
         "$TEAM_PROTECT_SCRIPT" --repo "$PROJECT_NAME" --owner "$OWNER" --branch main --force
@@ -724,7 +724,7 @@ if [[ "$BRANCH_PROTECTION" == "true" ]]; then
         warn "Branch protection scripts not found in .common/artagon-common/scripts/ci"
     fi
 
-    info "Reminder: once you cut a release-x.y.z branch, run protect-main-branch-team.sh for that branch to mirror the guardrails."
+    info "Reminder: once you cut a release-x.y.z branch, run gh_protect_main_team.sh for that branch to mirror the guardrails."
 fi
 
 # Summary

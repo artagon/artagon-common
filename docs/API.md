@@ -466,6 +466,6 @@ process_project() {
 ## See Also
 
 - [scripts/lib/common.sh](../scripts/lib/common.sh) - Source code
-- [scripts/setup-repo.sh](../scripts/setup-repo.sh) - Example usage
-- [scripts/auto_create_and_push.sh](../scripts/auto_create_and_push.sh) - Complex example
+- [scripts/repo_setup.sh](../scripts/repo_setup.sh) - Example usage
+- [scripts/gh_auto_create_and_push.sh](../scripts/gh_auto_create_and_push.sh) - Complex example
 - [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) - Common issues and solutions

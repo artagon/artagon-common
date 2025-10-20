@@ -816,11 +816,11 @@ Artagon projects use multiple security scripts to ensure dependency integrity th
 
 ### Scripts
 
-#### 1. mvn-update-dep-security.sh
+#### 1. mvn_update_security.sh
 
 **Purpose**: Generates or updates security baseline files for Maven dependencies.
 
-**Location**: `scripts/security/mvn-update-dep-security.sh`
+**Location**: `scripts/security/mvn_update_security.sh`
 
 **What it does**:
 - Resolves all compile-scope dependencies (including transitives) from Maven
@@ -843,7 +843,7 @@ scripts/artagon java security verify
 scripts/artagon java security verify
 
 # Show all options
-./scripts/mvn-update-dep-security.sh --help
+./scripts/security/mvn_update_security.sh --help
 ```
 
 **Options**:
@@ -884,11 +884,11 @@ Example for `com.artagon:artagon-parent`:
 - `0` - Success
 - `1` - Error occurred
 
-#### 2. verify-checksums.sh
+#### 2. mvn_verify_checksums.sh
 
 **Purpose**: Verifies SHA-256 and SHA-512 checksums for security baseline files.
 
-**Location**: `scripts/security/verify-checksums.sh`
+**Location**: `scripts/security/mvn_verify_checksums.sh`
 
 **What it does**:
 - Reads expected checksums from `.sha256` and `.sha512` files
@@ -900,13 +900,13 @@ Example for `com.artagon:artagon-parent`:
 **Usage**:
 ```bash
 # Verify files in current directory
-./verify-checksums.sh file1.csv file2.list
+./mvn_verify_checksums.sh file1.csv file2.list
 
 # Verify files in specific directory
-./verify-checksums.sh --security-dir /path/to/security file1.csv file2.list
+./mvn_verify_checksums.sh --security-dir /path/to/security file1.csv file2.list
 
 # Short option form
-./verify-checksums.sh -d /path/to/security file1.csv
+./mvn_verify_checksums.sh -d /path/to/security file1.csv
 ```
 
 **Options**:
@@ -940,29 +940,29 @@ SUCCESS: Verified 4 checksum(s) successfully
 
 **Purpose**: Standalone script to generate dependency checksums without PGP verification.
 
-**Location**: `scripts/security/generate-dependency-checksums.sh`
+**Location**: `scripts/security/mvn_generate_checksums.sh`
 
 **What it does**:
-- Similar to `mvn-update-dep-security.sh` but focuses only on checksums
+- Similar to `mvn_update_security.sh` but focuses only on checksums
 - Generates CSV files with SHA-256 checksums
 - Lighter-weight alternative when PGP verification isn't needed
 
 **Usage**:
 ```bash
 # Generate checksums for direct compile dependencies
-./scripts/generate-dependency-checksums.sh
+./scripts/security/mvn_generate_checksums.sh
 
 # Include transitive dependencies
-./scripts/generate-dependency-checksums.sh -t
-./scripts/generate-dependency-checksums.sh --transitive
+./scripts/security/mvn_generate_checksums.sh -t
+./scripts/security/mvn_generate_checksums.sh --transitive
 
 # Generate for test scope with custom output
-./scripts/generate-dependency-checksums.sh -s test -o security/test-checksums.csv
-./scripts/generate-dependency-checksums.sh --scope test --output security/test-checksums.csv
+./scripts/security/mvn_generate_checksums.sh -s test -o security/test-checksums.csv
+./scripts/security/mvn_generate_checksums.sh --scope test --output security/test-checksums.csv
 
 # See all options
-./scripts/generate-dependency-checksums.sh -h
-./scripts/generate-dependency-checksums.sh --help
+./scripts/security/mvn_generate_checksums.sh -h
+./scripts/security/mvn_generate_checksums.sh --help
 ```
 
 **Options**:
@@ -1041,7 +1041,7 @@ Uses `exec-maven-plugin` to verify the security baseline files themselves:
                 <goal>exec</goal>
             </goals>
             <configuration>
-                <executable>${project.basedir}/.common/artagon-common/scripts/security/verify-checksums.sh</executable>
+                <executable>${project.basedir}/.common/artagon-common/scripts/security/mvn_verify_checksums.sh</executable>
                 <arguments>
                     <argument>--security-dir</argument>
                     <argument>${project.basedir}/security</argument>
@@ -1058,14 +1058,14 @@ Uses `exec-maven-plugin` to verify the security baseline files themselves:
 
 Projects can create wrapper scripts to delegate to the shared scripts:
 
-**Example**: `artagon-parent/scripts/mvn-update-dep-security.sh`
+**Example**: `artagon-parent/scripts/mvn_update_security.sh`
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-COMMON_SCRIPT="${PROJECT_ROOT}/.common/artagon-common/scripts/security/mvn-update-dep-security.sh"
+COMMON_SCRIPT="${PROJECT_ROOT}/.common/artagon-common/scripts/security/mvn_update_security.sh"
 
 if [[ ! -x "${COMMON_SCRIPT}" ]]; then
     echo "ERROR: Shared script not found at ${COMMON_SCRIPT}" >&2
@@ -1180,11 +1180,11 @@ git submodule update --init --recursive
 
 #### Permission Denied
 
-**Error**: `Permission denied: ./scripts/mvn-update-dep-security.sh`
+**Error**: `Permission denied: ./scripts/security/mvn_update_security.sh`
 
 **Solution**: Make script executable:
 ```bash
-chmod +x ./scripts/mvn-update-dep-security.sh
+chmod +x ./scripts/security/mvn_update_security.sh
 ```
 
 #### Checksum Mismatch

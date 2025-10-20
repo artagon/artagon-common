@@ -22,16 +22,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Old: `bazel-configs: 'release debug asan'`
   - New: `bazel-configs: 'release,debug,asan'`
 - Improved shell script safety by adding `set -euo pipefail` to all deployment and CI scripts:
-  - `scripts/deploy/check-deploy-ready.sh`
-  - `scripts/deploy/deploy-snapshot.sh`
-  - `scripts/deploy/nexus-release.sh`
-  - `scripts/deploy/release.sh`
-  - `scripts/ci/protect-main-branch.sh`
-  - `scripts/ci/protect-main-branch-team.sh`
-  - `scripts/ci/protect-main-branch-strict.sh`
-  - `scripts/ci/check-branch-protection.sh`
-  - `scripts/ci/remove-branch-protection.sh`
-  - `scripts/ci/branch-protection-common.sh`
+  - `scripts/deploy/mvn_check_ready.sh`
+  - `scripts/deploy/mvn_deploy_snapshot.sh`
+  - `scripts/deploy/mvn_release_nexus.sh`
+  - `scripts/deploy/mvn_release.sh`
+  - `scripts/ci/gh_protect_main.sh`
+  - `scripts/ci/gh_protect_main_team.sh`
+  - `scripts/ci/gh_protect_main_strict.sh`
+  - `scripts/ci/gh_check_branch_protection.sh`
+  - `scripts/ci/gh_remove_branch_protection.sh`
+  - `scripts/ci/gh_branch_protection_common.sh`
 - Standardized all CI and deployment script shebangs to `#!/usr/bin/env bash` for better portability
 - Updated `README.md` Bazel examples to use comma-separated configs
 - Enhanced `.github/workflows/cpp-ci.yml` with automatic Nix detection
@@ -50,7 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Template paths improvements in Nix flake checks (d576050)
 - Comprehensive branch protection scripts for GitHub repositories
 - Reusable GitHub Actions workflows for C, C++, Rust, Java, and Bazel projects
-- Professional setup-repo.sh script (740 lines)
+- Professional repo_setup.sh script (740 lines)
 - Nix flakes for reproducible development environments (Java, C, C++, Rust)
 - Automated project scaffolding for 4 languages
 - Security scanning integration (OWASP, OSS Index, Trivy)

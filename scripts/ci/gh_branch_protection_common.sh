@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Common functions for branch protection scripts
-# Source this file in other scripts: source "$(dirname "$0")/branch-protection-common.sh"
+# Source this file in other scripts: source "$(dirname "$0")/gh_branch_protection_common.sh"
 #
 
 # Colors for output

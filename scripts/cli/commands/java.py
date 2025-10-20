@@ -380,7 +380,7 @@ def _parse_security_args(args: Sequence[str]) -> SecurityOptions:
 @registry.command("java security", "Maintain Java dependency security baselines.")
 def handle_security(ctx: CommandContext, args: Sequence[str]) -> int:
     options = _parse_security_args(args)
-    security_script = ctx.cwd / "scripts/security/mvn-update-dep-security.sh"
+    security_script = ctx.cwd / "scripts/security/mvn_update_security.sh"
     if options.update:
         ctx.run(["bash", str(security_script), "--update"])
     elif options.verify:
@@ -403,7 +403,7 @@ def handle_github(ctx: CommandContext, args: Sequence[str]) -> int:
         owner = ctx.config.owner
         command = [
             "bash",
-            str(ctx.cwd / "scripts/ci/protect-main-branch-team.sh"),
+            str(ctx.cwd / "scripts/ci/gh_protect_main_team.sh"),
             "--repo",
             repo,
             "--branch",

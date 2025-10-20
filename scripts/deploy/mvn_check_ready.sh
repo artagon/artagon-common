@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Check if project is ready for deployment
-# Usage: ./artagon-common/scripts/check-deploy-ready.sh
+# Usage: ./artagon-common/scripts/deploy/mvn_check_ready.sh
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -95,7 +95,7 @@ if [ $ERRORS -eq 0 ]; then
     echo "=========================================="
     echo ""
     echo "To deploy snapshot:"
-    echo "  ./artagon-common/scripts/deploy-snapshot.sh"
+    echo "  ./artagon-common/scripts/deploy/mvn_deploy_snapshot.sh"
     echo ""
     echo "To release:"
     echo "  ./artagon-common/scripts/release.sh 1.0.0"

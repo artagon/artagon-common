@@ -677,7 +677,7 @@ scripts/ci/remove-branch-protection.sh --repo artagon-common
 git push
 
 # Re-apply protection
-scripts/ci/protect-main-branch.sh --repo artagon-common
+scripts/ci/gh_protect_main.sh --repo artagon-common
 ```
 
 ---

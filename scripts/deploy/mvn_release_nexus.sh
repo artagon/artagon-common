@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Release artifacts from Nexus staging to Maven Central
-# Usage: ./artagon-common/scripts/nexus-release.sh
+# Usage: ./artagon-common/scripts/deploy/mvn_release_nexus.sh
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"

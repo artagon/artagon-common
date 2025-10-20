@@ -55,20 +55,20 @@ cd ../..
 
 ## Script Testing
 
-### Test auto_create_and_push.sh
+### Test gh_auto_create_and_push.sh
 
 ```bash
 # From any project with the submodule
-.common/artagon-common/scripts/auto_create_and_push.sh --help
+.common/artagon-common/scripts/gh_auto_create_and_push.sh --help
 
 # Should display help text with all options
 ```
 
-### Test setup-artagon-common.sh
+### Test repo_add_artagon_common.sh
 
 ```bash
 # In a new test project
-.common/artagon-common/scripts/setup-artagon-common.sh
+.common/artagon-common/scripts/repo_add_artagon_common.sh
 
 # Should add submodule to current project
 ```

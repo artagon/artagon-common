@@ -43,8 +43,8 @@ Comprehensive deployment guide:
 **→ [java/MAVEN_RELEASE_GUIDE.md#security-automation](java/MAVEN_RELEASE_GUIDE.md#security-automation)**
 
 Security scripts documentation:
-- `mvn-update-dep-security.sh` - Generate security baselines
-- `verify-checksums.sh` - Verify security file checksums
+- `mvn_update_security.sh` - Generate security baselines
+- `mvn_verify_checksums.sh` - Verify security file checksums
 - Maven plugin integration
 - Security workflow and best practices
 - Troubleshooting
@@ -126,7 +126,7 @@ Available workflows:
 ### I'm Managing Dependency Security
 
 1. [java/MAVEN_RELEASE_GUIDE.md#security-automation](java/MAVEN_RELEASE_GUIDE.md#security-automation) - Security scripts guide
-2. Update baselines: `./scripts/mvn-update-dep-security.sh --update`
+2. Update baselines: `./scripts/mvn_update_security.sh --update`
 3. Verify before release: `mvn -P artagon-oss-security verify`
 
 ---

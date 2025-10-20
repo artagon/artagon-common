@@ -6,26 +6,26 @@ All branch protection scripts now support flexible parameter-based execution.
 
 ### Basic Protection Script
 
-**`protect-main-branch.sh`** - ✅ Fully Parameterized
+**`gh_protect_main.sh`** - ✅ Fully Parameterized
 
 ```bash
 # Protect a single repository
-./scripts/ci/protect-main-branch.sh --repo artagon-common
+./scripts/ci/gh_protect_main.sh --repo artagon-common
 
 # Protect multiple repositories
-./scripts/ci/protect-main-branch.sh --repo artagon-bom --repo artagon-parent
+./scripts/ci/gh_protect_main.sh --repo artagon-bom --repo artagon-parent
 
 # Protect repository in different organization
-./scripts/ci/protect-main-branch.sh --repo my-project --owner myorg
+./scripts/ci/gh_protect_main.sh --repo my-project --owner myorg
 
 # Protect all default repositories
-./scripts/ci/protect-main-branch.sh --all
+./scripts/ci/gh_protect_main.sh --all
 
 # Protect custom branch
-./scripts/ci/protect-main-branch.sh --repo artagon-common --branch develop
+./scripts/ci/gh_protect_main.sh --repo artagon-common --branch develop
 
 # Skip confirmation
-./scripts/ci/protect-main-branch.sh --repo artagon-common --force
+./scripts/ci/gh_protect_main.sh --repo artagon-common --force
 ```
 
 ### Parameters
@@ -57,10 +57,10 @@ When using `--all`, these repositories are processed:
 
 ```bash
 # Single repo in your org
-./scripts/ci/protect-main-branch.sh --repo my-app --owner mycompany
+./scripts/ci/gh_protect_main.sh --repo my-app --owner mycompany
 
 # Multiple repos in your org
-./scripts/ci/protect-main-branch.sh \
+./scripts/ci/gh_protect_main.sh \
   --owner mycompany \
   --repo api-server \
   --repo web-frontend \
@@ -71,26 +71,26 @@ When using `--all`, these repositories are processed:
 
 ```bash
 # Protect develop branch
-./scripts/ci/protect-main-branch.sh --repo artagon-common --branch develop
+./scripts/ci/gh_protect_main.sh --repo artagon-common --branch develop
 
 # Protect release branches
-./scripts/ci/protect-main-branch.sh --repo artagon-bom --branch release/v1.0
+./scripts/ci/gh_protect_main.sh --repo artagon-bom --branch release/v1.0
 ```
 
 #### Automated/CI Usage
 
 ```bash
 # Non-interactive mode for CI/CD
-./scripts/ci/protect-main-branch.sh --all --force
+./scripts/ci/gh_protect_main.sh --all --force
 ```
 
 ### Script Status
 
 | Script | Status | Notes |
 |--------|--------|-------|
-| `protect-main-branch.sh` | ✅ Ready | Full parameterization |
-| `protect-main-branch-team.sh` | 🔄 In Progress | Being updated |
-| `protect-main-branch-strict.sh` | 🔄 In Progress | Being updated |
+| `gh_protect_main.sh` | ✅ Ready | Full parameterization |
+| `gh_protect_main_team.sh` | 🔄 In Progress | Being updated |
+| `gh_protect_main_strict.sh` | 🔄 In Progress | Being updated |
 | `check-branch-protection.sh` | 🔄 In Progress | Being updated |
 | `remove-branch-protection.sh` | 🔄 In Progress | Being updated |
 
@@ -99,13 +99,13 @@ When using `--all`, these repositories are processed:
 **Old way (hardcoded):**
 ```bash
 # Had to edit script to change repos or owner
-./scripts/ci/protect-main-branch.sh
+./scripts/ci/gh_protect_main.sh
 ```
 
 **New way (parameterized):**
 ```bash
 # Flexible, no editing needed
-./scripts/ci/protect-main-branch.sh --repo my-repo --owner my-org
+./scripts/ci/gh_protect_main.sh --repo my-repo --owner my-org
 ```
 
 ### Common Workflows
@@ -122,14 +122,14 @@ When using `--all`, these repositories are processed:
 #### New Repository Setup
 ```bash
 # Protect new repo immediately
-./scripts/ci/protect-main-branch.sh --repo new-project --force
+./scripts/ci/gh_protect_main.sh --repo new-project --force
 ```
 
 #### Multi-Organization Management
 ```bash
 # Protect same repo name across orgs
-./scripts/ci/protect-main-branch.sh --repo shared-lib --owner org1
-./scripts/ci/protect-main-branch.sh --repo shared-lib --owner org2
+./scripts/ci/gh_protect_main.sh --repo shared-lib --owner org1
+./scripts/ci/gh_protect_main.sh --repo shared-lib --owner org2
 ```
 
 ### Error Handling
@@ -138,12 +138,12 @@ The scripts provide clear error messages:
 
 ```bash
 # No repos specified
-$ ./scripts/ci/protect-main-branch.sh
+$ ./scripts/ci/gh_protect_main.sh
 Error: No repositories specified
 Use --repo to specify repositories or --all for all default repos
 
 # Invalid option
-$ ./scripts/ci/protect-main-branch.sh --invalid
+$ ./scripts/ci/gh_protect_main.sh --invalid
 Error: Unknown option: --invalid
 Use --help for usage information
 
@@ -174,7 +174,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          .common/artagon-commo./scripts/ci/protect-main-branch.sh \
+          .common/artagon-commo./scripts/ci/gh_protect_main.sh \
             --repo ${{ github.event.repository.name }} \
             --owner ${{ github.event.repository.owner.login }} \
             --force
@@ -193,13 +193,13 @@ jobs:
 **Problem:** Command not found
 ```bash
 # Solution: Use full path or add to PATH
-bash /path/t./scripts/ci/protect-main-branch.sh --help
+bash /path/t./scripts/ci/gh_protect_main.sh --help
 ```
 
 **Problem:** Permission denied
 ```bash
 # Solution: Ensure script is executable
-chmod +x scripts/ci/protect-main-branch.sh
+chmod +x scripts/ci/gh_protect_main.sh
 ```
 
 **Problem:** Authentication failed

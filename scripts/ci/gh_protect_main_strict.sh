@@ -4,8 +4,8 @@
 # Maximum protection - enforced for everyone including admins
 #
 # Usage:
-#   ./protect-main-branch-strict.sh --repo artagon-common
-#   ./protect-main-branch-strict.sh --all
+#   ./gh_protect_main_strict.sh --repo artagon-common
+#   ./gh_protect_main_strict.sh --all
 #
 
 set -euo pipefail

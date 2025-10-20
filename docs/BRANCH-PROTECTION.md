@@ -18,11 +18,11 @@ Shows detailed protection settings for each repository including:
 - Admin enforcement
 - Force push and deletion settings
 
-### 2. `protect-main-branch.sh` ⭐ **Recommended for Solo Development**
+### 2. `gh_protect_main.sh` ⭐ **Recommended for Solo Development**
 **Apply basic branch protection (no PR reviews required)**
 
 ```bash
-./protect-main-branch.sh
+./gh_protect_main.sh
 ```
 
 **Protection settings:**
@@ -33,11 +33,11 @@ Shows detailed protection settings for each repository including:
 
 **Best for:** Solo development where you want safety rails but not strict review requirements.
 
-### 3. `protect-main-branch-team.sh` ⭐ **Recommended for Teams**
+### 3. `gh_protect_main_team.sh` ⭐ **Recommended for Teams**
 **Apply team-level protection (PR reviews required, admin override allowed)**
 
 ```bash
-./protect-main-branch-team.sh
+./gh_protect_main_team.sh
 ```
 
 **Protection settings:**
@@ -52,11 +52,11 @@ Shows detailed protection settings for each repository including:
 
 **Best for:** Team collaboration with code review, but allows admin flexibility for emergencies.
 
-### 4. `protect-main-branch-strict.sh`
+### 4. `gh_protect_main_strict.sh`
 **Apply strict branch protection (maximum protection)**
 
 ```bash
-./protect-main-branch-strict.sh
+./gh_protect_main_strict.sh
 ```
 
 **Protection settings:**
@@ -93,7 +93,7 @@ Completely removes branch protection from all repositories. Use with caution!
 
 2. **Apply basic protection:**
    ```bash
-   ./protect-main-branch.sh
+   ./gh_protect_main.sh
    ```
 
 3. **Verify protection was applied:**
@@ -128,7 +128,7 @@ gh api -X DELETE /repos/artagon/REPO-NAME/branches/main/protection
 
 | Feature | None | Basic (Solo) | Team | Strict |
 |---------|------|-------------|------|--------|
-| **Script** | - | `protect-main-branch.sh` | `protect-main-branch-team.sh` | `protect-main-branch-strict.sh` |
+| **Script** | - | `gh_protect_main.sh` | `gh_protect_main_team.sh` | `gh_protect_main_strict.sh` |
 | **Direct push to main** | ✅ Yes | ✅ Yes | ❌ No | ❌ No |
 | **Require PR reviews** | ❌ No | ❌ No | ✅ 1 approval | ✅ 1 approval |
 | **Dismiss stale reviews** | - | - | ✅ Yes | ✅ Yes |
@@ -209,7 +209,7 @@ Perfect for: Open source, regulated environments
 Use **basic protection** to prevent accidents while maintaining flexibility:
 
 ```bash
-./protect-main-branch.sh
+./gh_protect_main.sh
 ```
 
 **What you get:**
@@ -227,7 +227,7 @@ Use **basic protection** to prevent accidents while maintaining flexibility:
 Use **team protection** for code review with admin flexibility:
 
 ```bash
-./protect-main-branch-team.sh
+./gh_protect_main_team.sh
 ```
 
 **What you get:**
@@ -249,7 +249,7 @@ Use **team protection** for code review with admin flexibility:
 Use **strict protection** for maximum protection:
 
 ```bash
-./protect-main-branch-strict.sh
+./gh_protect_main_strict.sh
 ```
 
 **What you get:**
@@ -274,12 +274,12 @@ Need to make emergency changes? You have options:
 ```bash
 ./remove-branch-protection.sh
 # Make your changes
-./protect-main-branch.sh  # Re-enable protection
+./gh_protect_main.sh  # Re-enable protection
 ```
 
 **Option 2:** Use basic protection instead of strict
 ```bash
-./protect-main-branch.sh  # Allows direct pushes
+./gh_protect_main.sh  # Allows direct pushes
 ```
 
 ## Repository Coverage

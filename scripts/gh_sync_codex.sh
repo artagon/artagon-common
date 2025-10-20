@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# sync-codex.sh - ensure Codex preferences/context overlays reference shared Artagon defaults.
+# gh_sync_codex.sh - ensure Codex preferences/context overlays reference shared Artagon defaults.
 
 set -euo pipefail
 
@@ -9,7 +9,7 @@ ROOT_DIR="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 
 usage() {
   cat <<'USAGE'
-Usage: scripts/sync-codex.sh [--ensure|--check] [--quiet]
+Usage: scripts/gh_sync_codex.sh [--ensure|--check] [--quiet]
 
 Ensures the repository exposes shared Codex preferences while allowing
 project-specific overlays.

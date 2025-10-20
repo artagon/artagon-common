@@ -10,9 +10,9 @@ set -euo pipefail
 #   - An SSH key added to your GitHub account for SSH pushes (optional but recommended)
 #
 # Usage examples:
-#   ./auto_create_and_push.sh --repo my-project --public --ssh
-#   ./auto_create_and_push.sh --repo my-app --private --https --description "My awesome app"
-#   ./auto_create_and_push.sh --owner myorg --repo api-server --private --message "Initial commit"
+#   ./gh_auto_create_and_push.sh --repo my-project --public --ssh
+#   ./gh_auto_create_and_push.sh --repo my-app --private --https --description "My awesome app"
+#   ./gh_auto_create_and_push.sh --owner myorg --repo api-server --private --message "Initial commit"
 #
 # Flags:
 #   --owner <org|user>        GitHub owner (defaults to your gh auth user)
@@ -56,7 +56,7 @@ while [[ $# -gt 0 ]]; do
     --no-auto-cd) NO_AUTO_CD=1; shift;;
     -h|--help)
       cat << 'EOF'
-Usage: auto_create_and_push.sh --repo <name> [options]
+Usage: gh_auto_create_and_push.sh --repo <name> [options]
 
 Required:
   --repo <name>              Repository name
@@ -75,8 +75,8 @@ Options:
   -h, --help                 Show this help
 
 Examples:
-  auto_create_and_push.sh --repo my-project --private
-  auto_create_and_push.sh --repo api --owner myorg --description "REST API" --private
+  gh_auto_create_and_push.sh --repo my-project --private
+  gh_auto_create_and_push.sh --repo api --owner myorg --description "REST API" --private
 EOF
       exit 0;;
     *) echo "ERROR: Unknown argument: $1" >&2; exit 1;;

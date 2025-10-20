@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# generate-dependency-checksums.sh
+# mvn_generate_checksums.sh
 #
 # Generate dependency checksums for Maven projects
 # This script downloads dependencies and generates SHA-256 checksums
 # for security verification during builds and releases.
 #
 # Usage:
-#   generate-dependency-checksums.sh [OPTIONS]
+#   mvn_generate_checksums.sh [OPTIONS]
 #
 # Options:
 #   -t, --transitive          Include transitive dependencies (default: false)
@@ -16,13 +16,13 @@
 #
 # Examples:
 #   # Generate checksums for direct compile dependencies
-#   ./generate-dependency-checksums.sh
+#   ./mvn_generate_checksums.sh
 #
 #   # Include transitive dependencies
-#   ./generate-dependency-checksums.sh --transitive
+#   ./mvn_generate_checksums.sh --transitive
 #
 #   # Generate for test scope
-#   ./generate-dependency-checksums.sh --scope test --output test.csv
+#   ./mvn_generate_checksums.sh --scope test --output test.csv
 
 set -euo pipefail
 
@@ -63,12 +63,12 @@ warn() {
 
 show_help() {
     cat << 'EOF'
-generate-dependency-checksums.sh - Generate dependency checksums
+mvn_generate_checksums.sh - Generate dependency checksums
 
 Generate SHA-256 checksums for Maven project dependencies.
 
 USAGE:
-    generate-dependency-checksums.sh [OPTIONS]
+    mvn_generate_checksums.sh [OPTIONS]
 
 OPTIONS:
     -t, --transitive          Include transitive dependencies (default: false)
@@ -78,13 +78,13 @@ OPTIONS:
 
 EXAMPLES:
     # Generate checksums for direct compile dependencies
-    ./generate-dependency-checksums.sh
+    ./mvn_generate_checksums.sh
 
     # Include transitive dependencies
-    ./generate-dependency-checksums.sh -t
+    ./mvn_generate_checksums.sh -t
 
     # Generate for test scope
-    ./generate-dependency-checksums.sh -s test -o test.csv
+    ./mvn_generate_checksums.sh -s test -o test.csv
 
 EXIT CODES:
     0   Success
