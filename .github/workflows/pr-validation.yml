@@ -44,6 +44,7 @@ jobs:
             deploy
             templates
             hooks
+            agents
           requireScope: false
           subjectPattern: ^[a-z].+$
           subjectPatternError: |
