@@ -86,7 +86,9 @@ init_submodule() {
   if [[ -f .gitmodules ]] && grep -q 'artagon-common' .gitmodules 2>/dev/null; then
     log "Initializing artagon-common submodule..."
     if ! $DRY_RUN; then
-      git submodule update --init --recursive artagon-common 2>/dev/null || true
+      if ! git submodule update --init --recursive artagon-common 2>&1; then
+        warn "Failed to initialize artagon-common submodule. Some features may not work correctly."
+      fi
     fi
   fi
 }
