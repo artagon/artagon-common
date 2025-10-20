@@ -119,7 +119,7 @@ cd "${SECURITY_DIR}"
 
 # Verify each file
 verified=0
-failed=0
+_failed=0
 
 for file in "${FILES[@]}"; do
     if [[ ! -f "${file}" ]]; then

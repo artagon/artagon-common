@@ -17,7 +17,7 @@ This repository serves as a centralized collection of common tooling used across
   - 🆕 **C**: CMake, clang-format, code quality configs
   - 🆕 **C++**: CMake with C++23, clang-tidy, modern C++ setup
   - 🆕 **Rust**: Cargo.toml, rustfmt, clippy configurations
-- **Nix Flakes**: 🆕 Reproducible build environments for all languages
+- **Nix Integration**: See [artagon-nix](https://github.com/artagon/artagon-nix) for reproducible development environments
   - Lock down exact versions of compilers, build tools, and dependencies
   - Consistent development environments across teams and CI/CD
 - **Configs**: Shared configuration files for code quality tools
@@ -68,12 +68,6 @@ artagon-common/
 │   │   └── gh_remove_branch_protection.sh  # Remove protection
 │   ├── build/                   # Build-related scripts (future use)
 │   └── dev/                     # Development tools (future use)
-├── nix/                         # 🆕 Nix flakes for reproducible builds
-│   └── templates/
-│       ├── java/flake.nix      # Java 25 + Maven
-│       ├── c/flake.nix         # C17 + CMake + GCC/Clang
-│       ├── cpp/flake.nix       # C++23 + CMake + GCC/Clang
-│       └── rust/flake.nix      # Rust stable + Cargo
 ├── configs/                     # Shared project templates and configs
 │   ├── java/
 │   │   └── settings.xml        # Maven settings with GitHub Packages
@@ -660,100 +654,53 @@ cc_test(
 
 ### 🆕 Nix Integration for Reproducible Builds
 
-Artagon Common provides Nix flakes for all supported languages, ensuring fully reproducible development environments and builds.
+For reproducible development environments, see [artagon-nix](https://github.com/artagon/artagon-nix).
+
+Artagon Nix provides Nix flake templates for all supported languages (Java, C, C++, Rust), ensuring fully reproducible development environments and builds.
 
 #### Why Nix?
 
 - **True reproducibility** - Exact same environment on every machine
-- **Version control** - Lock down JDK, compilers, build tools, and system libraries
+- **Version control** - Lock down exact versions of compilers, build tools, and system libraries
 - **Polyglot support** - Manage Java, C/C++, and Rust toolchains seamlessly
 - **Zero conflicts** - No more "works on my machine" issues
 - **CI/CD consistency** - Identical environment locally and in GitHub Actions
 
-#### Quick Start with Nix
+#### Quick Start
 
 ```bash
-# Install Nix (if not already installed)
-curl -L https://nixos.org/nix/install | sh
-
-# Enable flakes (add to ~/.config/nix/nix.conf)
-experimental-features = nix-command flakes
-
-# Create a project with Nix support
-./scripts/repo_setup.sh --type rust --name my-project --with-nix
+# Create a project with Nix support (automatically adds artagon-nix submodule)
+./scripts/repo_setup.sh --type java --name my-project --with-nix
 
 # Enter development shell
 cd my-project
 nix develop
-
-# Or use direnv for automatic activation
-echo "use flake" > .envrc
-direnv allow
 ```
 
-#### Available Nix Templates
-
-Each language has a pre-configured Nix flake with:
-
-**Java (nix/templates/java/flake.nix)**
-- JDK 25 (Temurin distribution)
-- Maven 3.x
-- GitHub CLI (`gh`)
-- GPG for artifact signing
-- Pre-configured environment variables for GitHub Packages and OSSRH
-
-**C (nix/templates/c/flake.nix)**
-- GCC 13 and Clang 18
-- CMake and Make/Ninja
-- GDB and Valgrind for debugging
-- clang-format and clang-tidy
-- Doxygen for documentation
-
-**C++ (nix/templates/cpp/flake.nix)**
-- GCC 13 and Clang 18 with C++23 support
-- CMake, Make, Ninja, and Meson
-- GDB and LLDB debuggers
-- clang-format, clang-tidy, and cppcheck
-- Optional Google Test and Catch2
-
-**Rust (nix/templates/rust/flake.nix)**
-- Rust stable toolchain (customizable to nightly/specific version)
-- Cargo with rust-analyzer, clippy, rustfmt
-- cargo-watch, cargo-edit, cargo-audit, cargo-deny
-- Cross-compilation support
-- WASM target support
-
-#### Using Nix in Existing Projects
+#### Adding to Existing Projects
 
 ```bash
-# Copy appropriate flake to your project
-cp .common/artagon-common/nix/templates/java/flake.nix .
+# Add artagon-nix as submodule
+git submodule add https://github.com/artagon/artagon-nix.git .nix/artagon-nix
+git submodule update --init --recursive
+
+# Checkout v1 tag for stability
+cd .nix/artagon-nix && git checkout v1 && cd ../..
+
+# Create symlink to appropriate template
+ln -s .nix/artagon-nix/templates/java/flake.nix .
 
 # Enter development environment
 nix develop
-
-# Build with Nix (for CI/CD)
-nix build
 ```
 
-#### direnv Integration
+#### Documentation
 
-For automatic environment activation when entering project directories:
-
-```bash
-# Install direnv
-# macOS: brew install direnv
-# Linux: apt-get install direnv
-
-# Add to shell rc file (~/.bashrc, ~/.zshrc)
-eval "$(direnv hook bash)"  # or zsh
-
-# In your project
-echo "use flake" > .envrc
-direnv allow
-
-# Now the Nix environment activates automatically!
-```
+See [artagon-nix](https://github.com/artagon/artagon-nix) for:
+- Complete installation guide
+- Template reference and customization
+- Troubleshooting common issues
+- Advanced usage examples
 
 ## Using in Your Projects
 
@@ -1013,9 +960,9 @@ See [LICENSE](LICENSE) for details.
 
 **New in Latest Release:**
 - 🆕 Multi-language support (Java, C, C++, Rust)
-- 🆕 Nix flakes for reproducible builds with Bazel support
+- 🆕 Nix integration via [artagon-nix](https://github.com/artagon/artagon-nix) for reproducible development environments
 - 🆕 Bazel build system support for C/C++ projects
-- 🆕 Reusable Bazel CI/CD workflows with Nix integration
+- 🆕 Reusable CI/CD workflows via [artagon-workflows](https://github.com/artagon/artagon-workflows)
 - 🆕 Unified repo_setup.sh script with build system selection
 - 🆕 Language-specific templates and configs (CMake + Bazel)
 - 🆕 Reusable GitHub Actions workflows for C/C++
