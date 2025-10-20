@@ -53,21 +53,34 @@ warn() {
 }
 ```
 
-### Argument Parsing Pattern
+### Argument Parsing Pattern (Portable)
+
+**Important**: Use portable manual parsing, NOT GNU getopt
+- BSD getopt (macOS) doesn't support long options
+- GNU getopt not available by default on macOS
+- Manual parsing works everywhere
+
 ```bash
 # Default configuration
 OPTION1=""
 OPTION2="default_value"
 FLAG=false
+ARGS=()
 
-# Parse command line arguments
+# Parse command line arguments (portable - works on BSD and GNU)
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -o|--option1)
+            if [[ -z "$2" || "$2" == -* ]]; then
+                error "Option $1 requires an argument"
+            fi
             OPTION1="$2"
             shift 2
             ;;
         -p|--option2)
+            if [[ -z "$2" || "$2" == -* ]]; then
+                error "Option $1 requires an argument"
+            fi
             OPTION2="$2"
             shift 2
             ;;
@@ -95,6 +108,12 @@ if [[ -z "${OPTION1}" ]]; then
     error "Option1 is required"
 fi
 ```
+
+**Key Pattern Points:**
+- Validate arguments aren't empty and don't start with `-`
+- Shift 2 for options with arguments, shift 1 for flags
+- Support both short (`-o`) and long (`--option`) forms
+- Clear error messages for invalid input
 
 ### Safe Arithmetic with set -e
 ```bash

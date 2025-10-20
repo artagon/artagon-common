@@ -1,17 +1,28 @@
 #!/usr/bin/env bash
+# generate-dependency-checksums.sh
 #
 # Generate dependency checksums for Maven projects
 # This script downloads dependencies and generates SHA-256 checksums
 # for security verification during builds and releases.
 #
-# Usage: ./generate-dependency-checksums.sh [OPTIONS]
+# Usage:
+#   generate-dependency-checksums.sh [OPTIONS]
 #
 # Options:
-#   --transitive     Include transitive dependencies (default: false)
-#   --scope SCOPE    Dependency scope to include (default: compile)
-#   --output FILE    Output CSV file (default: security/dependency-checksums.csv)
-#   --help           Show this help message
+#   -t, --transitive          Include transitive dependencies (default: false)
+#   -s, --scope SCOPE         Dependency scope to include (default: compile)
+#   -o, --output FILE         Output CSV file (default: security/dependency-checksums.csv)
+#   -h, --help                Show this help message
 #
+# Examples:
+#   # Generate checksums for direct compile dependencies
+#   ./generate-dependency-checksums.sh
+#
+#   # Include transitive dependencies
+#   ./generate-dependency-checksums.sh --transitive
+#
+#   # Generate for test scope
+#   ./generate-dependency-checksums.sh --scope test --output test.csv
 
 set -euo pipefail
 
@@ -21,85 +32,111 @@ SCOPE="compile"
 OUTPUT="security/dependency-checksums.csv"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Colors for output
+# Color output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Functions
-print_usage() {
-    echo "Usage: $0 [OPTIONS]"
-    echo ""
-    echo "Generate dependency checksums for Maven projects"
-    echo ""
-    echo "Options:"
-    echo "  --transitive          Include transitive dependencies"
-    echo "  --scope SCOPE         Dependency scope (default: compile)"
-    echo "  --output FILE         Output CSV file (default: security/dependency-checksums.csv)"
-    echo "  --help                Show this help message"
-    echo ""
-    echo "Examples:"
-    echo "  $0                                    # Generate checksums for direct compile dependencies"
-    echo "  $0 --transitive                       # Include transitive dependencies"
-    echo "  $0 --scope test --output test.csv     # Generate for test scope"
+# Helper functions
+error() {
+    echo -e "${RED}ERROR: $1${NC}" >&2
+    exit 1
 }
 
-log_info() {
-    echo -e "${GREEN}[INFO]${NC} $1"
+info() {
+    echo -e "${BLUE}INFO: $1${NC}"
 }
 
-log_warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
+success() {
+    echo -e "${GREEN}SUCCESS: $1${NC}"
 }
 
-log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
+warn() {
+    echo -e "${YELLOW}WARNING: $1${NC}"
 }
 
-# Parse arguments
+show_help() {
+    cat << 'EOF'
+generate-dependency-checksums.sh - Generate dependency checksums
+
+Generate SHA-256 checksums for Maven project dependencies.
+
+USAGE:
+    generate-dependency-checksums.sh [OPTIONS]
+
+OPTIONS:
+    -t, --transitive          Include transitive dependencies (default: false)
+    -s, --scope SCOPE         Dependency scope to include (default: compile)
+    -o, --output FILE         Output CSV file (default: security/dependency-checksums.csv)
+    -h, --help                Show this help message
+
+EXAMPLES:
+    # Generate checksums for direct compile dependencies
+    ./generate-dependency-checksums.sh
+
+    # Include transitive dependencies
+    ./generate-dependency-checksums.sh -t
+
+    # Generate for test scope
+    ./generate-dependency-checksums.sh -s test -o test.csv
+
+EXIT CODES:
+    0   Success
+    1   Error occurred
+
+EOF
+}
+
+# Parse command line arguments (portable - works on BSD and GNU)
 while [[ $# -gt 0 ]]; do
-    case $1 in
-        --transitive)
+    case "$1" in
+        -t|--transitive)
             TRANSITIVE="true"
             shift
             ;;
-        --scope)
+        -s|--scope)
+            if [[ -z "$2" || "$2" == -* ]]; then
+                error "Option $1 requires an argument"
+            fi
             SCOPE="$2"
             shift 2
             ;;
-        --output)
+        -o|--output)
+            if [[ -z "$2" || "$2" == -* ]]; then
+                error "Option $1 requires an argument"
+            fi
             OUTPUT="$2"
             shift 2
             ;;
-        --help)
-            print_usage
+        -h|--help)
+            show_help
             exit 0
             ;;
+        -*)
+            error "Unknown option: $1"
+            ;;
         *)
-            log_error "Unknown option: $1"
-            print_usage
-            exit 1
+            error "Unexpected positional argument: $1"
             ;;
     esac
 done
 
 # Check for Maven
 if ! command -v mvn &> /dev/null; then
-    log_error "Maven (mvn) not found in PATH"
-    exit 1
+    error "Maven (mvn) not found in PATH"
 fi
 
 # Check for pom.xml
 if [ ! -f "pom.xml" ]; then
-    log_error "pom.xml not found in current directory"
-    exit 1
+    error "pom.xml not found in current directory"
 fi
 
-log_info "Generating dependency checksums..."
-log_info "  Transitive: $TRANSITIVE"
-log_info "  Scope: $SCOPE"
-log_info "  Output: $OUTPUT"
+info "Generating dependency checksums..."
+info "  Transitive: $TRANSITIVE"
+info "  Scope: $SCOPE"
+info "  Output: $OUTPUT"
 
 # Create output directory
 OUTPUT_DIR="$(dirname "$OUTPUT")"
@@ -122,10 +159,10 @@ cat > "$TEMP_POM" <<'EOF'
 EOF
 
 # Download dependencies and calculate checksums
-log_info "Downloading dependencies..."
+info "Downloading dependencies..."
 mvn dependency:resolve -DincludeScope=$SCOPE
 
-log_info "Calculating checksums..."
+info "Calculating checksums..."
 if [ "$TRANSITIVE" = "true" ]; then
     mvn dependency:list -DincludeScope=$SCOPE -DoutputFile=dependency-list.txt
 else
@@ -133,7 +170,7 @@ else
 fi
 
 # Generate checksum CSV
-log_info "Generating $OUTPUT..."
+info "Generating $OUTPUT..."
 echo "# Dependency Checksums (SHA-256)" > "$OUTPUT"
 echo "# Generated: $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> "$OUTPUT"
 echo "# Scope: $SCOPE" >> "$OUTPUT"
@@ -161,9 +198,9 @@ while IFS= read -r line; do
             CHECKSUM=$(sha256sum "$JAR_PATH" | awk '{print $1}')
             FILENAME=$(basename "$JAR_PATH")
             echo "$FILENAME,$CHECKSUM" >> "$OUTPUT"
-            log_info "  ✓ $FILENAME"
+            info "  ✓ $FILENAME"
         else
-            log_warn "  ✗ File not found: $JAR_PATH"
+            warn "  ✗ File not found: $JAR_PATH"
         fi
     fi
 done < dependency-list.txt
@@ -171,5 +208,5 @@ done < dependency-list.txt
 # Cleanup
 rm -f dependency-list.txt "$TEMP_POM"
 
-log_info "✅ Checksums generated successfully: $OUTPUT"
-log_info "$(grep -c "^[^#]" "$OUTPUT" || echo 0) dependencies processed"
+success "Checksums generated successfully: $OUTPUT"
+info "$(grep -c "^[^#]" "$OUTPUT" || echo 0) dependencies processed"

@@ -6,6 +6,13 @@ This document describes the security scripts available in artagon-common for man
 
 Artagon projects use multiple security scripts to ensure dependency integrity through checksum verification and PGP signature validation. These scripts are located in `scripts/security/` and are shared across all Artagon projects via the artagon-common submodule.
 
+**Key Features:**
+- Portable argument parsing (works on macOS, Linux, BSD, and other Unix systems)
+- Support for both short (`-o`) and long (`--option`) command-line arguments
+- Consistent color-coded output (red for errors, green for success, blue for info, yellow for warnings)
+- Comprehensive help messages with examples
+- Exit code standards (0 for success, 1 for errors)
+
 ## Scripts
 
 ### 1. update-dependency-security.sh
@@ -136,17 +143,32 @@ SUCCESS: Verified 4 checksum(s) successfully
 
 **What it does**:
 - Similar to `update-dependency-security.sh` but focuses only on checksums
-- Generates CSV or properties files with SHA-256 checksums
+- Generates CSV files with SHA-256 checksums
 - Lighter-weight alternative when PGP verification isn't needed
 
 **Usage**:
 ```bash
-# Generate checksums
-./scripts/generate-dependency-checksums.sh --project-root /path/to/project
+# Generate checksums for direct compile dependencies
+./scripts/generate-dependency-checksums.sh
+
+# Include transitive dependencies
+./scripts/generate-dependency-checksums.sh -t
+./scripts/generate-dependency-checksums.sh --transitive
+
+# Generate for test scope with custom output
+./scripts/generate-dependency-checksums.sh -s test -o security/test-checksums.csv
+./scripts/generate-dependency-checksums.sh --scope test --output security/test-checksums.csv
 
 # See all options
+./scripts/generate-dependency-checksums.sh -h
 ./scripts/generate-dependency-checksums.sh --help
 ```
+
+**Options**:
+- `-t, --transitive` - Include transitive dependencies (default: false)
+- `-s, --scope SCOPE` - Dependency scope to include (default: compile)
+- `-o, --output FILE` - Output CSV file (default: security/dependency-checksums.csv)
+- `-h, --help` - Show help message
 
 ## Integration with Maven
 
@@ -384,6 +406,68 @@ chmod +x ./scripts/update-dependency-security.sh
 
 **Solution**: Add version to pluginManagement in parent POM or specify directly in plugin configuration.
 
+## Script Design and Portability
+
+### Argument Parsing
+
+All security scripts use **portable manual argument parsing** that works across different Unix-like operating systems:
+
+**Why not GNU getopt?**
+- macOS and BSD systems ship with BSD `getopt` which doesn't support long options
+- GNU `getopt` is not available by default on macOS
+- Portable parsing ensures scripts work everywhere without additional dependencies
+
+**Implementation:**
+- Supports both short (`-o`) and long (`--option`) arguments
+- Validates that options requiring arguments actually receive them
+- Provides clear error messages for invalid arguments
+- Works identically on Linux, macOS, BSD, and other Unix systems
+
+**Example Pattern:**
+```bash
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -o|--output)
+            if [[ -z "$2" || "$2" == -* ]]; then
+                error "Option $1 requires an argument"
+            fi
+            OUTPUT="$2"
+            shift 2
+            ;;
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        -*)
+            error "Unknown option: $1"
+            ;;
+        *)
+            # Handle positional arguments
+            ;;
+    esac
+done
+```
+
+### Color Output
+
+All scripts use consistent ANSI color codes:
+- **Red** (`\033[0;31m`): Errors
+- **Green** (`\033[0;32m`): Success messages
+- **Yellow** (`\033[1;33m`): Warnings
+- **Blue** (`\033[0;34m`): Info messages
+
+Color is automatically disabled when output is redirected to a file or pipe.
+
+### Helper Functions
+
+Standard helper functions used across all scripts:
+```bash
+error()   # Prints red error message to stderr and exits with code 1
+success() # Prints green success message
+info()    # Prints blue info message
+warn()    # Prints yellow warning message
+```
+
 ## Best Practices
 
 1. **Always verify before releasing**: Run `--verify` mode before creating releases
@@ -393,6 +477,7 @@ chmod +x ./scripts/update-dependency-security.sh
 5. **Keep submodules updated**: Regularly update artagon-common submodule to get script fixes
 6. **Document exceptions**: If marking dependencies as `noKey`, document why in commit messages
 7. **Run security profile in CI**: Include `-P artagon-oss-security` in CI builds
+8. **Use long options in documentation**: While short options work, long options are more readable in docs and scripts
 
 ## See Also
 

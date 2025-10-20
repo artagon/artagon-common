@@ -128,34 +128,41 @@ EXAMPLES:
 EOF
 }
 
-# Parse command line arguments using getopt
-OPTS=$(getopt -o p:s:f:S:t:uvm:h --long project-root:,security-dir:,checksum-format:,scopes:,transitive:,update,verify,maven-cmd:,help -n 'update-dependency-security.sh' -- "$@")
-
-if [[ $? != 0 ]]; then
-    error "Failed to parse arguments. Use --help for usage information"
-fi
-
-eval set -- "$OPTS"
-
-while true; do
+# Parse command line arguments (portable - works on BSD and GNU)
+while [[ $# -gt 0 ]]; do
     case "$1" in
         -p|--project-root)
+            if [[ -z "$2" || "$2" == -* ]]; then
+                error "Option $1 requires an argument"
+            fi
             PROJECT_ROOT="$2"
             shift 2
             ;;
         -s|--security-dir)
+            if [[ -z "$2" || "$2" == -* ]]; then
+                error "Option $1 requires an argument"
+            fi
             SECURITY_DIR="$2"
             shift 2
             ;;
         -f|--checksum-format)
+            if [[ -z "$2" || "$2" == -* ]]; then
+                error "Option $1 requires an argument"
+            fi
             CHECKSUM_FORMAT="$2"
             shift 2
             ;;
         -S|--scopes)
+            if [[ -z "$2" || "$2" == -* ]]; then
+                error "Option $1 requires an argument"
+            fi
             MAVEN_SCOPES="$2"
             shift 2
             ;;
         -t|--transitive)
+            if [[ -z "$2" || "$2" == -* ]]; then
+                error "Option $1 requires an argument"
+            fi
             TRANSITIVE="$2"
             shift 2
             ;;
@@ -168,6 +175,9 @@ while true; do
             shift
             ;;
         -m|--maven-cmd)
+            if [[ -z "$2" || "$2" == -* ]]; then
+                error "Option $1 requires an argument"
+            fi
             MVN_CMD="$2"
             shift 2
             ;;
@@ -175,12 +185,11 @@ while true; do
             show_help
             exit 0
             ;;
-        --)
-            shift
-            break
+        -*)
+            error "Unknown option: $1"
             ;;
         *)
-            error "Unknown option: $1"
+            error "Unexpected positional argument: $1"
             ;;
     esac
 done

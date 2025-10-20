@@ -79,10 +79,13 @@ EOF
 SECURITY_DIR="$(pwd)"
 FILES=()
 
-# Parse command line arguments
+# Parse command line arguments (portable - works on BSD and GNU)
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -d|--security-dir)
+            if [[ -z "$2" || "$2" == -* ]]; then
+                error "Option $1 requires an argument"
+            fi
             SECURITY_DIR="$2"
             shift 2
             ;;
@@ -94,6 +97,7 @@ while [[ $# -gt 0 ]]; do
             error "Unknown option: $1"
             ;;
         *)
+            # Positional argument - add to files list
             FILES+=("$1")
             shift
             ;;
