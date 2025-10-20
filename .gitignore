@@ -972,3 +972,6 @@ _site/
 ehthumbs_vista.db
 .TemporaryItems
 .Trashes
+
+# Allow shared script library in scripts/lib
+!scripts/lib/
