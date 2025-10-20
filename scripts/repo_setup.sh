@@ -522,13 +522,21 @@ EOF
         ;;
 esac
 
-# Copy Nix flake if requested
+# Add Nix development environment if requested
 if [[ "$WITH_NIX" == "true" ]]; then
-    info "Adding Nix flake for reproducible builds"
+    info "Adding Nix development environment"
 
-    if [[ -f .common/artagon-common/nix/templates/${PROJECT_TYPE}/flake.nix ]]; then
-        cp .common/artagon-common/nix/templates/${PROJECT_TYPE}/flake.nix .
-        success "Nix flake added"
+    # Add artagon-nix as submodule
+    git submodule add "${GIT_PROTOCOL}github.com/${GITHUB_ORG}/artagon-nix.git" .nix/artagon-nix
+    git submodule update --init --recursive
+
+    # Checkout v1 tag for stability
+    (cd .nix/artagon-nix && git checkout v1)
+
+    # Create symlink to appropriate template
+    if [[ -f .nix/artagon-nix/templates/${PROJECT_TYPE}/flake.nix ]]; then
+        ln -s .nix/artagon-nix/templates/${PROJECT_TYPE}/flake.nix .
+        success "Nix flake symlink created"
 
         # Create .envrc for direnv integration (optional)
         cat > .envrc << 'EOF'
@@ -542,7 +550,7 @@ EOF
         info "Created .envrc for direnv integration"
         info "Run 'direnv allow' to activate (requires direnv)"
     else
-        warn "No Nix template found for $PROJECT_TYPE"
+        warn "No Nix template found for $PROJECT_TYPE in artagon-nix"
     fi
 fi
 
@@ -662,7 +670,6 @@ This project vendors `.common/artagon-common`, which provides shared automation 
 
 - `codex/` exposes project overlays layered on top of shared Codex preferences in `codex/shared/`
 - `.common/artagon-common/scripts/` offers setup, CI, release, and security tooling
-- `.common/artagon-common/nix/templates/` exposes reusable Nix development environments
 - `.common/artagon-common/docs/` captures standards and reference material
 
 See `.common/artagon-common/README.md` for the full capability catalog.
@@ -701,7 +708,7 @@ git commit -m "Initial commit: ${PROJECT_TYPE} project setup
 - Dual licensing (AGPL-3.0 / Commercial) configured
 - Git hooks enabled for automatic license management
 - Build configuration added${WITH_NIX:+
-- Nix flake for reproducible builds}"
+- artagon-nix submodule added for reproducible development environment}"
 
 # Push to GitHub
 info "Pushing to GitHub"
