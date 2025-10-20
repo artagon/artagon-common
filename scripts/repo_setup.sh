@@ -108,6 +108,9 @@ OPTIONS:
     --with-nix
             Include Nix flake for reproducible builds
 
+    --build-system <cmake|bazel>
+            Build system for C/C++ projects (default: cmake)
+
     --branch-protection
             Apply branch protection rules after creation
 
@@ -609,10 +612,22 @@ if [[ "$WITH_NIX" == "true" ]]; then
     info "Adding Nix development environment"
 
     # Add artagon-nix as submodule if not already present
+    nix_remote_ssh="git@github.com:artagon/artagon-nix.git"
+    nix_remote_https="https://github.com/artagon/artagon-nix.git"
+    preferred_remote="$nix_remote_ssh"
+    fallback_remote="$nix_remote_https"
+    if [[ "$PROTOCOL" == "https" ]]; then
+        preferred_remote="$nix_remote_https"
+        fallback_remote="$nix_remote_ssh"
+    fi
+
     if [ ! -d ".nix/artagon-nix/.git" ] && ! grep -q '\.nix/artagon-nix' .gitmodules 2>/dev/null; then
-        git submodule add "${GIT_PROTOCOL}github.com/${GITHUB_ORG}/artagon-nix.git" .nix/artagon-nix
+        if ! git submodule add "$preferred_remote" .nix/artagon-nix; then
+            git submodule add "$fallback_remote" .nix/artagon-nix
+        fi
     fi
     git submodule update --init --recursive
+    unset nix_remote_ssh nix_remote_https preferred_remote fallback_remote
 
     # Checkout v1 tag for stability
     (cd .nix/artagon-nix && git checkout v1)
@@ -699,7 +714,7 @@ Available configs (see `.bazelrc`):
 
 EOF
         else
-            cat >> README.md << 'EOF'
+            cat >> README.md << EOF
 ```bash
 # Build
 mkdir build && cd build
@@ -710,7 +725,7 @@ make
 make test
 
 # Run
-./bin/PROJECT_NAME
+./bin/${PROJECT_NAME}
 ```
 
 EOF

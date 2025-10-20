@@ -165,8 +165,18 @@ detect_project_type() {
     elif [[ -f "Cargo.toml" ]]; then
         echo "rust"
     elif [[ -f "CMakeLists.txt" ]] || [[ -f "WORKSPACE.bazel" ]] || [[ -f "BUILD.bazel" ]]; then
-        # Check for C vs C++ based on file extensions
-        if find src include \( -name "*.cpp" -o -name "*.hpp" \) 2>/dev/null | grep -q .; then
+        # Check for C vs C++ based on file extensions (only search existing dirs)
+        local search_dirs=()
+        [[ -d src ]] && search_dirs+=("src")
+        [[ -d include ]] && search_dirs+=("include")
+
+        local cpp_indicator=""
+        if [[ ${#search_dirs[@]} -gt 0 ]]; then
+            cpp_indicator="$(find "${search_dirs[@]}" \
+                \( -name "*.cpp" -o -name "*.hpp" \) -print -quit 2>/dev/null || true)"
+        fi
+
+        if [[ -n "$cpp_indicator" ]]; then
             echo "cpp"
         else
             echo "c"
@@ -262,14 +272,46 @@ check_license_files() {
     local status=0
     local required_files=(
         "LICENSE"
+    )
+
+    # Check main LICENSE file
+    for file in "${required_files[@]}"; do
+        if [[ -f "$file" ]]; then
+            check_pass "License file exists: $file"
+        else
+            check_fail "License file missing: $file"
+            status=1
+        fi
+    done
+
+    # Check that licenses is a symlink to .legal/artagon-license/licenses
+    if [[ -L "licenses" ]]; then
+        local target
+        target="$(readlink licenses)"
+        if [[ "$target" == ".legal/artagon-license/licenses" ]]; then
+            check_pass "licenses is a symlink to .legal/artagon-license/licenses"
+        else
+            check_fail "licenses symlink points to wrong target: $target (expected: .legal/artagon-license/licenses)"
+            status=1
+        fi
+    elif [[ -d "licenses" ]]; then
+        check_fail "licenses is a directory (should be a symlink to .legal/artagon-license/licenses)"
+        status=1
+    else
+        check_fail "licenses symlink missing"
+        status=1
+    fi
+
+    # Check that license files exist through the symlink
+    local license_files=(
         "licenses/LICENSE-AGPL.txt"
         "licenses/LICENSE-COMMERCIAL.txt"
         "licenses/LICENSING.md"
     )
 
-    for file in "${required_files[@]}"; do
+    for file in "${license_files[@]}"; do
         if [[ -f "$file" ]]; then
-            check_pass "License file exists: $file"
+            check_pass "License file accessible: $file"
         else
             check_fail "License file missing: $file"
             status=1
