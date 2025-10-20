@@ -130,11 +130,11 @@ jobs:
           fi
 
       - name: Check for Issue Reference
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          BRANCH_NAME: ${{ github.head_ref }}
         run: |
-          PR_BODY="${{ github.event.pull_request.body }}"
-          PR_TITLE="${{ github.event.pull_request.title }}"
-          BRANCH_NAME="${{ github.head_ref }}"
-
           # Check if issue is referenced in body, title, or branch
           if echo "$PR_BODY" | grep -qiE "(closes?|fixes?|resolves?) #[0-9]+"; then
             echo "✓ Issue referenced in PR body"

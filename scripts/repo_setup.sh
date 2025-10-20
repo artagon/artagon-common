@@ -25,7 +25,7 @@ set -euo pipefail
 
 # Script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-COMMON_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+_COMMON_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 LIB_PATH="${SCRIPT_DIR}/lib/common.sh"
 
 # shellcheck source=scripts/lib/common.sh
@@ -526,16 +526,19 @@ esac
 if [[ "$WITH_NIX" == "true" ]]; then
     info "Adding Nix development environment"
 
-    # Add artagon-nix as submodule
-    git submodule add "${GIT_PROTOCOL}github.com/${GITHUB_ORG}/artagon-nix.git" .nix/artagon-nix
+    # Add artagon-nix as submodule if not already present
+    if [ ! -d ".nix/artagon-nix/.git" ] && ! grep -q '\.nix/artagon-nix' .gitmodules 2>/dev/null; then
+        git submodule add "${GIT_PROTOCOL}github.com/${GITHUB_ORG}/artagon-nix.git" .nix/artagon-nix
+    fi
     git submodule update --init --recursive
 
     # Checkout v1 tag for stability
     (cd .nix/artagon-nix && git checkout v1)
+    git add .nix/artagon-nix
 
     # Create symlink to appropriate template
     if [[ -f .nix/artagon-nix/templates/${PROJECT_TYPE}/flake.nix ]]; then
-        ln -s .nix/artagon-nix/templates/${PROJECT_TYPE}/flake.nix .
+        ln -sfn ".nix/artagon-nix/templates/${PROJECT_TYPE}/flake.nix" "./flake.nix"
         success "Nix flake symlink created"
 
         # Create .envrc for direnv integration (optional)
