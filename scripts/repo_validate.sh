@@ -166,7 +166,7 @@ detect_project_type() {
         echo "rust"
     elif [[ -f "CMakeLists.txt" ]] || [[ -f "WORKSPACE.bazel" ]] || [[ -f "BUILD.bazel" ]]; then
         # Check for C vs C++ based on file extensions
-        if find src include -name "*.cpp" -o -name "*.hpp" 2>/dev/null | grep -q .; then
+        if find src include \( -name "*.cpp" -o -name "*.hpp" \) 2>/dev/null | grep -q .; then
             echo "cpp"
         else
             echo "c"
