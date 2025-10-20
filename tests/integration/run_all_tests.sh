@@ -21,10 +21,10 @@ echo "Test: Template files exist"
 if [[ -f "$ROOT_DIR/templates/CONTRIBUTING.md.template" ]] && \
    [[ -f "$ROOT_DIR/templates/README.md" ]]; then
   echo "✓ Templates exist"
-  ((PASSED++))
+  ((PASSED++)) || true
 else
   echo "✗ Templates missing"
-  ((FAILED++))
+  ((FAILED++)) || true
 fi
 
 # Test 2: Scripts exist and are executable
@@ -46,9 +46,9 @@ done
 
 if $ALL_EXEC; then
   echo "✓ All scripts executable"
-  ((PASSED++))
+  ((PASSED++)) || true
 else
-  ((FAILED++))
+  ((FAILED++)) || true
 fi
 
 # Test 3: Script syntax validation
@@ -64,9 +64,9 @@ done
 
 if $SYNTAX_OK; then
   echo "✓ All scripts have valid syntax"
-  ((PASSED++))
+  ((PASSED++)) || true
 else
-  ((FAILED++))
+  ((FAILED++)) || true
 fi
 
 # Test 4: Template contains variables
@@ -75,20 +75,20 @@ if grep -q "{{ repository.name }}" "$ROOT_DIR/templates/CONTRIBUTING.md.template
    grep -q "{{ repository.owner }}" "$ROOT_DIR/templates/CONTRIBUTING.md.template" && \
    grep -q "{{ repository.description }}" "$ROOT_DIR/templates/CONTRIBUTING.md.template"; then
   echo "✓ Template variables present"
-  ((PASSED++))
+  ((PASSED++)) || true
 else
   echo "✗ Template variables missing"
-  ((FAILED++))
+  ((FAILED++)) || true
 fi
 
 # Test 5: repo_setup.sh integrates CONTRIBUTING.md generation
 echo "Test: repo_setup.sh integrates CONTRIBUTING.md setup"
 if grep -q "gh_setup_contributing" "$ROOT_DIR/scripts/repo_setup.sh"; then
   echo "✓ CONTRIBUTING.md integration present"
-  ((PASSED++))
+  ((PASSED++)) || true
 else
   echo "✗ CONTRIBUTING.md integration missing"
-  ((FAILED++))
+  ((FAILED++)) || true
 fi
 
 # Test 6: Agent sync scripts exist
@@ -96,30 +96,53 @@ echo "Test: Agent configuration scripts exist"
 if [[ -x "$ROOT_DIR/scripts/gh_sync_agents.sh" ]] && \
    [[ -x "$ROOT_DIR/scripts/gh_sync_claude.sh" ]]; then
   echo "✓ Agent scripts exist"
-  ((PASSED++))
+  ((PASSED++)) || true
 else
   echo "✗ Agent scripts missing"
-  ((FAILED++))
+  ((FAILED++)) || true
 fi
 
 # Test 7: Test helpers exist
 echo "Test: Test helper utilities exist"
 if [[ -f "$SCRIPT_DIR/helpers/test-helpers.sh" ]]; then
   echo "✓ Test helpers exist"
-  ((PASSED++))
+  ((PASSED++)) || true
 else
   echo "✗ Test helpers missing"
-  ((FAILED++))
+  ((FAILED++)) || true
 fi
 
 # Test 8: Integration test documentation
 echo "Test: Integration testing documentation exists"
 if grep -q "Integration Testing" "$ROOT_DIR/TESTING.md"; then
   echo "✓ Documentation present"
-  ((PASSED++))
+  ((PASSED++)) || true
 else
   echo "✗ Documentation missing"
-  ((FAILED++))
+  ((FAILED++)) || true
+fi
+
+# Test 9: GitHub template files exist
+echo "Test: GitHub template files in templates/.github/"
+if [[ -f "$ROOT_DIR/templates/.github/PULL_REQUEST_TEMPLATE.md" ]] && \
+   [[ -f "$ROOT_DIR/templates/.github/labeler.yml" ]] && \
+   [[ -d "$ROOT_DIR/templates/.github/ISSUE_TEMPLATE" ]]; then
+  echo "✓ GitHub templates exist"
+  ((PASSED++)) || true
+else
+  echo "✗ GitHub templates missing"
+  ((FAILED++)) || true
+fi
+
+# Test 10: Symlinks in artagon-common
+echo "Test: GitHub config symlinks in artagon-common"
+if [[ -L "$ROOT_DIR/.github/PULL_REQUEST_TEMPLATE.md" ]] && \
+   [[ -L "$ROOT_DIR/.github/labeler.yml" ]]; then
+  echo "✓ GitHub config symlinks exist"
+  ((PASSED++)) || true
+else
+  echo "✗ GitHub config symlinks missing"
+  ((FAILED++)) || true
 fi
 
 # Summary
