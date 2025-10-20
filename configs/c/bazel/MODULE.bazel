@@ -14,3 +14,6 @@ bazel_dep(name = "platforms", version = "0.0.8")
 
 # Testing
 bazel_dep(name = "googletest", version = "1.14.0", dev_dependency = True)
+
+# Benchmark (optional)
+bazel_dep(name = "google_benchmark", version = "1.8.3", dev_dependency = True)
