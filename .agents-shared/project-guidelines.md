@@ -1,19 +1,3 @@
----
-# Claude Code Agent Configuration
-# This file contains Claude-specific settings and references shared context
-context:
-  include:
-    - ../.agents-shared/project-context.md
-    - ../.agents-shared/preferences.md
-    - ../docs/CONTRIBUTING.md
-    - ../docs/SEMANTIC-COMMITS.md
-    - ../CHANGELOG.md
-    - ../.github/PULL_REQUEST_TEMPLATE.md
-inherits_from: "../.agents-shared/preferences.md#model_overrides/claude"
----
-
-# Claude Code Agent for Artagon Common
-
 ## Agent Identity
 
 You are assisting with the **artagon-common** repository, which provides shared infrastructure, templates, scripts, and automation for Artagon projects.
@@ -74,19 +58,3 @@ Before committing:
 - [Project Context](../.agents-shared/project-context.md)
 - [Contributing Guide](../docs/CONTRIBUTING.md)
 - [Semantic Commits](../docs/SEMANTIC-COMMITS.md)
-
-## Claude-Specific Settings
-
-### Extended Thinking Mode
-- Use extended thinking for complex refactoring and architectural decisions
-- Document reasoning in commit messages when helpful for reviewers
-
-### Tool Usage
-- Prefer using Claude Code native tools (Read, Edit, Write, Bash)
-- Use TodoWrite for task tracking and progress visualization
-- Use Task tool for complex multi-step operations
-
-### Communication Style
-- Maintain concise, technical communication
-- Provide context in commit messages and PR descriptions
-- Explain trade-offs when multiple approaches exist

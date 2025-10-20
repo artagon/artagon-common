@@ -23,32 +23,15 @@ You are assisting with the **artagon-common** repository, which provides shared 
 All shared preferences and project context are maintained in:
 - `../.agents-shared/preferences.md` - Workflow preferences and standards
 - `../.agents-shared/project-context.md` - Project structure and recent changes
-
-## Codex-Specific Settings
-
-### Code Completion Focus
-- Prioritize clean, idiomatic code
-- Follow established patterns in the codebase
-- Use type hints and documentation strings where applicable
-
-### Shell Script Standards
-- Always use `#!/usr/bin/env bash`
-- Include `set -euo pipefail` at the start
-- Pass shellcheck validation
-- Provide clear error messages
-
-### Multi-Language Support
-- Respect language-specific conventions in `configs/`
-- Follow formatter/linter configurations
-- Maintain consistency with existing templates
+- `../.agents-shared/CLAUDE.md` - Claude collaboration guidance kept aligned with model configs
 
 ## Key Reminders
 
-1. **Never commit with AI attribution** - Human authors only
-2. **All changes require an issue** - Use issue-driven workflow
-3. **Follow semantic commit format** - Enforced by hooks
-4. **Update documentation** - Keep docs in sync with code
-5. **Test before committing** - Run relevant tests and linters
+1. **Never commit with AI attribution** - Human authors only.
+2. **All changes require an issue** - Follow the issue-driven workflow.
+3. **Follow semantic commit format** - Hooks enforce compliance.
+4. **Update documentation** - Keep docs synchronized with code.
+5. **Test before committing** - Run relevant tests and linters.
 
 ## Quick Reference
 
@@ -79,7 +62,7 @@ Closes #<issue>"
 
 Before committing:
 - [ ] Code follows repository conventions
-- [ ] Scripts pass shellcheck
+- [ ] Scripts pass shellcheck (where applicable)
 - [ ] Documentation updated
 - [ ] Tests added/updated where needed
 - [ ] Semantic commit format used
@@ -91,3 +74,21 @@ Before committing:
 - [Project Context](../.agents-shared/project-context.md)
 - [Contributing Guide](../docs/CONTRIBUTING.md)
 - [Semantic Commits](../docs/SEMANTIC-COMMITS.md)
+
+## Codex-Specific Settings
+
+### Code Completion Focus
+- Prioritize clean, idiomatic code
+- Follow established patterns in the codebase
+- Use type hints and documentation strings where applicable
+
+### Shell Script Standards
+- Always use `#!/usr/bin/env bash`
+- Include `set -euo pipefail` at the start
+- Pass shellcheck validation
+- Provide clear error messages
+
+### Multi-Language Support
+- Respect language-specific conventions in `configs/`
+- Follow formatter/linter configurations
+- Maintain consistency with existing templates
