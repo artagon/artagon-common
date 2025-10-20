@@ -21,7 +21,7 @@ This repository serves as a centralized collection of common tooling used across
   - Lock down exact versions of compilers, build tools, and dependencies
   - Consistent development environments across teams and CI/CD
 - **Configs**: Shared configuration files for code quality tools
-- **Workflows**: Reusable GitHub Actions workflows
+- **Workflows**: See [artagon-workflows](https://github.com/artagon/artagon-workflows) for reusable GitHub Actions workflows
 
 ## Installation
 
@@ -97,13 +97,7 @@ artagon-common/
 │   ├── .editorconfig          # Code style settings
 │   └── .gitignore.template     # Generic .gitignore
 ├── .github/
-│   └── workflows/              # 🆕 Reusable GitHub Actions workflows
-│       ├── c-ci.yml           # C project CI (build, test, coverage, sanitizers)
-│       ├── c-release.yml      # C project releases (DEB, RPM, AppImage, DMG, ZIP)
-│       ├── cpp-ci.yml         # C++ project CI (multi-std, sanitizers, coverage)
-│       ├── cpp-release.yml    # C++ project releases (all distribution formats)
-│       ├── bazel-ci.yml       # 🆕 Bazel project CI (Nix-aware, multi-platform)
-│       └── bazel-release.yml  # 🆕 Bazel project releases (multi-platform packaging)
+│   └── workflows/              # Workflows that run on this repo (tests, validation)
 ├── .gitignore                  # Git ignore for this repo
 └── README.md                   # This file
 ```
@@ -387,7 +381,9 @@ Remove all branch protection (use with caution).
 
 ### 🆕 GitHub Actions Workflows for C/C++ Projects
 
-Artagon Common provides production-ready, reusable GitHub Actions workflows for C and C++ projects with comprehensive CI/CD and multi-platform packaging.
+**Workflows have moved to [artagon-workflows](https://github.com/artagon/artagon-workflows)**
+
+Artagon provides production-ready, reusable GitHub Actions workflows for C and C++ projects with comprehensive CI/CD and multi-platform packaging.
 
 #### Features
 
@@ -420,7 +416,7 @@ name: CI
 on: [push, pull_request]
 jobs:
   ci:
-    uses: artagon/artagon-common/.github/workflows/c-ci.yml@main
+    uses: artagon/artagon-workflows/.github/workflows/c-ci.yml@v1
     with:
       c-standard: '17'
       enable-coverage: true
@@ -434,7 +430,7 @@ name: CI
 on: [push, pull_request]
 jobs:
   ci:
-    uses: artagon/artagon-common/.github/workflows/cpp-ci.yml@main
+    uses: artagon/artagon-workflows/.github/workflows/cpp-ci.yml@v1
     with:
       cxx-standard: '23'
       test-standards: '17,20,23'  # Test multiple standards
@@ -451,7 +447,7 @@ on:
     tags: ['v*']
 jobs:
   release:
-    uses: artagon/artagon-common/.github/workflows/cpp-release.yml@main
+    uses: artagon/artagon-workflows/.github/workflows/cpp-release.yml@v1
     with:
       cxx-standard: '23'
       build-deb: true
@@ -568,7 +564,7 @@ name: CI
 on: [push, pull_request]
 jobs:
   ci:
-    uses: artagon/artagon-common/.github/workflows/bazel-ci.yml@main
+    uses: artagon/artagon-workflows/.github/workflows/bazel-ci.yml@v1
     with:
       bazel-configs: 'release,debug,asan,ubsan'
       enable-coverage: true
@@ -584,7 +580,7 @@ on:
     tags: ['v*']
 jobs:
   release:
-    uses: artagon/artagon-common/.github/workflows/bazel-release.yml@main
+    uses: artagon/artagon-workflows/.github/workflows/bazel-release.yml@v1
     with:
       binary-targets: '//:main //cmd:cli'
       create-packages: true
