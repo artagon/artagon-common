@@ -49,7 +49,7 @@ test_basic_substitution() {
       --repo-name "test-project" \
       --repo-owner "test-org" \
       --repo-desc "Test description" \
-      --force 2>&1 | head -10
+      --force 2>&1
   local exit_code=$?
   set -e
 

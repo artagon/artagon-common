@@ -348,7 +348,7 @@ When adding tests:
 2. Document any test limitations or prerequisites
 3. Include examples of manual testing if needed
 
-See [TESTING.md](../../TESTING.md) for comprehensive testing guide.
+See [TESTING.md](../TESTING.md) for comprehensive testing guide.
 
 ## Tooling Expectations
 
