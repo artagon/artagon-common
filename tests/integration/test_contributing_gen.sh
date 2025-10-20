@@ -98,7 +98,12 @@ test_special_characters() {
       --force >/dev/null 2>&1; then
 
     assert_file_exists "CONTRIBUTING.md"
-    # Check that the special characters are preserved
+    # Check that the special characters themselves are preserved
+    assert_file_contains "CONTRIBUTING.md" "&"
+    assert_file_contains "CONTRIBUTING.md" "|"
+    assert_file_contains "CONTRIBUTING.md" "/"
+    assert_file_contains "CONTRIBUTING.md" "\\"
+    # Also verify the descriptive words
     assert_file_contains "CONTRIBUTING.md" "ampersand"
     assert_file_contains "CONTRIBUTING.md" "pipe"
     assert_file_contains "CONTRIBUTING.md" "slash"
