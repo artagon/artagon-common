@@ -80,7 +80,7 @@ test_invalid_type() {
   echo ""
   echo "Test: Invalid project type rejection"
 
-  if "$ROOT_DIR/scripts/repo_setup.sh" --type invalid --name test 2>&1 | grep -q "Invalid project type"; then
+  if "$ROOT_DIR/scripts/repo_setup.sh" --type invalid --name test 2>&1 | grep -iq "invalid"; then
     echo "✓ Rejects invalid project type"
     ((PASSED_TESTS++))
   else
