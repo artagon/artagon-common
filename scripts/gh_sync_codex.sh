@@ -64,15 +64,15 @@ cd "$ROOT_DIR"
 
 resolve_shared_target() {
   if [[ -d .common/artagon-common/.agents/codex ]]; then
-    SHARED_DIR=".common/artagon-common/.agents/codex"
+    _SHARED_DIR=".common/artagon-common/.agents/codex"
     SHARED_LINK="../.common/artagon-common/.agents/codex"
     return 0
   elif [[ -d .agents/codex ]]; then
-    SHARED_DIR=".agents/codex"
+    _SHARED_DIR=".agents/codex"
     SHARED_LINK="../.agents/codex"
     return 0
   fi
-  SHARED_DIR=""
+  _SHARED_DIR=""
   SHARED_LINK=""
   return 1
 }
