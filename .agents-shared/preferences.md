@@ -16,6 +16,7 @@ Specifically:
 - ❌ Do NOT add "🤖 Generated with [Claude Code](https://claude.com/claude-code)"
 - ❌ Do NOT add "Co-Authored-By: Claude <noreply@anthropic.com>"
 - ❌ Do NOT add "Co-Authored-By: Copilot" or other AI metadata
+- ❌ Do NOT add "Co-Authored-By: Gemini" or other AI metadata
 
 All commits should show the human author only. These are professional open source projects where code contributions should be attributed to human authors only, not AI assistants.
 
