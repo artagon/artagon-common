@@ -2,7 +2,53 @@
 
 Automation scripts for deployment, CI/CD, and repository management.
 
-## Structure
+## Artagon CLI
+
+The preferred entry point is the Python CLI located at `scripts/artagon`.
+It orchestrates releases, snapshot deployments, security baseline updates,
+and GitHub administration through a single interface.
+
+### Available commands
+
+```bash
+# Display available commands
+scripts/artagon --help
+
+# Release workflows
+scripts/artagon java release run --version 1.2.3
+scripts/artagon java release tag 1.2.3
+scripts/artagon java release branch cut 1.2.3
+scripts/artagon java release branch stage [--deploy]
+
+# Snapshot deployment
+scripts/artagon java snapshot publish
+
+# Dependency security
+scripts/artagon java security update
+scripts/artagon java security verify
+
+# GitHub branch protection
+scripts/artagon java gh protect --branch main
+```
+
+Add `--dry-run` (or `-n`) before the command to log actions without
+executing them.
+
+### Configuration
+
+Defaults are loaded from `.artagonrc`. Example:
+
+```toml
+[defaults]
+language = "java"
+owner = "your-github-org"
+repo = "your-repo"
+```
+
+Override via environment variable `ARTAGON_CONFIG=/path/to/config` to
+point at a different file.
+
+## Legacy Structure
 
 ```
 scripts/
@@ -27,7 +73,7 @@ scripts/
 
 ## Deployment Scripts
 
-### deploy/check-deploy-ready.sh
+### deploy/check-deploy-ready.sh *(invoked via `artagon java release branch stage`)*
 
 Validates deployment prerequisites and configuration.
 
@@ -45,7 +91,7 @@ Validates deployment prerequisites and configuration.
 - Git working directory status
 - Security files
 
-### deploy/deploy-snapshot.sh
+### deploy/deploy-snapshot.sh *(invoked via `artagon java snapshot publish`)*
 
 Deploys SNAPSHOT versions to Sonatype OSSRH snapshots repository.
 
@@ -60,7 +106,7 @@ Deploys SNAPSHOT versions to Sonatype OSSRH snapshots repository.
 - GPG key configured
 - OSSRH credentials in `~/.m2/settings.xml`
 
-### deploy/release.sh
+### deploy/release.sh *(invoked via `artagon java release run`)*
 
 Creates and deploys a release version to Maven Central.
 
@@ -173,36 +219,25 @@ The git hooks (`pre-commit`, `post-checkout`, `post-merge`) invoke the script au
 
 3. **Verify Setup**:
    ```bash
-   ./scripts/deploy/check-deploy-ready.sh
+   scripts/artagon java release branch stage --dry-run
    ```
 
 ### Deploy Snapshot
 
 ```bash
-# Check readiness
-./scripts/deploy/check-deploy-ready.sh
-
-# Deploy
-./scripts/deploy/deploy-snapshot.sh
+scripts/artagon java snapshot publish
 ```
 
 ### Release to Maven Central
 
 ```bash
-# Check readiness
-./scripts/deploy/check-deploy-ready.sh
+scripts/artagon java release run --version 1.0.0
 
-# Release
-./scripts/deploy/release.sh 1.0.0
-
-# Push to GitHub
+# Push tags
 git push origin main --tags
 
-# Release from Nexus staging
-./scripts/deploy/nexus-release.sh
-
-# Create GitHub release
-gh release create v1.0.0 --title "Release 1.0.0"
+# Promote staging release if required
+scripts/artagon java release branch stage --deploy
 ```
 
 ## Troubleshooting

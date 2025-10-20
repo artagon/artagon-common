@@ -23,7 +23,7 @@ Complete guide for releasing artagon-bom and artagon-parent to GitHub Packages a
 - **`v*` tags** mark the immutable release. Pushing a tag triggers `.github/workflows/examples/release-tag.yml`, which verifies the Maven version and publishes via the shared `maven_deploy` reusable workflow.
 - Manual fallbacks remain available via `.github/workflows/examples/release.yml`, but always invoke them from the matching `release-x.y.z` branch to keep `main` untouched until you open a back-merge PR.
 
-> Tip: Protect `main` (and each `release-*` branch once created) with `scripts/ci/protect-main-branch-team.sh` so only fast-forward merges from reviewed PRs land, and require the CI + security checks introduced above.
+> Tip: Protect `main` (and each `release-*` branch once created) with `scripts/artagon java gh protect` so only fast-forward merges from reviewed PRs land, and require the CI + security checks introduced above.
 
 ## Prerequisites
 
@@ -130,6 +130,8 @@ The workflow `.github/workflows/examples/release-tag.yml` automatically triggers
 
 ## Quick Start Checklist
 
+> **Configuration:** The CLI reads defaults from `.artagonrc`. Set `owner` and `repo` under `[defaults]` to match your GitHub organisation/project, or point `ARTAGON_CONFIG` to an alternative file.
+
 ### One-Time Setup
 
 1. **Create a Sonatype account**
@@ -178,7 +180,7 @@ The workflow `.github/workflows/examples/release-tag.yml` automatically triggers
 
 4. **Verify your setup**
    ```bash
-   ./artagon-common/scripts/deploy/check-deploy-ready.sh
+   scripts/artagon java release branch stage
    ```
 
 ### Snapshot Deployment (Development)
@@ -186,7 +188,7 @@ The workflow `.github/workflows/examples/release-tag.yml` automatically triggers
 Deploy SNAPSHOT builds while iterating:
 
 ```bash
-./artagon-common/scripts/deploy/deploy-snapshot.sh
+scripts/artagon java snapshot publish
 ```
 
 _Manual equivalent_
@@ -215,7 +217,7 @@ Usage in downstream projects:
 
 _One-liner:_
 ```bash
-./artagon-common/scripts/deploy/release.sh 1.0.0
+scripts/artagon java release run --version 1.0.0
 ```
 
 _Manual flow:_
@@ -795,6 +797,8 @@ mvn nexus-staging:drop -Possrh-deploy
 
 ## Security Automation
 
+Prefer the CLI commands (`scripts/artagon java security update|verify`) for everyday workflows; the underlying scripts remain documented here for troubleshooting and advanced automation.
+
 This document describes the security scripts available in artagon-common for managing dependency integrity and verification.
 
 ### Overview
@@ -827,14 +831,14 @@ Artagon projects use multiple security scripts to ensure dependency integrity th
 **Usage**:
 ```bash
 # Update baselines (long form)
-./scripts/mvn-update-dep-security.sh --update
+scripts/artagon java security update
 
 # Update baselines (short form)
-./scripts/mvn-update-dep-security.sh -u
+scripts/artagon java security update
 
 # Verify baselines are current
-./scripts/mvn-update-dep-security.sh --verify
-./scripts/mvn-update-dep-security.sh -v
+scripts/artagon java security verify
+scripts/artagon java security verify
 
 # Show all options
 ./scripts/mvn-update-dep-security.sh --help
@@ -1083,7 +1087,7 @@ exec "${COMMON_SCRIPT}" --project-root "${PROJECT_ROOT}" "$@"
 
 2. **Generate initial security baselines**:
    ```bash
-   ./scripts/mvn-update-dep-security.sh --update
+   scripts/artagon java security update
    ```
 
 3. **Commit baseline files**:
@@ -1100,7 +1104,7 @@ When updating dependencies:
 
 2. **Regenerate baselines**:
    ```bash
-   ./scripts/mvn-update-dep-security.sh --update
+   scripts/artagon java security update
    ```
 
 3. **Review changes**:
@@ -1120,7 +1124,7 @@ Before creating a release:
 
 1. **Verify baselines are current**:
    ```bash
-   ./scripts/mvn-update-dep-security.sh --verify
+   scripts/artagon java security verify
    ```
 
 2. **Run security profile**:

@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+"""
+Artagon CLI entry point.
+
+Usage examples:
+
+    artagon java release run --version 1.2.3
+    artagon java snapshot publish
+    artagon java security verify
+"""
+
+from __future__ import annotations
+
+import os
+import sys
+from pathlib import Path
+from typing import Iterable, List
+
+from cli import CLIConfig, CommandContext, registry  # type: ignore[import]
+from cli import commands as _  # noqa: F401  (ensure command registration)
+
+
+def _print_usage() -> None:
+    prog = "artagon"
+    print("Artagon automation toolkit\n")
+    print("Usage:")
+    print(f"  {prog} <command> [options]\n")
+    print("Available commands:")
+    for path, command in registry:
+        print(f"  {path:<20} {command.help}")
+    print("\nUse the command followed by --help for detailed usage.")
+
+
+def main(argv: Iterable[str] | None = None) -> int:
+    tokens = list(argv if argv is not None else sys.argv[1:])
+    dry_run = False
+    if tokens and tokens[0] in ("--dry-run", "-n"):
+        dry_run = True
+        tokens = tokens[1:]
+    if not tokens or tokens[0] in ("-h", "--help"):
+        _print_usage()
+        return 0 if tokens else 1
+
+    script_path = Path(__file__).resolve()
+    repo_root = script_path.parent.parent
+    config_path = os.environ.get("ARTAGON_CONFIG")  # type: ignore[name-defined]
+    config = CLIConfig.load(Path(config_path) if config_path else repo_root / ".artagonrc")
+
+    command, remaining = registry.find(tokens)
+    if command is None:
+        available = ", ".join(name for name, _ in registry)
+        print(f"Unknown command path: {' '.join(tokens)}", file=sys.stderr)
+        print(f"Available commands: {available}", file=sys.stderr)
+        return 2
+
+    try:
+        context = CommandContext(cwd=repo_root, dry_run=dry_run, config=config)
+        return command.handler(context, remaining)
+    except KeyboardInterrupt:
+        print("Interrupted.", file=sys.stderr)
+        return 130
+
+
+if __name__ == "__main__":
+    sys.exit(main())

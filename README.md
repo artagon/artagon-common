@@ -116,6 +116,43 @@ artagon-common/
 ### 🆕 Unified Project Setup
 
 #### `setup-repo.sh`
+### 🧰 Artagon CLI
+
+A Python-based command line interface consolidates release and deployment tasks. It lives at `scripts/artagon` and supports a dry-run mode for safe experimentation.
+
+```bash
+# Show available commands
+scripts/artagon --help
+
+# Run a Java release
+scripts/artagon java release run --version 1.2.3
+
+# Publish a SNAPSHOT build
+scripts/artagon java snapshot publish
+
+# Update or verify dependency security baselines
+scripts/artagon java security update
+scripts/artagon java security verify
+
+# Apply branch protection to a release branch
+scripts/artagon java gh protect --branch release-1.2.3
+```
+
+Add `--dry-run` (or `-n`) before the command to inspect actions without executing them.
+
+### ⚙️ CLI Configuration
+
+The CLI reads defaults from `.artagonrc` (TOML format) at the repository root. Example:
+
+```toml
+[defaults]
+language = "java"
+owner = "artagon"
+repo = "artagon-common"
+```
+
+Override values to match your GitHub organisation or preferred language; environment variable `ARTAGON_CONFIG` can point to an alternate configuration file if needed.
+
 
 **The recommended way to create new Artagon projects** - automatically sets up a complete project with language-specific templates, Nix integration, and GitHub configuration.
 
