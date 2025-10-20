@@ -21,10 +21,10 @@ if [[ -f "$ROOT_DIR/templates/.github/PULL_REQUEST_TEMPLATE.md" ]] && \
    [[ -f "$ROOT_DIR/templates/.github/ISSUE_TEMPLATE/chore.md" ]] && \
    [[ -f "$ROOT_DIR/templates/.github/ISSUE_TEMPLATE/feature_request.md" ]]; then
   echo "✓ All GitHub template files exist"
-  ((PASSED++)) || true || true
+  ((PASSED++)) || true
 else
   echo "✗ Some GitHub template files missing"
-  ((FAILED++)) || true || true
+  ((FAILED++)) || true
 fi
 
 # Test 2: Symlinks exist in artagon-common
