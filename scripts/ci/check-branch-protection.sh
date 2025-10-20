@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Check Branch Protection Status for GitHub Repositories
 #

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 # Deploy Artagon BOM and Parent to OSSRH Snapshots

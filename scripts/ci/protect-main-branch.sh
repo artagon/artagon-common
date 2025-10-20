@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Branch Protection Script for GitHub Repositories
 # Applies basic protection - blocks force pushes and deletions

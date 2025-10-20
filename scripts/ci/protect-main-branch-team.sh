@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Team Branch Protection Script for GitHub Repositories
 # Balanced protection - requires PR reviews but allows admin override

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Common functions for branch protection scripts
 # Source this file in other scripts: source "$(dirname "$0")/branch-protection-common.sh"

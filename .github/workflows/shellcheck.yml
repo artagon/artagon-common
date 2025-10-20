@@ -1,0 +1,47 @@
+# Shellcheck CI Workflow
+#
+# Validates all shell scripts in the repository using shellcheck
+# Runs on push and pull requests to catch shell script issues early
+
+name: Shellcheck
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - '**/*.sh'
+      - '.github/workflows/shellcheck.yml'
+  pull_request:
+    paths:
+      - '**/*.sh'
+      - '.github/workflows/shellcheck.yml'
+  workflow_dispatch:
+
+jobs:
+  shellcheck:
+    name: Shellcheck Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Run shellcheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          severity: warning
+          format: gcc
+          scandir: '.'
+          ignore_paths: |
+            .git
+            .legal/artagon-license
+
+      - name: Upload shellcheck results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: shellcheck-results
+          path: shellcheck.log
+          if-no-files-found: ignore

@@ -69,6 +69,23 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Check for Nix
+        id: check-nix
+        run: |
+          if [ -f "flake.nix" ]; then
+            echo "has_nix=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_nix=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install Nix
+        if: steps.check-nix.outputs.has_nix == 'true'
+        uses: cachix/install-nix-action@v24
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
       - name: Install dependencies
         run: |
           sudo apt-get update

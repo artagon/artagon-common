@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Strict Branch Protection Script for GitHub Repositories
 # Maximum protection - enforced for everyone including admins
