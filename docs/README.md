@@ -58,6 +58,16 @@ Dual licensing implementation:
 - Source file headers
 - CLA configuration
 
+### 🐚 Nix Development Environments
+**→ [../nix/templates/README.md](../nix/templates/README.md)**
+
+Reproducible development environment templates:
+- Java/Maven template with JDK 17 and 21
+- Security tools integration (GPG, OpenSSL)
+- Multiple shell configurations
+- Cross-platform compatibility (Linux, macOS)
+- Symlink vs copy usage patterns
+
 ---
 
 ## Documentation Structure

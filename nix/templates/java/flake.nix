@@ -1,5 +1,17 @@
+# Nix Flake Template for Artagon Parent POM
+#
+# This template provides a reproducible development environment for working
+# with the Artagon Parent POM Maven project, including security verification.
+#
+# Usage:
+#   nix develop              # Enter development shell (JDK 25)
+#   nix develop .#jdk17      # Use JDK 17
+#   nix develop .#jdk21      # Use JDK 21
+#   nix develop .#jdk25      # Use JDK 25 (explicit)
+#   nix flake check          # Run checks
+
 {
-  description = "Artagon Java Project - Reproducible Build Environment";
+  description = "Artagon Java Project Development Environment";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -9,92 +21,183 @@
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = import nixpkgs { inherit system; };
 
-        # JDK 25 from unstable channel
-        jdk = pkgs.jdk25;
+        # Common build inputs for all shells
+        commonInputs = with pkgs; [
+          # Security tools (for dependency verification)
+          gnupg            # PGP signature verification
+          openssl          # SHA checksum generation
+          curl             # Downloading artifacts
 
-        # Maven with specific version
-        maven = pkgs.maven;
+          # Documentation
+          pandoc           # Convert documentation
 
-        # Build tools and utilities
-        buildInputs = with pkgs; [
-          jdk
-          maven
+          # Version control
           git
-          gh              # GitHub CLI
-          gnupg           # GPG for artifact signing
+          git-lfs
 
-          # Optional: helpful development tools
-          jq              # JSON processing
-          yq              # YAML processing
-
-          # Code quality tools
-          # checkstyle    # Uncomment if needed
-          # spotbugs      # Uncomment if needed
+          # Utilities
+          jq               # JSON processing
+          yq-go            # YAML processing
         ];
+
+        # Maven wrapper helper
+        mvnw = pkgs.writeShellScriptBin "mvnw" ''
+          if [ -f ./mvnw ]; then
+            ./mvnw "$@"
+          else
+            ${pkgs.maven}/bin/mvn "$@"
+          fi
+        '';
 
       in
       {
-        # Development shell
-        devShells.default = pkgs.mkShell {
-          inherit buildInputs;
+        # Multiple development shells for different JDK versions
+        devShells = {
+          # Default shell with JDK 25
+          default = pkgs.mkShell {
+            name = "artagon-parent-jdk25";
 
-          # Environment variables
-          JAVA_HOME = "${jdk}";
-          MAVEN_OPTS = "-Xmx2g -XX:+UseG1GC";
+            buildInputs = with pkgs; [
+              jdk              # Java Development Kit (latest - 25)
+              maven              # Maven build tool
+            ] ++ commonInputs ++ [ mvnw ];
 
-          # GitHub Packages authentication (from environment)
-          GITHUB_USERNAME = builtins.getEnv "GITHUB_USERNAME";
-          GITHUB_TOKEN = builtins.getEnv "GITHUB_TOKEN";
+            JAVA_HOME = "${pkgs.jdk}/lib/openjdk";
 
-          # OSSRH credentials (from environment)
-          OSSRH_USERNAME = builtins.getEnv "OSSRH_USERNAME";
-          OSSRH_PASSWORD = builtins.getEnv "OSSRH_PASSWORD";
+            shellHook = ''
+              echo "☕ Artagon Parent POM Development Environment"
+              echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+              echo "Java version: $(java -version 2>&1 | head -n 1)"
+              echo "Maven version: $(mvn -version | head -n 1)"
+              echo ""
+              echo "Available commands:"
+              echo "  mvn verify                              # Developer build"
+              echo "  mvn -P artagon-oss-security verify      # Security verification"
+              echo "  mvn -P artagon-oss-release verify       # Release build"
+              echo ""
+              echo "Security scripts:"
+              echo "  ./scripts/update-dependency-security.sh -u"
+              echo "  ./scripts/update-dependency-security.sh -v"
+              echo ""
+              echo "Environment:"
+              echo "  JAVA_HOME=$JAVA_HOME"
+              echo "  Maven cache: $HOME/.m2/repository"
+              echo ""
+              echo "💡 Use 'nix develop .#jdk17' or 'nix develop .#jdk21' for other versions"
+              echo ""
+            '';
+          };
 
-          # GPG configuration (from environment)
-          GPG_PASSPHRASE = builtins.getEnv "GPG_PASSPHRASE";
-          GPG_KEYNAME = builtins.getEnv "GPG_KEYNAME";
+          # JDK 17 shell (explicit)
+          jdk17 = pkgs.mkShell {
+            name = "artagon-parent-jdk17";
 
-          shellHook = ''
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "🚀 Artagon Java Development Environment"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "Java:  $(java -version 2>&1 | head -n 1)"
-            echo "Maven: $(mvn --version | head -n 1)"
-            echo "JAVA_HOME: $JAVA_HOME"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo ""
-            echo "Quick commands:"
-            echo "  mvn clean install      # Build project"
-            echo "  mvn test              # Run tests"
-            echo "  mvn clean deploy      # Deploy to repository"
-            echo ""
+            buildInputs = with pkgs; [
+              jdk17
+              maven
+            ] ++ commonInputs ++ [ mvnw ];
 
-            # Warn if credentials not set
-            if [ -z "$GITHUB_TOKEN" ]; then
-              echo "⚠️  GITHUB_TOKEN not set - set for GitHub Packages access"
+            JAVA_HOME = "${pkgs.jdk17}/lib/openjdk";
+
+            shellHook = ''
+              echo "☕ Artagon Parent (JDK 17)"
+              java -version
+            '';
+          };
+
+          # JDK 21 shell for testing
+          jdk21 = pkgs.mkShell {
+            name = "artagon-parent-jdk21";
+
+            buildInputs = with pkgs; [
+              jdk21
+              maven
+            ] ++ commonInputs ++ [ mvnw ];
+
+            JAVA_HOME = "${pkgs.jdk21}/lib/openjdk";
+
+            shellHook = ''
+              echo "☕ Artagon Parent (JDK 21)"
+              java -version
+            '';
+          };
+
+          # JDK 25 shell (explicit)
+          jdk25 = pkgs.mkShell {
+            name = "artagon-parent-jdk25";
+
+            buildInputs = with pkgs; [
+              jdk
+              maven
+            ] ++ commonInputs ++ [ mvnw ];
+
+            JAVA_HOME = "${pkgs.jdk}/lib/openjdk";
+
+            shellHook = ''
+              echo "☕ Artagon Parent (JDK 25)"
+              java -version
+            '';
+          };
+
+          # CI shell - minimal dependencies for continuous integration
+          ci = pkgs.mkShell {
+            name = "artagon-parent-ci";
+
+            buildInputs = with pkgs; [
+              jdk
+              maven
+              gnupg
+              openssl
+              git
+            ];
+
+            JAVA_HOME = "${pkgs.jdk}/lib/openjdk";
+
+            shellHook = ''
+              echo "🤖 CI Environment (JDK 25)"
+              echo "Running in minimal CI mode"
+            '';
+          };
+        };
+
+        # Checks
+        checks = {
+          # Verify Maven project compiles
+          maven-compile = pkgs.stdenv.mkDerivation {
+            name = "maven-compile-check";
+            src = ./.;
+            buildInputs = [ pkgs.maven pkgs.jdk ];
+            buildPhase = ''
+              export JAVA_HOME=${pkgs.jdk}/lib/openjdk
+              mvn clean compile -DskipTests
+            '';
+            installPhase = "touch $out";
+          };
+
+          # Verify security scripts are executable
+          scripts-executable = pkgs.runCommand "scripts-check" {} ''
+            cd ${./.}
+            if [ ! -x scripts/update-dependency-security.sh ]; then
+              echo "Error: update-dependency-security.sh not executable"
+              exit 1
             fi
+            touch $out
           '';
         };
 
-        # Build derivation (for CI/CD)
-        packages.default = pkgs.stdenv.mkDerivation {
-          name = "artagon-java-project";
-          src = ./.;
+        # Formatter
+        formatter = pkgs.writeShellScriptBin "format-all" ''
+          # Format Java code with google-java-format
+          ${pkgs.google-java-format}/bin/google-java-format \
+            -i $(find . -name "*.java")
 
-          buildInputs = [ jdk maven ];
+          # Format XML (pom.xml) with xmlformat
+          ${pkgs.xmlformat}/bin/xmlformat -i pom.xml
 
-          buildPhase = ''
-            export JAVA_HOME=${jdk}
-            mvn clean package -DskipTests
-          '';
-
-          installPhase = ''
-            mkdir -p $out
-            cp -r target/* $out/
-          '';
-        };
+          echo "✓ Formatting complete"
+        '';
       }
     );
 }
