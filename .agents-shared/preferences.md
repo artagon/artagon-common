@@ -244,6 +244,112 @@ git push -u origin feat/42-add-cpp26-bazel-support
 - **Tests**: All existing pass, add tests for new functionality
 - **Security**: No secrets committed, proper input validation, secure defaults
 
+## Testing Requirements
+
+**MANDATORY:** For each feature that changes shell scripts in this repository, integration tests MUST be added.
+
+### When Tests Are Required
+
+Tests are **REQUIRED** for:
+- ✅ New shell scripts in `scripts/` directory
+- ✅ Changes to existing scripts that modify behavior
+- ✅ New functions or features in shell scripts
+- ✅ Bug fixes that change script logic
+- ✅ Template generation scripts
+- ✅ Repository setup automation scripts
+
+### Test Framework Location
+
+All integration tests must be placed in:
+```
+tests/integration/
+├── helpers/
+│   └── test-helpers.sh          # Shared test utilities and assertions
+├── fixtures/
+│   └── expected-outputs/        # Expected test outputs
+├── test_<feature>.sh            # Individual test suites
+└── run_all_tests.sh            # Master test runner
+```
+
+### Test Requirements
+
+Each test must:
+1. **Use Test Helpers**: Source `tests/integration/helpers/test-helpers.sh`
+2. **Be Isolated**: Use `create_test_env()` for temporary test directories
+3. **Clean Up**: Use `cleanup_test_env()` or trap handlers
+4. **Be Executable**: `chmod +x` for all test scripts
+5. **Be Documented**: Add description and expected behavior
+6. **Use Assertions**: Use helper functions (`assert_file_exists`, `assert_file_contains`, etc.)
+
+### Example Test Structure
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+source "$SCRIPT_DIR/helpers/test-helpers.sh"
+
+test_my_script_feature() {
+  echo ""
+  echo "Test: My script feature works correctly"
+
+  local test_dir
+  test_dir="$(create_test_env)"
+  cd "$test_dir"
+
+  # Setup
+  # ... test setup ...
+
+  # Execute
+  "$ROOT_DIR/scripts/my_script.sh" --param value
+
+  # Assert
+  assert_file_exists "expected-output.txt"
+  assert_file_contains "expected-output.txt" "expected content"
+
+  # Cleanup
+  cleanup_test_env "$test_dir"
+}
+
+main() {
+  test_my_script_feature
+  print_test_summary
+}
+
+main
+```
+
+### Running Tests
+
+```bash
+# Run all integration tests
+./tests/integration/run_all_tests.sh
+
+# Run specific test suite
+./tests/integration/test_<feature>.sh
+```
+
+### Test Coverage Expectations
+
+For script changes, tests should cover:
+- ✅ Basic functionality (happy path)
+- ✅ Parameter validation
+- ✅ Error handling
+- ✅ Edge cases (empty values, special characters)
+- ✅ Idempotency (if applicable)
+- ✅ Integration points with other scripts
+
+### Documentation
+
+When adding tests:
+1. Update `TESTING.md` with new test descriptions
+2. Document any test limitations or prerequisites
+3. Include examples of manual testing if needed
+
+See [TESTING.md](../../TESTING.md) for comprehensive testing guide.
+
 ## Tooling Expectations
 
 - Run available formatters/linters/tests relevant to your changes
