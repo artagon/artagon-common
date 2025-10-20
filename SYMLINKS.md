@@ -259,7 +259,6 @@ ln -sf ../.agents-shared/preferences.md preferences.md
 
 ## See Also
 
-- [Migration Report](tools/migrations/agents-refactor-*.json) - Detailed migration log
 - [Agent Preferences](.agents-shared/preferences.md) - Shared workflow preferences
 - [Project Context](.agents-shared/project-context.md) - Project structure and history
 - [Contributing Guide](docs/CONTRIBUTING.md) - Development workflow

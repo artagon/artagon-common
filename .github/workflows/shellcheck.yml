@@ -37,6 +37,7 @@ jobs:
           ignore_paths: |
             .git
             .legal/artagon-license
+            nix
 
       - name: Upload shellcheck results
         if: always()
