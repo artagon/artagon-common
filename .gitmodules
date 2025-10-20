@@ -1,3 +1,6 @@
 [submodule ".legal/artagon-license"]
 	path = .legal/artagon-license
 	url = git@github.com:artagon/artagon-license.git
+[submodule "nix"]
+	path = nix
+	url = git@github.com:artagon/artagon-nix.git
