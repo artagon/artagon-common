@@ -234,17 +234,93 @@ setup_model_directory_links() {
   fi
 }
 
-# Create file-level symlinks to shared content
-setup_file_symlinks() {
+# Create project-specific files with semantic references to shared content
+setup_project_files() {
   local model="$1"
   local agent_dir=".agents-$model"
   local shared_path="${SHARED_PATH}"
 
   mkdir -p "$agent_dir"
 
-  # Symlink shared files for convenience
-  ensure_symlink "../$shared_path/preferences.md" "$agent_dir/preferences.md" "shared preferences"
-  ensure_symlink "../$shared_path/project-context.md" "$agent_dir/project-context.md" "shared context"
+  # Generate preferences.md with reference to shared
+  local prefs_file="$agent_dir/preferences.md"
+  if [[ ! -f "$prefs_file" ]]; then
+    if $DRY_RUN; then
+      log "[DRY RUN] Would generate $prefs_file with pointer to shared"
+    else
+      cat > "$prefs_file" <<EOF
+# ${model^} Agent Preferences
+
+> **Base guidance:** See [Shared Preferences](../$shared_path/preferences.md)
+
+## Project-Specific Preferences
+
+Add project-specific workflow preferences, coding standards, or ${model}-specific
+instructions here. These will be combined with the shared Artagon preferences.
+
+### Example Customizations
+
+- Project-specific naming conventions
+- Custom git workflow variations
+- Project-specific tools or scripts
+- ${model^}-specific temperature or behavior settings
+
+---
+
+**Note:** This file complements the shared preferences. The shared content is
+automatically included via pointers in project.md. Add only project-specific
+overrides or additions here.
+EOF
+      log "Generated $prefs_file with reference to shared"
+    fi
+  else
+    log "Skipping $prefs_file (already exists)"
+  fi
+
+  # Generate project-context.md with reference to shared
+  local context_file="$agent_dir/project-context.md"
+  if [[ ! -f "$context_file" ]]; then
+    if $DRY_RUN; then
+      log "[DRY RUN] Would generate $context_file with pointer to shared"
+    else
+      cat > "$context_file" <<EOF
+# Project Context
+
+> **Base context:** See [Shared Project Context](../$shared_path/project-context.md)
+
+## Project-Specific Context
+
+### Repository Overview
+
+<!-- Describe this specific project -->
+
+### Architecture
+
+<!-- Key architectural decisions -->
+
+### Recent Changes
+
+<!-- Notable recent changes to this project -->
+
+### Dependencies
+
+<!-- Project-specific dependencies and versions -->
+
+### Known Issues
+
+<!-- Current known issues or limitations -->
+
+---
+
+**Note:** This file complements the shared context. The shared content is
+automatically included via pointers in project.md. Add only project-specific
+context here.
+EOF
+      log "Generated $context_file with reference to shared"
+    fi
+  else
+    log "Skipping $context_file (already exists)"
+  fi
 }
 
 # Run bootstrap for a single model
@@ -257,8 +333,8 @@ bootstrap_model() {
   # 1. Generate project.md with pointers
   generate_project_md "$model"
 
-  # 2. Create file-level symlinks for convenience
-  setup_file_symlinks "$model"
+  # 2. Create project-specific files with semantic references
+  setup_project_files "$model"
 
   # 3. Create directory-level convenience links
   setup_model_directory_links "$model"
@@ -270,7 +346,7 @@ check_model() {
   local agent_dir=".agents-$model"
   local status=0
 
-  # Check project.md exists
+  # Check project.md exists with pointers
   if [[ ! -f "$agent_dir/project.md" ]]; then
     err "Missing $agent_dir/project.md"
     status=1
@@ -285,7 +361,20 @@ check_model() {
     fi
   fi
 
-  # Check convenience symlinks
+  # Check project-specific files exist (not symlinks)
+  if [[ ! -f "$agent_dir/preferences.md" ]]; then
+    warn "Missing $agent_dir/preferences.md (project-specific file)"
+  elif [[ -L "$agent_dir/preferences.md" ]]; then
+    warn "$agent_dir/preferences.md is a symlink (should be a real file with reference)"
+  fi
+
+  if [[ ! -f "$agent_dir/project-context.md" ]]; then
+    warn "Missing $agent_dir/project-context.md (project-specific file)"
+  elif [[ -L "$agent_dir/project-context.md" ]]; then
+    warn "$agent_dir/project-context.md is a symlink (should be a real file with reference)"
+  fi
+
+  # Check convenience directory symlinks
   if [[ ! -L ".$model" ]]; then
     warn "Missing convenience symlink: .$model"
   fi
