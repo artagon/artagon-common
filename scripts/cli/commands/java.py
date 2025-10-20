@@ -59,10 +59,21 @@ def ensure_repository_clean() -> callable:
 
 def ensure_release_branch(options: ReleaseOptions) -> callable:
     def _inner(ctx: CommandContext) -> None:
-        result = ctx.run(["git", "symbolic-ref", "--short", "HEAD"], capture_output=True, read_only=True)
+        result = ctx.run(["git", "symbolic-ref", "--short", "HEAD"], capture_output=True, read_only=True, check=False)
         branch = result.stdout.strip()
-        if not branch:
-            raise RuntimeError("Unable to determine current branch.")
+
+        # Handle detached HEAD state (common in CI/CD)
+        if not branch or result.returncode != 0:
+            # Try to get branch name from git describe or use a default
+            result = ctx.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], capture_output=True, read_only=True, check=False)
+            branch = result.stdout.strip()
+            if not branch or branch == "HEAD":
+                # In detached HEAD state, use a placeholder if allowed
+                if options.allow_mismatch:
+                    branch = "detached-head"
+                else:
+                    raise RuntimeError("Unable to determine current branch (detached HEAD). Use --allow-branch-mismatch to continue.")
+
         options.branch = branch
 
         if options.action in {ReleaseAction.RUN, ReleaseAction.TAG, ReleaseAction.BRANCH_STAGE}:

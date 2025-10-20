@@ -97,7 +97,7 @@ jobs:
           TOTAL_COUNT=0
 
           for commit in $COMMITS; do
-            ((TOTAL_COUNT++))
+            TOTAL_COUNT=$((TOTAL_COUNT + 1))
             MSG=$(git log --format=%s -n 1 $commit)
 
             # Skip merge commits
@@ -110,7 +110,7 @@ jobs:
               echo "✓ $commit: $MSG"
             else
               echo "✗ $commit: $MSG"
-              ((INVALID_COUNT++))
+              INVALID_COUNT=$((INVALID_COUNT + 1))
             fi
           done
 

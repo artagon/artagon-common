@@ -322,7 +322,7 @@ while IFS= read -r line; do
         artifact="${BASH_REMATCH[2]}"
         packaging="${BASH_REMATCH[3]}"
         version="${BASH_REMATCH[4]}"
-        scope="${BASH_REMATCH[5]}"
+        _scope="${BASH_REMATCH[5]}"
 
         # Only process jar artifacts in specified scopes
         if [[ "${packaging}" == "jar" ]]; then

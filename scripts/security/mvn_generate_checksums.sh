@@ -191,7 +191,7 @@ while IFS= read -r line; do
         ARTIFACT_ID="${BASH_REMATCH[2]}"
         TYPE="${BASH_REMATCH[3]}"
         VERSION="${BASH_REMATCH[4]}"
-        SCOPE_FOUND="${BASH_REMATCH[5]}"
+        _SCOPE_FOUND="${BASH_REMATCH[5]}"
 
         # Find JAR in local repository
         JAR_PATH="$HOME/.m2/repository/${GROUP_ID//.//}/$ARTIFACT_ID/$VERSION/$ARTIFACT_ID-$VERSION.$TYPE"
