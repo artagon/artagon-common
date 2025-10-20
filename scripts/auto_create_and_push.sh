@@ -35,6 +35,12 @@ FORCE=0
 NOPROMPT=0
 NO_AUTO_CD=0
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LIB_PATH="${SCRIPT_DIR}/lib/common.sh"
+
+# shellcheck source=scripts/lib/common.sh
+source "${LIB_PATH}"
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --owner) OWNER="$2"; shift 2;;
@@ -150,10 +156,7 @@ else
     echo "Repository ${OWNER}/${REPO} already exists."
   else
     echo "Creating repository ${OWNER}/${REPO} (${VISIBILITY})..."
-    CREATE_CMD="gh repo create ${OWNER}/${REPO} --${VISIBILITY}"
-    [[ -n "$DESCRIPTION" ]] && CREATE_CMD="$CREATE_CMD --description \"$DESCRIPTION\""
-    CREATE_CMD="$CREATE_CMD --confirm"
-    eval "$CREATE_CMD"
+    gh_repo_create "$OWNER" "$REPO" "--${VISIBILITY}" "$DESCRIPTION" --confirm
   fi
 fi
 

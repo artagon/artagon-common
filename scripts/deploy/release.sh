@@ -33,9 +33,26 @@ if git status --porcelain | grep .; then
     exit 1
 fi
 
-if ! git rev-parse --verify main >/dev/null 2>&1; then
-    echo "ERROR: Not on main branch"
+CURRENT_BRANCH="$(git symbolic-ref --short HEAD 2>/dev/null || true)"
+if [[ -z "$CURRENT_BRANCH" ]]; then
+    echo "ERROR: Detached HEAD state detected. Check out a release branch (release-x.y.z) and retry."
     exit 1
+fi
+
+if [[ "${CURRENT_BRANCH}" != release-* ]]; then
+    echo "ERROR: Release script must be run from a release-* branch. Current branch: ${CURRENT_BRANCH}"
+    exit 1
+fi
+
+BRANCH_VERSION="${CURRENT_BRANCH#release-}"
+if [[ "${BRANCH_VERSION}" != "${RELEASE_VERSION}" ]]; then
+    echo "WARNING: Branch name (${CURRENT_BRANCH}) does not match release version (${RELEASE_VERSION})."
+    read -p "Continue anyway? (y/N) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Aborting release."
+        exit 1
+    fi
 fi
 
 if ! mvn clean verify; then
@@ -103,9 +120,10 @@ echo "Release $RELEASE_VERSION Complete!"
 echo "=========================================="
 echo ""
 echo "Next steps:"
-echo "1. Push to remote: git push origin main --tags"
-echo "2. Release staging repo at: https://s01.oss.sonatype.org/"
-echo "3. Create GitHub release for tag v$RELEASE_VERSION"
+echo "1. Push to remote: git push origin ${CURRENT_BRANCH} --tags"
+echo "2. Open a pull request from ${CURRENT_BRANCH} back to main to land post-release commits"
+echo "3. Release staging repo at: https://s01.oss.sonatype.org/"
+echo "4. Create GitHub release for tag v$RELEASE_VERSION"
 echo ""
 echo "To rollback if needed:"
 echo "  git reset --hard HEAD~2"

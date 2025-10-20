@@ -1,4 +1,4 @@
-name: Java Build (Reusable)
+name: Maven Build (Reusable)
 
 on:
   workflow_call:

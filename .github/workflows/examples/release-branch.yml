@@ -1,0 +1,28 @@
+# Example Release Branch Workflow
+# Copy this to your project's .github/workflows/release-branch.yml
+
+name: Release Branch
+
+on:
+  push:
+    branches:
+      - 'release-*'
+  workflow_dispatch:
+    inputs:
+      deploy-to-staging:
+        description: 'Deploy artifacts to staging after validation'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  release-branch:
+    name: Validate Release Branch
+    uses: artagon/artagon-common/.github/workflows/maven_release_branch.yml@main
+    with:
+      deploy-to-staging: ${{ (github.event.inputs.deploy-to-staging || 'false') == 'true' }}
+    secrets: inherit

@@ -13,6 +13,15 @@ Complete guide for releasing artagon-bom and artagon-parent to GitHub Packages a
 
 ---
 
+## Branch Model & Automation Overview
+
+- **`main`** always carries the next stable development snapshot. Keep it green by gating merges with the CI workflow from `.github/workflows/examples/ci.yml` (push/PR on `main` and `release-*`).
+- **`release-x.y.z` branches** are cut from `main` when you freeze a version. Run `.github/workflows/examples/release-branch.yml` to enforce build, test, and security baselines and to optionally stage artifacts to OSSRH.
+- **`v*` tags** mark the immutable release. Pushing a tag triggers `.github/workflows/examples/release-tag.yml`, which verifies the Maven version and publishes via the shared `maven_deploy` reusable workflow.
+- Manual fallbacks remain available via `.github/workflows/examples/release.yml`, but always invoke them from the matching `release-x.y.z` branch to keep `main` untouched until you open a back-merge PR.
+
+> Tip: Protect `main` and `release-*` branches with `scripts/ci/protect-main-branch.sh` so only fast-forward merges from reviewed PRs land, and require the CI + security checks introduced above.
+
 ## Prerequisites
 
 ### Required GitHub Secrets
@@ -48,21 +57,21 @@ Go to **Settings > Actions > General > Workflow permissions** and select:
 
 ### Option 1: Automatic Deployment on Push
 
-Simply push to the `main` branch:
+Push to your `release-x.y.z` branch (cut from `main` after you freeze the version):
 
 ```bash
 # The GitHub Actions workflow will automatically:
 # 1. Build the project
-# 2. Deploy to GitHub Packages
+# 2. Deploy to GitHub Packages or OSSRH staging (if configured)
 
-git push origin main
+git push origin release-1.2.3
 ```
 
 **What happens:**
-- Workflow: `.github/workflows/github-packages-deploy.yml` triggers
-- Builds the project
-- Deploys current version to GitHub Packages
-- Packages available at: `https://github.com/artagon/artagon-bom/packages`
+- Workflow: `.github/workflows/examples/release-branch.yml` triggers
+- Builds the project and runs security checks
+- Optionally deploys current version to GitHub Packages or OSSRH staging when the dispatch input `deploy-to-staging` is enabled
+- Packages become available at: `https://github.com/artagon/artagon-bom/packages`
 
 ### Option 2: Manual Workflow Dispatch
 
@@ -71,9 +80,10 @@ git push origin main
 3. Select **"Deploy to GitHub Packages"** workflow (left sidebar)
 4. Click **"Run workflow"** button (right side)
 5. Select:
-   - **Branch**: `main`
+   - **Branch**: your `release-x.y.z` branch
    - **Deploy type**: `snapshot` or `release`
-6. Click **"Run workflow"** (green button)
+6. Choose whether to enable `deploy-to-staging`
+7. Click **"Run workflow"** (green button)
 
 **Screenshots walkthrough:**
 
@@ -81,16 +91,18 @@ git push origin main
 Actions → Deploy to GitHub Packages → Run workflow
    ↓
 [Use workflow from: main ▼]
+[Use branch: release-1.2.3 ▼]
 [Deployment type: snapshot ▼]
+[Deploy to staging: true/false]
    ↓
 [Run workflow]
 ```
 
 The workflow will:
-- ✅ Checkout code
+- ✅ Checkout code from the selected release branch
 - ✅ Set up Java 25
 - ✅ Configure Maven for GitHub authentication
-- ✅ Build and deploy to GitHub Packages
+- ✅ Build and, if requested, deploy to GitHub Packages or OSSRH staging
 - ✅ Show deployment summary with package URL
 
 ### Option 3: Tag-based Release
@@ -111,7 +123,7 @@ git tag v1
 git push origin v1
 ```
 
-The workflow automatically triggers on tag push and deploys to GitHub Packages.
+The workflow `.github/workflows/examples/release-tag.yml` automatically triggers on tag push, validates that the project version matches the tag, and deploys to GitHub Packages / Maven Central using the shared `maven_deploy` pipeline.
 
 ---
 

@@ -5,14 +5,15 @@ name: Deploy Snapshot
 
 on:
   push:
-    branches: [ main, develop ]
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
   deploy-snapshot:
     name: Deploy Snapshot to OSSRH
-    if: contains(github.ref, 'refs/heads/main') || contains(github.ref, 'refs/heads/develop')
-    uses: artagon/artagon-common/.github/workflows/maven-deploy.yml@main
+    if: github.ref == 'refs/heads/main'
+    uses: artagon/artagon-common/.github/workflows/maven_deploy.yml@main
     with:
       java-version: '25'
       deploy-profile: 'ossrh-deploy,artagon-oss-release'

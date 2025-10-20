@@ -31,6 +31,10 @@ TRANSITIVE="false"
 SCOPE="compile"
 OUTPUT="security/dependency-checksums.csv"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LIB_PATH="${SCRIPT_DIR}/../lib/common.sh"
+
+# shellcheck source=scripts/lib/common.sh
+source "${LIB_PATH}"
 
 # Color output
 RED='\033[0;31m'
@@ -123,9 +127,9 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Check for Maven
-if ! command -v mvn &> /dev/null; then
-    error "Maven (mvn) not found in PATH"
+# Check for required tools
+if ! require_commands mvn openssl; then
+    error "Required tools missing. Install the tool(s) listed above."
 fi
 
 # Check for pom.xml
@@ -178,13 +182,11 @@ echo "# Transitive: $TRANSITIVE" >> "$OUTPUT"
 
 # Parse dependency list and calculate checksums
 while IFS= read -r line; do
-    # Skip non-dependency lines
-    if [[ ! "$line" =~ ^[[:space:]]*[a-zA-Z] ]]; then
-        continue
-    fi
+    clean_line="$(clean_maven_dependency_line "$line")"
+    [[ -z "$clean_line" ]] && continue
 
     # Extract artifact coordinates
-    if [[ "$line" =~ ([^:]+):([^:]+):([^:]+):([^:]+):([^:]+) ]]; then
+    if [[ "$clean_line" =~ ([^:]+):([^:]+):([^:]+):([^:]+):([^:]+) ]]; then
         GROUP_ID="${BASH_REMATCH[1]}"
         ARTIFACT_ID="${BASH_REMATCH[2]}"
         TYPE="${BASH_REMATCH[3]}"
@@ -195,7 +197,7 @@ while IFS= read -r line; do
         JAR_PATH="$HOME/.m2/repository/${GROUP_ID//.//}/$ARTIFACT_ID/$VERSION/$ARTIFACT_ID-$VERSION.$TYPE"
 
         if [ -f "$JAR_PATH" ]; then
-            CHECKSUM=$(sha256sum "$JAR_PATH" | awk '{print $1}')
+            CHECKSUM=$(openssl dgst -sha256 "$JAR_PATH" | awk '{print $2}')
             FILENAME=$(basename "$JAR_PATH")
             echo "$FILENAME,$CHECKSUM" >> "$OUTPUT"
             info "  ✓ $FILENAME"

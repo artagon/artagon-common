@@ -15,11 +15,11 @@ Artagon projects use multiple security scripts to ensure dependency integrity th
 
 ## Scripts
 
-### 1. update-dependency-security.sh
+### 1. mvn-update-dep-security.sh
 
 **Purpose**: Generates or updates security baseline files for Maven dependencies.
 
-**Location**: `scripts/security/update-dependency-security.sh`
+**Location**: `scripts/security/mvn-update-dep-security.sh`
 
 **What it does**:
 - Resolves all compile-scope dependencies (including transitives) from Maven
@@ -32,17 +32,17 @@ Artagon projects use multiple security scripts to ensure dependency integrity th
 **Usage**:
 ```bash
 # Update baselines (long form)
-./scripts/update-dependency-security.sh --update
+./scripts/mvn-update-dep-security.sh --update
 
 # Update baselines (short form)
-./scripts/update-dependency-security.sh -u
+./scripts/mvn-update-dep-security.sh -u
 
 # Verify baselines are current
-./scripts/update-dependency-security.sh --verify
-./scripts/update-dependency-security.sh -v
+./scripts/mvn-update-dep-security.sh --verify
+./scripts/mvn-update-dep-security.sh -v
 
 # Show all options
-./scripts/update-dependency-security.sh --help
+./scripts/mvn-update-dep-security.sh --help
 ```
 
 **Options**:
@@ -142,7 +142,7 @@ SUCCESS: Verified 4 checksum(s) successfully
 **Location**: `scripts/security/generate-dependency-checksums.sh`
 
 **What it does**:
-- Similar to `update-dependency-security.sh` but focuses only on checksums
+- Similar to `mvn-update-dep-security.sh` but focuses only on checksums
 - Generates CSV files with SHA-256 checksums
 - Lighter-weight alternative when PGP verification isn't needed
 
@@ -257,14 +257,14 @@ Uses `exec-maven-plugin` to verify the security baseline files themselves:
 
 Projects can create wrapper scripts to delegate to the shared scripts:
 
-**Example**: `artagon-parent/scripts/update-dependency-security.sh`
+**Example**: `artagon-parent/scripts/mvn-update-dep-security.sh`
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-COMMON_SCRIPT="${PROJECT_ROOT}/.common/artagon-common/scripts/security/update-dependency-security.sh"
+COMMON_SCRIPT="${PROJECT_ROOT}/.common/artagon-common/scripts/security/mvn-update-dep-security.sh"
 
 if [[ ! -x "${COMMON_SCRIPT}" ]]; then
     echo "ERROR: Shared script not found at ${COMMON_SCRIPT}" >&2
@@ -288,7 +288,7 @@ exec "${COMMON_SCRIPT}" --project-root "${PROJECT_ROOT}" "$@"
 
 2. **Generate initial security baselines**:
    ```bash
-   ./scripts/update-dependency-security.sh --update
+   ./scripts/mvn-update-dep-security.sh --update
    ```
 
 3. **Commit baseline files**:
@@ -305,7 +305,7 @@ When updating dependencies:
 
 2. **Regenerate baselines**:
    ```bash
-   ./scripts/update-dependency-security.sh --update
+   ./scripts/mvn-update-dep-security.sh --update
    ```
 
 3. **Review changes**:
@@ -325,7 +325,7 @@ Before creating a release:
 
 1. **Verify baselines are current**:
    ```bash
-   ./scripts/update-dependency-security.sh --verify
+   ./scripts/mvn-update-dep-security.sh --verify
    ```
 
 2. **Run security profile**:
@@ -379,11 +379,11 @@ git submodule update --init --recursive
 
 ### Permission Denied
 
-**Error**: `Permission denied: ./scripts/update-dependency-security.sh`
+**Error**: `Permission denied: ./scripts/mvn-update-dep-security.sh`
 
 **Solution**: Make script executable:
 ```bash
-chmod +x ./scripts/update-dependency-security.sh
+chmod +x ./scripts/mvn-update-dep-security.sh
 ```
 
 ### Checksum Mismatch

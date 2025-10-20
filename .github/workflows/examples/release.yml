@@ -23,7 +23,8 @@ on:
 jobs:
   release:
     name: Release to Maven Central
-    uses: artagon/artagon-common/.github/workflows/maven-release.yml@main
+    if: startsWith(github.ref, 'refs/heads/release-')
+    uses: artagon/artagon-common/.github/workflows/maven_release.yml@main
     with:
       java-version: '25'
       release-version: ${{ github.event.inputs.release-version }}

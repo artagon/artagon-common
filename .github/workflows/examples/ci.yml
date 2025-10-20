@@ -5,14 +5,18 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches:
+      - main
+      - 'release-*'
   pull_request:
-    branches: [ main, develop ]
+    branches:
+      - main
+      - 'release-*'
 
 jobs:
   build:
     name: Build and Test
-    uses: artagon/artagon-common/.github/workflows/java-build.yml@main
+    uses: artagon/artagon-common/.github/workflows/maven_build.yml@main
     with:
       java-version: '25'
       run-tests: true
@@ -21,7 +25,7 @@ jobs:
   security-scan:
     name: Security Scan
     needs: build
-    uses: artagon/artagon-common/.github/workflows/security-scan.yml@main
+    uses: artagon/artagon-common/.github/workflows/maven_security_scan.yml@main
     with:
       run-dependency-check: true
       run-ossindex-audit: true

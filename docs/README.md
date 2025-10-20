@@ -43,7 +43,7 @@ Comprehensive deployment guide:
 **→ [SECURITY-SCRIPTS.md](SECURITY-SCRIPTS.md)**
 
 Security scripts documentation:
-- `update-dependency-security.sh` - Generate security baselines
+- `mvn-update-dep-security.sh` - Generate security baselines
 - `verify-checksums.sh` - Verify security file checksums
 - Maven plugin integration
 - Security workflow and best practices
@@ -96,10 +96,10 @@ docs/
 See [../.github/workflows/README.md](../.github/workflows/README.md) for reusable workflows documentation.
 
 Available workflows:
-- **java-build.yml** - Build and test Java projects
-- **maven-deploy.yml** - Deploy to Maven repositories
-- **maven-release.yml** - Automated release process
-- **security-scan.yml** - Security vulnerability scanning
+- **maven_build.yml** - Build and test Java projects
+- **maven_deploy.yml** - Deploy to Maven repositories
+- **maven_release.yml** - Automated release process
+- **maven_security_scan.yml** - Security vulnerability scanning
 
 ---
 
@@ -129,7 +129,7 @@ Available workflows:
 ### I'm Managing Dependency Security
 
 1. [SECURITY-SCRIPTS.md](SECURITY-SCRIPTS.md) - Security scripts guide
-2. Update baselines: `./scripts/update-dependency-security.sh --update`
+2. Update baselines: `./scripts/mvn-update-dep-security.sh --update`
 3. Verify before release: `mvn -P artagon-oss-security verify`
 
 ---

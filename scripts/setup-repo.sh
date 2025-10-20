@@ -26,6 +26,10 @@ set -euo pipefail
 # Script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 COMMON_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+LIB_PATH="${SCRIPT_DIR}/lib/common.sh"
+
+# shellcheck source=scripts/lib/common.sh
+source "${LIB_PATH}"
 
 # Default values
 PROJECT_TYPE=""
@@ -271,13 +275,10 @@ if [[ "$VISIBILITY" == "private" ]]; then
     VISIBILITY_FLAG="--private"
 fi
 
-DESCRIPTION_FLAG=""
-if [[ -n "$DESCRIPTION" ]]; then
-    DESCRIPTION_FLAG="--description \"$DESCRIPTION\""
-fi
-
 # Create GitHub repository
-eval gh repo create "$OWNER/$PROJECT_NAME" $VISIBILITY_FLAG $DESCRIPTION_FLAG --clone
+if ! gh_repo_create "$OWNER" "$PROJECT_NAME" "$VISIBILITY_FLAG" "$DESCRIPTION" --clone; then
+    error "Failed to create GitHub repository via gh CLI"
+fi
 
 if [[ ! -d "$PROJECT_NAME" ]]; then
     error "Repository directory not created: $PROJECT_NAME"
@@ -418,13 +419,14 @@ int main(int argc, char *argv[]) {
 EOF
 
         # Create basic header
+        HEADER_GUARD="$(generate_header_guard "$PROJECT_NAME")"
         cat > include/${PROJECT_NAME}.h << EOF
-#ifndef ${PROJECT_NAME^^}_H
-#define ${PROJECT_NAME^^}_H
+#ifndef ${HEADER_GUARD}_H
+#define ${HEADER_GUARD}_H
 
 // Add your public API here
 
-#endif // ${PROJECT_NAME^^}_H
+#endif // ${HEADER_GUARD}_H
 EOF
         ;;
 
@@ -468,9 +470,10 @@ int main(int argc, char* argv[]) {
 EOF
 
         # Create basic header
+        HEADER_GUARD="$(generate_header_guard "$PROJECT_NAME")"
         cat > include/${PROJECT_NAME}.hpp << EOF
-#ifndef ${PROJECT_NAME^^}_HPP
-#define ${PROJECT_NAME^^}_HPP
+#ifndef ${HEADER_GUARD}_HPP
+#define ${HEADER_GUARD}_HPP
 
 #include <string>
 
@@ -480,7 +483,7 @@ namespace ${PROJECT_NAME//-/_} {
 
 } // namespace ${PROJECT_NAME//-/_}
 
-#endif // ${PROJECT_NAME^^}_HPP
+#endif // ${HEADER_GUARD}_HPP
 EOF
         ;;
 

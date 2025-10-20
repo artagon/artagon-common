@@ -17,10 +17,12 @@ Reusable GitHub Actions workflows for Java/Maven projects deploying to Maven Cen
 
 These reusable workflows provide standardized CI/CD pipelines for Java projects:
 
-- **java-build.yml** - Build and test Java projects with Maven
-- **maven-deploy.yml** - Deploy artifacts to Maven Central (Sonatype OSSRH)
-- **maven-release.yml** - Automated release process with versioning
-- **security-scan.yml** - Comprehensive security scanning
+- **maven_build.yml** - Build and test Java projects with Maven
+- **maven_deploy.yml** - Deploy artifacts to Maven Central (Sonatype OSSRH)
+- **maven_release.yml** - Automated release process with versioning
+- **maven_release_branch.yml** - Validate release branches and optionally deploy to staging
+- **maven_release_tag.yml** - Publish tagged releases after validation
+- **maven_security_scan.yml** - Comprehensive security scanning
 
 ### Benefits
 
@@ -34,7 +36,7 @@ These reusable workflows provide standardized CI/CD pipelines for Java projects:
 
 ## Available Workflows
 
-### 1. Java Build (java-build.yml)
+### 1. Maven Build (maven_build.yml)
 
 Builds and tests Java projects with customizable options.
 
@@ -49,7 +51,7 @@ Builds and tests Java projects with customizable options.
 **Outputs:**
 - `build-version` - The project version that was built
 
-### 2. Maven Deploy (maven-deploy.yml)
+### 2. Maven Deploy (maven_deploy.yml)
 
 Deploys artifacts to Maven Central (Sonatype OSSRH).
 
@@ -66,7 +68,7 @@ Deploys artifacts to Maven Central (Sonatype OSSRH).
 - `GPG_PRIVATE_KEY` - GPG private key for signing
 - `GPG_PASSPHRASE` - GPG passphrase
 
-### 3. Maven Release (maven-release.yml)
+### 3. Maven Release (maven_release.yml)
 
 Automated release process with versioning and tagging.
 
@@ -89,7 +91,7 @@ Automated release process with versioning and tagging.
 **Outputs:**
 - `release-tag` - The git tag created for the release
 
-### 4. Security Scan (security-scan.yml)
+### 4. Maven Security Scan (maven_security_scan.yml)
 
 Comprehensive security scanning with multiple tools.
 
@@ -105,6 +107,35 @@ Comprehensive security scanning with multiple tools.
 - ✅ OWASP Dependency Check
 - ✅ Trivy vulnerability scanner
 - ✅ SpotBugs security analysis
+
+### 5. Maven Release Branch (maven_release_branch.yml)
+
+Validates `release-*` branches, runs build and security baselines, enforces version naming rules, and can optionally push artifacts to staging repositories.
+
+**Inputs:**
+- `deploy-to-staging` - Deploy to staging repositories after validation (default: false)
+- `run-tests`, `run-integration-tests`, `maven-args` - Forwarded to the build workflow
+- `run-dependency-check`, `run-ossindex-audit`, `run-trivy-scan`, `fail-on-severity` - Forwarded to the security workflow
+- `deploy-profile`, `deploy-skip-tests`, `deploy-args` - Passed to the deploy workflow when staging is enabled
+
+**Secrets:**
+- `OSSRH_USERNAME`, `OSSRH_PASSWORD`, `GPG_PRIVATE_KEY`, `GPG_PASSPHRASE` are required when `deploy-to-staging` is `true`
+
+### 6. Maven Release Tag (maven_release_tag.yml)
+
+Verifies the pushed Git tag against the Maven project version and publishes artifacts using the shared deploy workflow.
+
+**Inputs:**
+- `tag` - The git tag to publish (defaults to the caller workflow ref)
+- `deploy-profile` - Maven profile to use when deploying (default: 'ossrh-deploy,artagon-oss-release')
+- `skip-tests` - Skip tests during deployment (default: false)
+- `maven-args` - Additional Maven arguments passed to `mvn`
+
+**Secrets:**
+- `OSSRH_USERNAME`
+- `OSSRH_PASSWORD`
+- `GPG_PRIVATE_KEY`
+- `GPG_PASSPHRASE`
 
 ---
 
@@ -125,7 +156,7 @@ on:
 
 jobs:
   build:
-    uses: artagon/artagon-common/.github/workflows/java-build.yml@main
+    uses: artagon/artagon-common/.github/workflows/maven_build.yml@main
     with:
       java-version: '25'
       run-tests: true
@@ -143,6 +174,12 @@ Go to **Settings > Secrets and variables > Actions** and add:
 ### 3. Use the Workflow
 
 Push to your repository or create a pull request to trigger the workflow.
+
+### 4. Wire Up Release Automation
+
+- Copy `.github/workflows/examples/release-branch.yml` to orchestrate builds and security checks on `release-*` branches. The optional manual input stages a build to OSSRH once QA signs off.
+- Copy `.github/workflows/examples/release-tag.yml` to publish whenever a `v*` tag is pushed. The workflow verifies that the Maven version matches the tag before calling the reusable deploy pipeline.
+- Keep `.github/workflows/examples/release.yml` as a manual fallback. Run it from the relevant `release-*` branch if you need a fully managed release (version bump → deploy → retag).
 
 ---
 
@@ -209,7 +246,7 @@ on:
 jobs:
   build:
     name: Build and Test
-    uses: artagon/artagon-common/.github/workflows/java-build.yml@main
+    uses: artagon/artagon-common/.github/workflows/maven_build.yml@main
     with:
       java-version: '25'
       run-tests: true
@@ -218,7 +255,7 @@ jobs:
   security:
     name: Security Scan
     needs: build
-    uses: artagon/artagon-common/.github/workflows/security-scan.yml@main
+    uses: artagon/artagon-common/.github/workflows/maven_security_scan.yml@main
     with:
       run-dependency-check: true
       run-ossindex-audit: true
@@ -237,7 +274,7 @@ on:
 
 jobs:
   deploy:
-    uses: artagon/artagon-common/.github/workflows/maven-deploy.yml@main
+    uses: artagon/artagon-common/.github/workflows/maven_deploy.yml@main
     with:
       java-version: '25'
       deploy-profile: 'ossrh-deploy'
@@ -267,7 +304,7 @@ on:
 
 jobs:
   release:
-    uses: artagon/artagon-common/.github/workflows/maven-release.yml@main
+    uses: artagon/artagon-common/.github/workflows/maven_release.yml@main
     with:
       release-version: ${{ inputs.release-version }}
       auto-release-nexus: ${{ inputs.auto-release }}
@@ -292,7 +329,7 @@ jobs:
     strategy:
       matrix:
         java: ['21', '25']
-    uses: artagon/artagon-common/.github/workflows/java-build.yml@main
+    uses: artagon/artagon-common/.github/workflows/maven_build.yml@main
     with:
       java-version: ${{ matrix.java }}
       run-tests: true
@@ -311,7 +348,7 @@ You can reference workflows by:
 **Recommended**: Use tags for production workflows:
 
 ```yaml
-uses: artagon/artagon-common/.github/workflows/java-build.yml@v1.0.0
+uses: artagon/artagon-common/.github/workflows/maven_build.yml@v1.0.0
 ```
 
 ---
@@ -323,7 +360,7 @@ uses: artagon/artagon-common/.github/workflows/java-build.yml@v1.0.0
 ```yaml
 jobs:
   deploy:
-    uses: artagon/artagon-common/.github/workflows/maven-deploy.yml@main
+    uses: artagon/artagon-common/.github/workflows/maven_deploy.yml@main
     with:
       deploy-profile: 'my-custom-profile,another-profile'
     secrets:
@@ -336,7 +373,7 @@ jobs:
 ```yaml
 jobs:
   build:
-    uses: artagon/artagon-common/.github/workflows/java-build.yml@main
+    uses: artagon/artagon-common/.github/workflows/maven_build.yml@main
     with:
       maven-args: '-Dmy.property=value -X'
 ```
@@ -347,7 +384,7 @@ jobs:
 jobs:
   deploy:
     if: github.ref == 'refs/heads/main'
-    uses: artagon/artagon-common/.github/workflows/maven-deploy.yml@main
+    uses: artagon/artagon-common/.github/workflows/maven_deploy.yml@main
     # ...
 ```
 

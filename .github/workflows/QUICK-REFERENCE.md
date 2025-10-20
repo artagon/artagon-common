@@ -9,7 +9,7 @@ Quick reference for using Artagon reusable workflows.
 ```yaml
 jobs:
   build:
-    uses: artagon/artagon-common/.github/workflows/java-build.yml@main
+    uses: artagon/artagon-common/.github/workflows/maven_build.yml@main
 ```
 
 ### Deploy Snapshot
@@ -17,7 +17,7 @@ jobs:
 ```yaml
 jobs:
   deploy:
-    uses: artagon/artagon-common/.github/workflows/maven-deploy.yml@main
+    uses: artagon/artagon-common/.github/workflows/maven_deploy.yml@main
     secrets: inherit
 ```
 
@@ -26,7 +26,8 @@ jobs:
 ```yaml
 jobs:
   release:
-    uses: artagon/artagon-common/.github/workflows/maven-release.yml@main
+    # Run this workflow from a release-* branch selected in the manual dispatch form
+    uses: artagon/artagon-common/.github/workflows/maven_release.yml@main
     with:
       release-version: '1.0.0'
     secrets: inherit
@@ -37,7 +38,7 @@ jobs:
 ```yaml
 jobs:
   security:
-    uses: artagon/artagon-common/.github/workflows/security-scan.yml@main
+    uses: artagon/artagon-common/.github/workflows/maven_security_scan.yml@main
 ```
 
 ---
@@ -64,7 +65,7 @@ name: CI
 on: [push, pull_request]
 jobs:
   build:
-    uses: artagon/artagon-common/.github/workflows/java-build.yml@main
+    uses: artagon/artagon-common/.github/workflows/maven_build.yml@main
 ```
 
 ### CI + Security
@@ -74,10 +75,10 @@ name: CI
 on: [push, pull_request]
 jobs:
   build:
-    uses: artagon/artagon-common/.github/workflows/java-build.yml@main
+    uses: artagon/artagon-common/.github/workflows/maven_build.yml@main
   security:
     needs: build
-    uses: artagon/artagon-common/.github/workflows/security-scan.yml@main
+    uses: artagon/artagon-common/.github/workflows/maven_security_scan.yml@main
 ```
 
 ### Auto-Deploy Snapshots
@@ -89,12 +90,40 @@ on:
     branches: [main]
 jobs:
   deploy:
-    uses: artagon/artagon-common/.github/workflows/maven-deploy.yml@main
+    uses: artagon/artagon-common/.github/workflows/maven_deploy.yml@main
     secrets:
       OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
       OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
       GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
       GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+```
+
+### Release Branch Checks
+
+```yaml
+name: Release Branch
+on:
+  push:
+    branches: ['release-*']
+jobs:
+  release:
+    uses: artagon/artagon-common/.github/workflows/maven_release_branch.yml@main
+    with:
+      deploy-to-staging: false
+    secrets: inherit
+```
+
+### Publish on Release Tag
+
+```yaml
+name: Publish Release
+on:
+  push:
+    tags: ['v*']
+jobs:
+  release:
+    uses: artagon/artagon-common/.github/workflows/maven_release_tag.yml@main
+    secrets: inherit
 ```
 
 ### Manual Release
@@ -108,7 +137,7 @@ on:
         required: true
 jobs:
   release:
-    uses: artagon/artagon-common/.github/workflows/maven-release.yml@main
+    uses: artagon/artagon-common/.github/workflows/maven_release.yml@main
     with:
       release-version: ${{ inputs.version }}
     secrets:

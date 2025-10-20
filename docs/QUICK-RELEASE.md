@@ -8,7 +8,7 @@
 2. **Click**: "Deploy to GitHub Packages" (in left sidebar)
 3. **Click**: "Run workflow" button (right side)
 4. **Select**:
-   - Branch: `main`
+   - Branch: `release-x.y.z`
    - Deployment type: `release`
 5. **Click**: "Run workflow" (green button)
 
@@ -20,7 +20,7 @@
 2. **Click**: "Deploy to GitHub Packages" (in left sidebar)
 3. **Click**: "Run workflow" button (right side)
 4. **Select**:
-   - Branch: `main`
+   - Branch: `release-x.y.z`
    - Deployment type: `release`
 5. **Click**: "Run workflow" (green button)
 
@@ -30,7 +30,7 @@
 
 ## Method 2: Automatic Release on Push (Simplest)
 
-Just push to main branch - the workflow automatically deploys!
+Just push to your `release-x.y.z` branch - the workflow automatically deploys (or stages) the build!
 
 ```bash
 # Already done! Your current push already triggered deployment
@@ -56,7 +56,7 @@ git tag v1
 git push origin v1
 ```
 
-✅ **Auto-deploys to GitHub Packages!**
+✅ `.github/workflows/examples/release-tag.yml` validates the tag against the Maven version and auto-deploys to GitHub Packages / Maven Central!
 
 ---
 

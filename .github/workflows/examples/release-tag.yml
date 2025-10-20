@@ -1,0 +1,21 @@
+# Example Tag Release Workflow
+# Copy this to your project's .github/workflows/release-tag.yml
+
+name: Release Tag
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  publish:
+    name: Publish Release
+    uses: artagon/artagon-common/.github/workflows/maven_release_tag.yml@main
+    with:
+      skip-tests: false
+    secrets: inherit
