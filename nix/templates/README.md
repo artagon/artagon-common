@@ -16,7 +16,7 @@ Reproducible development environment for Maven-based Java projects.
 - `README.md` - Comprehensive patterns and usage guide
 
 **Provides:**
-- Java Development Kit (JDK 17 and 21)
+- Java Development Kit (JDK 25 default, optional JDK 17 & 21 shells)
 - Maven build tool
 - Security tools (GPG, OpenSSL)
 - Documentation tools (Pandoc)
@@ -24,9 +24,10 @@ Reproducible development environment for Maven-based Java projects.
 - Utilities (curl, jq, yq-go)
 
 **Multiple Development Shells:**
-- `default` - JDK 17 + Maven + all tools
+- `default` - JDK 25 + Maven + all tools
 - `jdk17` - Explicit JDK 17 environment
 - `jdk21` - JDK 21 for testing compatibility
+- `jdk25` - Explicit JDK 25 shell (same as default, named for clarity)
 - `ci` - Minimal CI environment
 
 **Usage in Projects:**

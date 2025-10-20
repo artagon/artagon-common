@@ -316,7 +316,7 @@ case "$PROJECT_TYPE" in
         mkdir -p .github/workflows
 
         # Copy templates
-        cp .common/artagon-common/templates/settings.xml .
+        cp .common/artagon-common/configs/java/settings.xml .
 
         # Create basic pom.xml
         cat > pom.xml << EOF
@@ -359,8 +359,10 @@ case "$PROJECT_TYPE" in
 EOF
 
         # Copy .gitignore
-        if [[ -f .common/artagon-common/templates/java/.gitignore.template ]]; then
-            cp .common/artagon-common/templates/java/.gitignore.template .gitignore
+        if [[ -f .common/artagon-common/configs/java/.gitignore.template ]]; then
+            cp .common/artagon-common/configs/java/.gitignore.template .gitignore
+        elif [[ -f .common/artagon-common/configs/.gitignore.template ]]; then
+            cp .common/artagon-common/configs/.gitignore.template .gitignore
         fi
         ;;
 
@@ -371,25 +373,25 @@ EOF
         # Build system specific setup
         if [[ "$BUILD_SYSTEM" == "bazel" ]]; then
             # Copy Bazel templates
-            cp .common/artagon-common/templates/c/bazel/.bazelversion .
-            cp .common/artagon-common/templates/c/bazel/.bazelrc .
-            cp .common/artagon-common/templates/c/bazel/MODULE.bazel .
-            cp .common/artagon-common/templates/c/bazel/WORKSPACE.bazel .
-            cp .common/artagon-common/templates/c/bazel/BUILD.bazel .
+            cp .common/artagon-common/configs/c/bazel/.bazelversion .
+            cp .common/artagon-common/configs/c/bazel/.bazelrc .
+            cp .common/artagon-common/configs/c/bazel/MODULE.bazel .
+            cp .common/artagon-common/configs/c/bazel/WORKSPACE.bazel .
+            cp .common/artagon-common/configs/c/bazel/BUILD.bazel .
             sed -i.bak "s/PROJECT_NAME/${PROJECT_NAME}/g" MODULE.bazel WORKSPACE.bazel BUILD.bazel && \
                 rm -f MODULE.bazel.bak WORKSPACE.bazel.bak BUILD.bazel.bak
         else
             # Copy CMake templates
-            cp .common/artagon-common/templates/c/CMakeLists.txt.template CMakeLists.txt
+            cp .common/artagon-common/configs/c/CMakeLists.txt.template CMakeLists.txt
             sed -i.bak "s/PROJECT_NAME/${PROJECT_NAME}/g" CMakeLists.txt && rm CMakeLists.txt.bak
         fi
 
-        cp .common/artagon-common/templates/c/.clang-format .
-        cp .common/artagon-common/templates/c/.gitignore.template .gitignore
+        cp .common/artagon-common/configs/c/.clang-format .
+        cp .common/artagon-common/configs/c/.gitignore.template .gitignore
 
         # Copy GitHub Actions workflows
-        if [ -d .common/artagon-common/templates/c/.github-workflows-examples ]; then
-            cp .common/artagon-common/templates/c/.github-workflows-examples/*.yml .github/workflows/
+        if [ -d .common/artagon-common/configs/c/.github-workflows-examples ]; then
+            cp .common/artagon-common/configs/c/.github-workflows-examples/*.yml .github/workflows/
         fi
 
         # Create basic main.c
@@ -420,26 +422,26 @@ EOF
         # Build system specific setup
         if [[ "$BUILD_SYSTEM" == "bazel" ]]; then
             # Copy Bazel templates
-            cp .common/artagon-common/templates/cpp/bazel/.bazelversion .
-            cp .common/artagon-common/templates/cpp/bazel/.bazelrc .
-            cp .common/artagon-common/templates/cpp/bazel/MODULE.bazel .
-            cp .common/artagon-common/templates/cpp/bazel/WORKSPACE.bazel .
-            cp .common/artagon-common/templates/cpp/bazel/BUILD.bazel .
+            cp .common/artagon-common/configs/cpp/bazel/.bazelversion .
+            cp .common/artagon-common/configs/cpp/bazel/.bazelrc .
+            cp .common/artagon-common/configs/cpp/bazel/MODULE.bazel .
+            cp .common/artagon-common/configs/cpp/bazel/WORKSPACE.bazel .
+            cp .common/artagon-common/configs/cpp/bazel/BUILD.bazel .
             sed -i.bak "s/PROJECT_NAME/${PROJECT_NAME}/g" MODULE.bazel WORKSPACE.bazel BUILD.bazel && \
                 rm -f MODULE.bazel.bak WORKSPACE.bazel.bak BUILD.bazel.bak
         else
             # Copy CMake templates
-            cp .common/artagon-common/templates/cpp/CMakeLists.txt.template CMakeLists.txt
+            cp .common/artagon-common/configs/cpp/CMakeLists.txt.template CMakeLists.txt
             sed -i.bak "s/PROJECT_NAME/${PROJECT_NAME}/g" CMakeLists.txt && rm CMakeLists.txt.bak
         fi
 
-        cp .common/artagon-common/templates/cpp/.clang-format .
-        cp .common/artagon-common/templates/cpp/.clang-tidy .
-        cp .common/artagon-common/templates/cpp/.gitignore.template .gitignore
+        cp .common/artagon-common/configs/cpp/.clang-format .
+        cp .common/artagon-common/configs/cpp/.clang-tidy .
+        cp .common/artagon-common/configs/cpp/.gitignore.template .gitignore
 
         # Copy GitHub Actions workflows
-        if [ -d .common/artagon-common/templates/cpp/.github-workflows-examples ]; then
-            cp .common/artagon-common/templates/cpp/.github-workflows-examples/*.yml .github/workflows/
+        if [ -d .common/artagon-common/configs/cpp/.github-workflows-examples ]; then
+            cp .common/artagon-common/configs/cpp/.github-workflows-examples/*.yml .github/workflows/
         fi
 
         # Create basic main.cpp
@@ -475,7 +477,7 @@ EOF
         cargo init --name "${PROJECT_NAME}"
 
         # Copy templates
-        cp .common/artagon-common/templates/rust/Cargo.toml.template Cargo.toml.new
+        cp .common/artagon-common/configs/rust/Cargo.toml.template Cargo.toml.new
         sed -i.bak "s/PROJECT_NAME/${PROJECT_NAME}/g" Cargo.toml.new && rm Cargo.toml.new.bak
 
         # Merge with generated Cargo.toml
@@ -484,10 +486,10 @@ EOF
             mv Cargo.toml.new Cargo.toml
         fi
 
-        cp .common/artagon-common/templates/rust/rustfmt.toml .
-        cp .common/artagon-common/templates/rust/clippy.toml .
-        cp -r .common/artagon-common/templates/rust/.cargo .
-        cp .common/artagon-common/templates/rust/.gitignore.template .gitignore
+        cp .common/artagon-common/configs/rust/rustfmt.toml .
+        cp .common/artagon-common/configs/rust/clippy.toml .
+        cp -r .common/artagon-common/configs/rust/.cargo .
+        cp .common/artagon-common/configs/rust/.gitignore.template .gitignore
         ;;
 esac
 

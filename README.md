@@ -74,32 +74,28 @@ artagon-common/
 │       ├── c/flake.nix         # C17 + CMake + GCC/Clang
 │       ├── cpp/flake.nix       # C++23 + CMake + GCC/Clang
 │       └── rust/flake.nix      # Rust stable + Cargo
-├── templates/                   # Project templates
+├── configs/                     # Shared project templates and configs
 │   ├── java/
-│   │   ├── settings.xml        # Maven settings with GitHub Packages
-│   │   └── .gitignore.template
-│   ├── c/                      # 🆕 C project templates
+│   │   └── settings.xml        # Maven settings with GitHub Packages
+│   ├── c/                      # 🆕 C project templates (CMake + Bazel)
 │   │   ├── CMakeLists.txt.template
 │   │   ├── .clang-format
-│   │   └── .gitignore.template
-│   ├── cpp/                    # 🆕 C++ project templates
+│   │   ├── .gitignore.template
+│   │   └── bazel/              # Bazel starter files
+│   ├── cpp/                    # 🆕 C++ project templates (CMake + Bazel)
 │   │   ├── CMakeLists.txt.template
 │   │   ├── .clang-format
 │   │   ├── .clang-tidy
-│   │   └── .gitignore.template
+│   │   ├── .gitignore.template
+│   │   └── bazel/              # Bazel starter files
 │   ├── rust/                   # 🆕 Rust project templates
 │   │   ├── Cargo.toml.template
 │   │   ├── rustfmt.toml
 │   │   ├── clippy.toml
 │   │   ├── .cargo/config.toml
 │   │   └── .gitignore.template
-│   ├── .gitignore.template     # Generic .gitignore
 │   ├── .editorconfig          # Code style settings
-│   └── README.template.md      # Project README template
-├── configs/                     # Shared configurations
-│   ├── checkstyle.xml          # Java code style
-│   ├── spotbugs.xml            # Bug detection
-│   └── pmd.xml                 # Code analysis
+│   └── .gitignore.template     # Generic .gitignore
 ├── .github/
 │   └── workflows/              # 🆕 Reusable GitHub Actions workflows
 │       ├── c-ci.yml           # C project CI (build, test, coverage, sanitizers)
@@ -111,6 +107,9 @@ artagon-common/
 ├── .gitignore                  # Git ignore for this repo
 └── README.md                   # This file
 ```
+
+> **Note:** Language templates formerly stored in `templates/` now reside in
+> `configs/`. Update any project automation that referenced the legacy paths.
 
 ## Available Scripts
 

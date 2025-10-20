@@ -162,30 +162,38 @@
           };
         };
 
-        # Checks
-        checks = {
-          # Verify Maven project compiles
-          maven-compile = pkgs.stdenv.mkDerivation {
-            name = "maven-compile-check";
-            src = ./.;
-            buildInputs = [ pkgs.maven pkgs.jdk ];
-            buildPhase = ''
-              export JAVA_HOME=${pkgs.jdk}/lib/openjdk
-              mvn clean compile -DskipTests
-            '';
-            installPhase = "touch $out";
-          };
-
-          # Verify security scripts are executable
-          scripts-executable = pkgs.runCommand "scripts-check" {} ''
-            cd ${./.}
-            if [ ! -x scripts/update-dependency-security.sh ]; then
-              echo "Error: update-dependency-security.sh not executable"
-              exit 1
-            fi
-            touch $out
-          '';
-        };
+        # Checks (auto-enabled when project files are present)
+        checks =
+          let
+            hasPom = builtins.pathExists ./pom.xml;
+            hasSecurityScript =
+              builtins.pathExists ./scripts/update-dependency-security.sh;
+          in
+            (pkgs.lib.optionalAttrs hasPom {
+              # Verify Maven project compiles
+              maven-compile = pkgs.stdenv.mkDerivation {
+                name = "maven-compile-check";
+                src = ./.;
+                buildInputs = [ pkgs.maven pkgs.jdk ];
+                buildPhase = ''
+                  export JAVA_HOME=${pkgs.jdk}/lib/openjdk
+                  mvn clean compile -DskipTests
+                '';
+                installPhase = "touch $out";
+              };
+            })
+            //
+            (pkgs.lib.optionalAttrs hasSecurityScript {
+              # Verify security scripts are executable
+              scripts-executable = pkgs.runCommand "scripts-check" {} ''
+                cd ${./.}
+                if [ ! -x scripts/update-dependency-security.sh ]; then
+                  echo "Error: update-dependency-security.sh not executable"
+                  exit 1
+                fi
+                touch $out
+              '';
+            });
 
         # Formatter
         formatter = pkgs.writeShellScriptBin "format-all" ''

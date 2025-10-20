@@ -505,6 +505,12 @@ nix flake check
 nix build .#docker
 ```
 
+> **Note:** Template checks are enabled only when your project includes
+> supporting files (`pom.xml`, `scripts/update-dependency-security.sh`, etc.).
+> When you reference the shared template directly (for example via a symlink),
+> the checks remain disabled to avoid false failures. Copy the template into
+> your repository if you want `nix flake check` to exercise your build.
+
 ## Direnv Integration
 
 ### .envrc for Maven Projects
