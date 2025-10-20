@@ -52,7 +52,7 @@ jobs:
               - feat(bazel): add C++26 support
               - fix(workflows): correct matrix syntax
               - docs: update API reference
-         wip: true
+          wip: true
           validateSingleCommit: false
 
       - name: Check Branch Name
