@@ -139,10 +139,11 @@ cleanup_test_env() {
   fi
 }
 
-# Run command and capture exit code safely
-# Usage: run_and_capture_exit <command> [args...]
-# Returns: exit code of the command
-run_and_capture_exit() {
+# Run command without errexit (set -e) enabled
+# Usage: if run_without_errexit <command> [args...]; then ... fi
+# This temporarily disables set -e to allow the command to fail without
+# exiting the script. Use in conditionals to handle both success and failure.
+run_without_errexit() {
   set +e
   "$@"
   local exit_code=$?

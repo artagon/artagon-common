@@ -44,14 +44,11 @@ test_basic_substitution() {
   cp -r "$ROOT_DIR/scripts" .common/artagon-common/
 
   # Run script with explicit parameters
-  run_and_capture_exit "$SETUP_SCRIPT" \
+  if run_without_errexit "$SETUP_SCRIPT" \
       --repo-name "test-project" \
       --repo-owner "test-org" \
       --repo-desc "Test description" \
-      --force 2>&1
-  local exit_code=$?
-
-  if [[ $exit_code -eq 0 ]]; then
+      --force 2>&1; then
     assert_file_exists "CONTRIBUTING.md"
     assert_file_contains "CONTRIBUTING.md" "test-project"
     assert_file_contains "CONTRIBUTING.md" "test-org"
@@ -62,7 +59,7 @@ test_basic_substitution() {
     assert_file_not_contains "CONTRIBUTING.md" "{{ repository.owner }}"
     assert_file_not_contains "CONTRIBUTING.md" "{{ repository.description }}"
   else
-    echo "✗ Script execution failed with exit code: $exit_code"
+    echo "✗ Script execution failed"
     ((FAILED_TESTS++))
   fi
 
