@@ -6,6 +6,13 @@ set -euo pipefail
 # Creates and configures a new project repository with language-specific
 # templates, Nix integration, and GitHub configurations.
 #
+# Automatically sets up:
+#   - GitHub PR and issue templates (symlinked from artagon-common)
+#   - Auto-labeler configuration
+#   - Git hooks for semantic commits and pre-commit checks
+#   - .editorconfig for consistent editor settings
+#   - CONTRIBUTING.md from template
+#
 # Usage:
 #   ./repo_setup.sh --type <java|c|cpp|rust> --name <project-name> [options]
 #
