@@ -101,13 +101,13 @@ After release, users can use your packages:
 </parent>
 ```
 
-**See**: [GITHUB-PACKAGES.md](GITHUB-PACKAGES.md) for complete usage guide
+**See**: [MAVEN_GITHUB-PACKAGES.md](MAVEN_GITHUB-PACKAGES.md) for complete usage guide
 
 ---
 
 ## Need More Control?
 
-See [RELEASE-GUIDE.md](RELEASE-GUIDE.md) for:
+See [MAVEN_RELEASE_GUIDE.md](MAVEN_RELEASE_GUIDE.md) for:
 - Version management
 - Maven Central releases
 - Advanced workflows

@@ -233,8 +233,8 @@ echo "use-agent" >> ~/.gnupg/gpg.conf
 
 ```
 artagon/
-├── DEPLOYMENT.md              # Full deployment guide
-├── QUICKSTART-DEPLOY.md       # This file
+├── MAVEN_DEPLOYMENT.md              # Full deployment guide
+├── MAVEN_QUICKSTART-DEPLOY.md       # This file
 ├── artagon-bom/
 │   └── pom.xml               # BOM with ossrh-deploy profile
 ├── artagon-parent/
@@ -253,7 +253,7 @@ artagon/
 
 ## Resources
 
-- **Full Guide**: [DEPLOYMENT.md](DEPLOYMENT.md)
+- **Full Guide**: [MAVEN_DEPLOYMENT.md](MAVEN_DEPLOYMENT.md)
 - **Scripts README**: [artagon-common/scripts/README.md](artagon-common/scripts/README.md)
 - **Sonatype Guide**: https://central.sonatype.org/publish/publish-guide/
 - **Nexus Repository Manager**: https://s01.oss.sonatype.org/

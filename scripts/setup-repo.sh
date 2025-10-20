@@ -329,6 +329,19 @@ case "$PROJECT_TYPE" in
         mkdir -p src/{main,test}/{java,resources}
         mkdir -p .github/workflows
 
+        # Install reusable workflow wrappers for CI/CD
+        WORKFLOW_TEMPLATE_DIR=".common/artagon-common/.github/workflows/examples"
+        if [[ -d "$WORKFLOW_TEMPLATE_DIR" ]]; then
+            info "Installing GitHub Actions workflows"
+            cp "$WORKFLOW_TEMPLATE_DIR/ci.yml" .github/workflows/ci.yml
+            cp "$WORKFLOW_TEMPLATE_DIR/release-branch.yml" .github/workflows/release-branch.yml
+            cp "$WORKFLOW_TEMPLATE_DIR/release-tag.yml" .github/workflows/release-tag.yml
+            cp "$WORKFLOW_TEMPLATE_DIR/release.yml" .github/workflows/release.yml
+            cp "$WORKFLOW_TEMPLATE_DIR/snapshot-deploy.yml" .github/workflows/snapshot-deploy.yml
+        else
+            warn "Workflow templates not found at $WORKFLOW_TEMPLATE_DIR; skipping GitHub Actions setup"
+        fi
+
         # Copy templates
         cp .common/artagon-common/configs/java/settings.xml .
 
@@ -697,13 +710,21 @@ git push -u origin main
 # Apply branch protection if requested
 if [[ "$BRANCH_PROTECTION" == "true" ]]; then
     info "Applying branch protection rules"
+    TEAM_PROTECT_SCRIPT=".common/artagon-common/scripts/ci/protect-main-branch-team.sh"
+    BASIC_PROTECT_SCRIPT=".common/artagon-common/scripts/ci/protect-main-branch.sh"
 
-    if [[ -x .common/artagon-common/scripts/ci/protect-main-branch.sh ]]; then
-        .common/artagon-common/scripts/ci/protect-main-branch.sh --repo "$PROJECT_NAME" --owner "$OWNER" --force
-        success "Branch protection applied"
+    if [[ -x "$TEAM_PROTECT_SCRIPT" ]]; then
+        "$TEAM_PROTECT_SCRIPT" --repo "$PROJECT_NAME" --owner "$OWNER" --branch main --force
+        success "Team branch protection applied to main"
+    elif [[ -x "$BASIC_PROTECT_SCRIPT" ]]; then
+        warn "Team branch protection script not found; falling back to basic protection"
+        "$BASIC_PROTECT_SCRIPT" --repo "$PROJECT_NAME" --owner "$OWNER" --branch main --force
+        success "Basic branch protection applied to main"
     else
-        warn "Branch protection script not found"
+        warn "Branch protection scripts not found in .common/artagon-common/scripts/ci"
     fi
+
+    info "Reminder: once you cut a release-x.y.z branch, run protect-main-branch-team.sh for that branch to mirror the guardrails."
 fi
 
 # Summary

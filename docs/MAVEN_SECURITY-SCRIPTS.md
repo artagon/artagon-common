@@ -483,5 +483,5 @@ warn()    # Prints yellow warning message
 
 - [Maven Checksum Plugin Documentation](https://github.com/nicoulaj/checksum-maven-plugin)
 - [PGP Verify Plugin Documentation](https://github.com/s4u/pgpverify-maven-plugin)
-- [RELEASE-GUIDE.md](RELEASE-GUIDE.md) - Complete release process guide
-- [DEPLOYMENT.md](DEPLOYMENT.md) - Deployment to Maven Central
+- [MAVEN_RELEASE_GUIDE.md](MAVEN_RELEASE_GUIDE.md) - Complete release process guide
+- [MAVEN_DEPLOYMENT.md](MAVEN_DEPLOYMENT.md) - Deployment to Maven Central

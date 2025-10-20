@@ -270,6 +270,6 @@ mvn nexus-staging:release -Possrh-deploy
 
 ## Resources
 
-- [Full Deployment Guide](../DEPLOYMENT.md)
+- [Full Deployment Guide](../MAVEN_DEPLOYMENT.md)
 - [Sonatype OSSRH](https://central.sonatype.org/publish/publish-guide/)
 - [Maven GPG Plugin](https://maven.apache.org/plugins/maven-gpg-plugin/)

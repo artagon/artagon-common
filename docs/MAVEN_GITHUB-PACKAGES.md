@@ -272,6 +272,6 @@ For issues related to:
 
 ## See Also
 
-- [DEPLOYMENT.md](DEPLOYMENT.md) - How to deploy to Maven Central (OSSRH)
-- [QUICKSTART-DEPLOY.md](QUICKSTART-DEPLOY.md) - Quick deployment guide
+- [MAVEN_DEPLOYMENT.md](MAVEN_DEPLOYMENT.md) - How to deploy to Maven Central (OSSRH)
+- [MAVEN_QUICKSTART-DEPLOY.md](MAVEN_QUICKSTART-DEPLOY.md) - Quick deployment guide
 - [GitHub Packages Documentation](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry)
