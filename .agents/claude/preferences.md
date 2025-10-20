@@ -8,7 +8,7 @@ Specifically:
 - ❌ Do NOT add "🤖 Generated with [Claude Code](https://claude.com/claude-code)"
 - ❌ Do NOT add "Co-Authored-By: Claude <noreply@anthropic.com>"
 
-All commits should show only the human author (Trumpickas <trumpyla@gmail.com>).
+All commits should show only the human author only.
 
 ## Pull Request Attribution
 
