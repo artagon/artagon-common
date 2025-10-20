@@ -8,6 +8,7 @@ Automation scripts for deployment, CI/CD, and repository management.
 scripts/
 ├── auto_create_and_push.sh      # GitHub repository creation
 ├── setup-artagon-common.sh      # Submodule setup
+├── sync-codex.sh                # Sync Codex overlays with shared guidance
 ├── deploy/                      # Deployment automation
 │   ├── check-deploy-ready.sh    # Pre-deployment validation
 │   ├── deploy-snapshot.sh       # Deploy snapshot to OSSRH
@@ -112,6 +113,20 @@ Use the Nexus UI: https://s01.oss.sonatype.org/
 ## CI/CD Scripts
 
 For branch protection and CI/CD automation, see the `ci/` directory and the main [README](../README.md#branch-protection) for full documentation.
+
+## Repository Tooling
+
+### sync-codex.sh
+
+Keeps `codex/` and `.codex/` overlays aligned with the shared guidance shipped in `.common/artagon-common/.agents/codex`. The script creates symlinks, scaffolds project-specific overlays, and validates that local files still reference the shared defaults.
+
+**Usage**:
+```bash
+./scripts/sync-codex.sh --ensure   # repair links and stub overlays (default)
+./scripts/sync-codex.sh --check    # verify structure only
+```
+
+The git hooks (`pre-commit`, `post-checkout`, `post-merge`) invoke the script automatically so Codex preferences stay synchronized after branch switches or merges.
 
 ## Quick Start
 

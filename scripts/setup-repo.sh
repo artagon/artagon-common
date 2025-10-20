@@ -306,6 +306,19 @@ info "Configuring git hooks"
 git config core.hooksPath .common/artagon-common/git-hooks
 success "Git hooks configured for automatic license management"
 
+# Publish Codex agent references for tooling
+CODEX_SYNC_SCRIPT=".common/artagon-common/scripts/sync-codex.sh"
+if [[ -x "${CODEX_SYNC_SCRIPT}" ]]; then
+    info "Syncing Codex preferences"
+    if "${CODEX_SYNC_SCRIPT}" --ensure --quiet; then
+        success "Codex references initialized"
+    else
+        warn "Codex sync script reported an issue"
+    fi
+else
+    warn "Codex sync script not found; skipping Codex setup"
+fi
+
 # Copy language-specific templates
 info "Copying $PROJECT_TYPE templates"
 
@@ -625,6 +638,20 @@ direnv allow
 
 EOF
 fi
+
+cat >> README.md << 'EOF'
+## Shared Tooling via artagon-common
+
+This project vendors `.common/artagon-common`, which provides shared automation and configuration:
+
+- `codex/` exposes project overlays layered on top of shared Codex preferences in `codex/shared/`
+- `.common/artagon-common/scripts/` offers setup, CI, release, and security tooling
+- `.common/artagon-common/nix/templates/` exposes reusable Nix development environments
+- `.common/artagon-common/docs/` captures standards and reference material
+
+See `.common/artagon-common/README.md` for the full capability catalog.
+
+EOF
 
 cat >> README.md << 'EOF'
 ## Licensing

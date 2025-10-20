@@ -144,11 +144,19 @@ artagon-common/
 ./scripts/setup-repo.sh --type rust --name secret-lib --private
 
 # C++ project with branch protection
-./scripts/setup-repo.sh --type cpp --name game-engine --branch-protection
+    ./scripts/setup-repo.sh --type cpp --name game-engine --branch-protection
 
-# C project for different organization
-./scripts/setup-repo.sh --type c --name firmware --owner embedded-team
+    # C project for different organization
+    ./scripts/setup-repo.sh --type c --name firmware --owner embedded-team
 ```
+
+### `sync-codex.sh`
+
+Keeps `codex/` overlays aligned with the shared Codex guidance distributed with `artagon-common`.
+
+- The script links `codex/shared/` to the shared preferences, stubs local overlays, and wires `.codex/` for tools that rely on it.
+- Git hooks (`pre-commit`, `post-checkout`, `post-merge`) run it automatically, and `setup-repo.sh` invokes it when bootstrapping a new repository.
+- Run manually with `./scripts/sync-codex.sh --ensure` to repair links or `--check` to validate structure.
 
 **Options:**
 - `--type <java|c|cpp|rust>` - Project language (required)
