@@ -9,7 +9,7 @@ Thank you for your interest in contributing to **{{ repository.name }}**! This p
 - **Shared Standards**: See [artagon-common](https://github.com/artagon/artagon-common) for detailed Artagon guidelines
 - **Semantic Commits**: [SEMANTIC-COMMITS.md](https://github.com/artagon/artagon-common/blob/main/docs/SEMANTIC-COMMITS.md)
 - **API Documentation**: [API.md](./docs/API.md) _(if applicable)_
-- **Issue Templates**: [.github/ISSUE_TEMPLATE/](../.github/ISSUE_TEMPLATE/)
+- **Issue Templates**: [.github/ISSUE_TEMPLATE/](.github/ISSUE_TEMPLATE/)
 
 ## Table of Contents
 
