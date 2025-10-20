@@ -137,10 +137,12 @@ The `gh_sync_agents.sh` script can be extended to automatically set up CONTRIBUT
 if [[ -f templates/CONTRIBUTING.md.template ]] && [[ ! -f CONTRIBUTING.md ]]; then
   REPO_NAME=$(basename $(git rev-parse --show-toplevel))
   REPO_OWNER=$(git remote get-url origin | sed -E 's/.*[:/]([^/]+)\/[^/]+$/\1/')
+  REPO_DESC=$(gh repo view --json description -q .description 2>/dev/null || echo "")
 
   cp templates/CONTRIBUTING.md.template CONTRIBUTING.md
   sed -i "s/{{ repository.name }}/$REPO_NAME/g" CONTRIBUTING.md
   sed -i "s/{{ repository.owner }}/$REPO_OWNER/g" CONTRIBUTING.md
+  sed -i "s/{{ repository.description }}/$REPO_DESC/g" CONTRIBUTING.md
   echo "✓ Generated CONTRIBUTING.md from template"
 fi
 ```
