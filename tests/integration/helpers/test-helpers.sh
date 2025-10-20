@@ -108,32 +108,6 @@ assert_symlink_points_to() {
   fi
 }
 
-assert_command_success() {
-  local cmd="$1"
-  if eval "$cmd" >/dev/null 2>&1; then
-    echo "✓ Command succeeded: $cmd"
-    ((PASSED_TESTS++))
-    return 0
-  else
-    echo "✗ Command failed: $cmd"
-    ((FAILED_TESTS++))
-    return 1
-  fi
-}
-
-assert_command_fails() {
-  local cmd="$1"
-  if ! eval "$cmd" >/dev/null 2>&1; then
-    echo "✓ Command failed as expected: $cmd"
-    ((PASSED_TESTS++))
-    return 0
-  else
-    echo "✗ Command succeeded (should have failed): $cmd"
-    ((FAILED_TESTS++))
-    return 1
-  fi
-}
-
 print_test_summary() {
   echo ""
   echo "========================================"
