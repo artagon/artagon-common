@@ -90,14 +90,33 @@ artagon-common/
 │   │   └── .gitignore.template
 │   ├── .editorconfig          # Code style settings
 │   └── .gitignore.template     # Generic .gitignore
+├── templates/                   # 🆕 Shared templates for new projects
+│   ├── .github/                # GitHub configuration templates
+│   │   ├── PULL_REQUEST_TEMPLATE.md  # PR checklist and guidelines
+│   │   ├── labeler.yml               # Auto-labeler configuration
+│   │   └── ISSUE_TEMPLATE/           # Issue templates
+│   │       ├── bug_report.md
+│   │       ├── feature_request.md
+│   │       └── chore.md
+│   ├── CONTRIBUTING.md.template # Contribution guidelines template
+│   └── README.md                # README template for new projects
+├── git-hooks/                   # Git hooks for semantic commits and checks
+│   ├── commit-msg              # Validates semantic commit format
+│   ├── pre-commit              # Runs shellcheck and formatters
+│   ├── post-checkout           # Updates dependencies
+│   └── post-merge              # Updates after merge
 ├── .github/
+│   ├── PULL_REQUEST_TEMPLATE.md → ../templates/.github/PULL_REQUEST_TEMPLATE.md
+│   ├── labeler.yml → ../templates/.github/labeler.yml
+│   ├── ISSUE_TEMPLATE/ → ../templates/.github/ISSUE_TEMPLATE/
 │   └── workflows/              # Workflows that run on this repo (tests, validation)
 ├── .gitignore                  # Git ignore for this repo
 └── README.md                   # This file
 ```
 
-> **Note:** Language templates formerly stored in `templates/` now reside in
-> `configs/`. Update any project automation that referenced the legacy paths.
+> **Note:** Language-specific templates formerly stored in `templates/` now reside in
+> `configs/`. The `templates/` directory now contains GitHub configuration templates
+> (PR/issue templates, labeler config) that are symlinked in new projects via `repo_setup.sh`.
 
 ## Available Scripts
 
@@ -156,6 +175,10 @@ Override values to match your GitHub organisation or preferred language; environ
 - Creates GitHub repository
 - Adds artagon-common as submodule
 - Copies language-specific templates and configs
+- 🆕 Symlinks GitHub configs (PR/issue templates, labeler)
+- 🆕 Installs git hooks (semantic commits, pre-commit checks)
+- 🆕 Copies .editorconfig for consistent editor settings
+- 🆕 Generates CONTRIBUTING.md from template
 - Optional Nix flake for reproducible builds
 - Optional branch protection rules
 - Generates README and LICENSE

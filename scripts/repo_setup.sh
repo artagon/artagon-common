@@ -6,6 +6,13 @@ set -euo pipefail
 # Creates and configures a new project repository with language-specific
 # templates, Nix integration, and GitHub configurations.
 #
+# Automatically sets up:
+#   - GitHub PR and issue templates (symlinked from artagon-common)
+#   - Auto-labeler configuration
+#   - Git hooks for semantic commits and pre-commit checks
+#   - .editorconfig for consistent editor settings
+#   - CONTRIBUTING.md from template
+#
 # Usage:
 #   ./repo_setup.sh --type <java|c|cpp|rust> --name <project-name> [options]
 #
@@ -331,6 +338,68 @@ if [[ -x "${CONTRIBUTING_SETUP_SCRIPT}" ]]; then
     fi
 else
     warn "CONTRIBUTING.md setup script not found; skipping"
+fi
+
+# Setup GitHub configuration files
+info "Setting up GitHub configuration files"
+GITHUB_TEMPLATES_DIR=".common/artagon-common/templates/.github"
+if [[ -d "$GITHUB_TEMPLATES_DIR" ]]; then
+    # Create .github directory structure
+    mkdir -p .github/ISSUE_TEMPLATE
+
+    # Symlink PR template
+    if [[ -f "$GITHUB_TEMPLATES_DIR/PULL_REQUEST_TEMPLATE.md" ]]; then
+        ln -sf "../.common/artagon-common/templates/.github/PULL_REQUEST_TEMPLATE.md" \
+            .github/PULL_REQUEST_TEMPLATE.md
+        info "Linked PR template"
+    fi
+
+    # Symlink labeler config
+    if [[ -f "$GITHUB_TEMPLATES_DIR/labeler.yml" ]]; then
+        ln -sf "../.common/artagon-common/templates/.github/labeler.yml" \
+            .github/labeler.yml
+        info "Linked labeler configuration"
+    fi
+
+    # Symlink issue templates
+    if [[ -d "$GITHUB_TEMPLATES_DIR/ISSUE_TEMPLATE" ]]; then
+        for template in "$GITHUB_TEMPLATES_DIR/ISSUE_TEMPLATE"/*.md; do
+            if [[ -f "$template" ]]; then
+                template_name=$(basename "$template")
+                ln -sf "../../.common/artagon-common/templates/.github/ISSUE_TEMPLATE/$template_name" \
+                    ".github/ISSUE_TEMPLATE/$template_name"
+            fi
+        done
+        info "Linked issue templates"
+    fi
+
+    success "GitHub configuration files installed"
+else
+    warn "GitHub templates not found at $GITHUB_TEMPLATES_DIR; skipping"
+fi
+
+# Copy .editorconfig
+EDITORCONFIG=".common/artagon-common/configs/.editorconfig"
+if [[ -f "$EDITORCONFIG" ]]; then
+    cp "$EDITORCONFIG" .editorconfig
+    info "Copied .editorconfig"
+fi
+
+# Install git hooks
+GIT_HOOKS_DIR=".common/artagon-common/git-hooks"
+if [[ -d "$GIT_HOOKS_DIR" && -d ".git/hooks" ]]; then
+    info "Installing git hooks"
+    for hook in "$GIT_HOOKS_DIR"/*; do
+        if [[ -f "$hook" ]]; then
+            hook_name=$(basename "$hook")
+            cp "$hook" ".git/hooks/$hook_name"
+            chmod +x ".git/hooks/$hook_name"
+            info "Installed git hook: $hook_name"
+        fi
+    done
+    success "Git hooks installed"
+else
+    warn "Git hooks directory not found; skipping git hooks installation"
 fi
 
 # Copy language-specific templates
