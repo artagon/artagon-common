@@ -244,6 +244,50 @@ git push -u origin feat/42-add-cpp26-bazel-support
 - **Tests**: All existing pass, add tests for new functionality
 - **Security**: No secrets committed, proper input validation, secure defaults
 
+## Pull Request Reviews
+
+### Code Review Process
+
+1. **All PRs Require Review**: At least one approving review required before merge
+2. **Conversation Resolution**: All review threads must be resolved before merging (enforced by branch protection)
+3. **Address All Feedback**: Respond to all review comments with fixes or explanations
+
+### GitHub Copilot Reviews
+
+**Copilot automatically reviews all PRs** and provides feedback on:
+- Security vulnerabilities
+- Code quality issues
+- Best practice violations
+- Performance concerns
+
+**Handling Copilot Feedback:**
+
+1. **Address All Comments**: Fix issues or provide explanations for each comment
+2. **Reply to Threads**: After fixing, reply to each comment explaining the fix
+3. **Resolve Conversations**: Mark conversations as resolved after addressing
+4. **Re-trigger Reviews**: Push new commits to trigger fresh Copilot review
+   - Copilot re-reviews automatically on new commits
+   - Review threads from outdated code are automatically marked as outdated
+
+**Example Response:**
+```
+Fixed in commit abc1234. Removed eval usage and replaced with direct command execution.
+```
+
+### Branch Protection Rules
+
+The `main` branch has protection rules enforcing:
+- ✅ Required passing status checks (Shellcheck, Validate PR, build)
+- ✅ At least 1 approving review required
+- ✅ All conversations must be resolved before merge
+- ✅ Branches must be up to date with base branch
+- ✅ Force pushes and deletions blocked
+
+**Impact**: PRs cannot be merged until:
+1. All CI checks pass
+2. All review conversations resolved
+3. At least one approving review received
+
 ## Testing Requirements
 
 **MANDATORY:** For each feature that changes shell scripts in this repository, integration tests MUST be added.
