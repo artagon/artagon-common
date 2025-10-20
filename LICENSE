@@ -1,0 +1,94 @@
+DUAL LICENSE NOTICE
+Copyright (C) 2025 Artagon LLC
+
+================================================================
+Section 1: AGPL-3.0 Open Source Option
+================================================================
+Artagon LLC provides this software under the terms of the GNU
+Affero General Public License, version 3.0 (AGPL-3.0). This
+option is intended for open source developers and organizations
+that are willing to share their source code under the same
+license when distributing or deploying the software, including
+over a network. The full text of the license is available in
+[`licenses/LICENSE-AGPL.txt`](licenses/LICENSE-AGPL.txt).
+
+Key obligations under AGPL-3.0 include:
+- Share complete corresponding source code for all covered works.
+- Provide network users with access to the source when the
+  software is made available as a service.
+- Preserve copyright and license notices.
+- Contribute modifications under AGPL-3.0.
+
+================================================================
+Section 2: Commercial License Option
+================================================================
+For teams that require proprietary use, confidential source code,
+or additional commercial assurances, Artagon LLC offers a paid
+commercial license. This option grants expanded rights for
+production deployments without the reciprocity requirements of
+AGPL-3.0. The full agreement is provided in
+[`licenses/LICENSE-COMMERCIAL.txt`](licenses/LICENSE-COMMERCIAL.txt).
+Contact sales@artagon.com to obtain pricing and a tailored license
+that meets your needs.
+
+Commercial license benefits:
+- Use in closed source and proprietary products.
+- No obligation to release derivative source code.
+- Access to priority support and commercial guarantees as
+  defined in the agreement.
+- Flexible deployment rights for on-premises, cloud, and SaaS
+  environments.
+
+================================================================
+Quick Decision Guide
+================================================================
+Choose AGPL-3.0 if you:
+- Build open source or research projects.
+- Are comfortable sharing all modifications publicly.
+- Provide network users with source access.
+
+Choose the Commercial License if you:
+- Need to embed the software in proprietary offerings.
+- Operate SaaS platforms without publishing source code.
+- Require commercial support, warranties, or custom terms.
+
+================================================================
+Warranty Disclaimer
+================================================================
+Unless otherwise stated in an executed commercial agreement,
+this software is provided "AS IS" without warranties or
+conditions of any kind, either express or implied, including,
+without limitation, any implied warranties of merchantability,
+fitness for a particular purpose, or non-infringement. In no
+event shall Artagon LLC be liable for any claim, damages, or
+other liability arising from the use of the software.
+
+================================================================
+Contributing
+================================================================
+Contributors must sign the appropriate Contributor License
+Agreement before submitting pull requests:
+- Individual contributors: see [`licenses/CLA.md`](licenses/CLA.md)
+- Corporate contributors: see [`licenses/CLA-CORPORATE.md`](licenses/CLA-CORPORATE.md)
+
+By contributing, you agree that your contributions are licensed
+under both AGPL-3.0 and the Artagon LLC commercial license terms
+to ensure consistent dual licensing for downstream users.
+
+================================================================
+Contact Information
+================================================================
+Licensing inquiries: licensing@artagon.com
+Sales: sales@artagon.com
+Support: support@artagon.com
+General: info@artagon.com
+Legal: legal@artagon.com
+Pricing: https://www.artagon.com/pricing
+
+Please review both licensing options carefully and consult your
+legal counsel. For guidance on selecting the right license,
+refer to [`licenses/LICENSING.md`](licenses/LICENSING.md). For
+additional information about our trademark policy, see
+[`licenses/TRADEMARK-POLICY.md`](licenses/TRADEMARK-POLICY.md).
+Always seek professional legal advice before relying on these
+documents.

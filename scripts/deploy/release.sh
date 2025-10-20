@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
 # Release Artagon BOM and Parent to Maven Central
 # Usage: ./artagon-common/scripts/release.sh <version>

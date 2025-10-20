@@ -8,7 +8,7 @@
 #   ci:
 #     uses: artagon/artagon-common/.github/workflows/bazel-ci.yml@main
 #     with:
-#       bazel-configs: 'release asan ubsan'
+#       bazel-configs: 'release,asan,ubsan'
 #     secrets: inherit
 
 name: Bazel Project CI
@@ -22,10 +22,10 @@ on:
         type: string
         default: 'latest'
       bazel-configs:
-        description: 'Bazel configs to test (space-separated: release debug asan ubsan tsan)'
+        description: 'Bazel configs to test (comma-separated: release,debug,asan,ubsan,tsan)'
         required: false
         type: string
-        default: 'release debug'
+        default: 'release,debug'
       enable-coverage:
         description: 'Enable code coverage'
         required: false
@@ -48,7 +48,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        config: ${{ fromJson(format('["{0}"]', inputs.bazel-configs)) }}
+        config: ${{ fromJson(format('[{0}]', inputs.bazel-configs)) }}
 
     steps:
       - name: Checkout code

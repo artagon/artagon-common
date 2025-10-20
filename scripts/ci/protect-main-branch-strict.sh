@@ -8,7 +8,7 @@
 #   ./protect-main-branch-strict.sh --all
 #
 
-set -e
+set -euo pipefail
 
 # Colors
 RED='\033[0;31m'

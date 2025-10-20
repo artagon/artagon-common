@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
 # Deploy Artagon BOM and Parent to OSSRH Snapshots
 # Usage: ./artagon-common/scripts/deploy-snapshot.sh

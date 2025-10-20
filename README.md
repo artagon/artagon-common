@@ -531,7 +531,7 @@ jobs:
   ci:
     uses: artagon/artagon-common/.github/workflows/bazel-ci.yml@main
     with:
-      bazel-configs: 'release debug asan ubsan'
+      bazel-configs: 'release,debug,asan,ubsan'
       enable-coverage: true
       targets: '//...'
     secrets: inherit

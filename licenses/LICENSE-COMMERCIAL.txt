@@ -1,0 +1,385 @@
+ARTAGON LLC COMMERCIAL LICENSE AGREEMENT
+Version 1.0
+Effective Date: [Insert Effective Date]
+
+This Commercial License Agreement ("Agreement") is entered into by and
+between Artagon LLC, a Delaware limited liability company with its
+principal place of business at 1201 N. Market Street, Suite 111,
+Wilmington, Delaware 19801 ("Licensor"), and the entity identified in
+the applicable ordering document ("Licensee"). Licensor and Licensee
+are each referred to herein as a "Party" and collectively as the
+"Parties."
+
+1. DEFINITIONS
+1.1 "Software" means the Artagon proprietary software products,
+     modules, and tools identified in the applicable Order Form,
+     including any Updates provided under this Agreement.
+1.2 "Licensed Software" means the Software, together with any
+     accompanying Documentation, media, and license keys delivered to
+     Licensee by Licensor pursuant to this Agreement.
+1.3 "Derivative Works" means any modifications, enhancements,
+     adaptations, translations, or derivative works of the Licensed
+     Software created by or on behalf of Licensee, excluding mere
+     configurations or parameter changes permitted under the
+     Documentation.
+1.4 "Production Use" means use of the Licensed Software in a live,
+     customer-facing, revenue-generating, or otherwise mission-critical
+     environment, including internal systems supporting such
+     operations.
+1.5 "Developer" means an employee, contractor, or consultant of
+     Licensee who is authorized to access the Licensed Software for the
+     purpose of development, testing, staging, or deployment on
+     Licensee's behalf.
+1.6 "Deployment" means installation, distribution, provisioning, or
+     execution of the Licensed Software in any environment, including
+     on-premises infrastructure, cloud services, managed hosting, or
+     virtualized platforms.
+1.7 "Documentation" means the user guides, integration instructions,
+     and technical specifications for the Licensed Software made
+     available by Licensor in written or electronic form.
+1.8 "Support Services" means the maintenance, updates, technical
+     support, and related services described in Section 7 and the
+     applicable Order Form.
+1.9 "Order Form" means a mutually executed ordering document,
+     statement of work, or online purchase confirmation that references
+     this Agreement and specifies Software, fees, term, and any
+     additional terms.
+1.10 "Updates" means bug fixes, patches, and minor version releases
+      of the Licensed Software that Licensor makes generally available
+      to its commercial customers during the Term.
+
+2. GRANT OF LICENSE
+2.1 License. Subject to Licensee's compliance with this Agreement and
+     payment of all applicable fees, Licensor grants to Licensee a
+     limited, non-exclusive, non-transferable (except as provided in
+     Section 18.4), non-sublicensable right to install, access, and use
+     the Licensed Software solely for Licensee's internal business
+     purposes in accordance with the scope set forth in the Order Form.
+2.2 Environments. Licensee may deploy the Licensed Software in
+     development, staging, QA, and Production Use environments up to
+     the quantities specified in the Order Form. Additional deployments
+     require the purchase of expanded rights.
+2.3 Developers. Use of the Licensed Software is limited to the number
+     of Developers or other utilization metrics defined in the Order
+     Form. Licensee shall ensure that only authorized Developers access
+     the Licensed Software.
+2.4 Copies. Licensee may make a reasonable number of back-up copies of
+     the Licensed Software for archival or disaster recovery purposes,
+     provided that all titles, trademarks, and copyright notices are
+     reproduced and the copies are used solely as replacements for
+     original authorized installations.
+
+3. LICENSE RESTRICTIONS
+3.1 General Restrictions. Except as expressly permitted in this
+     Agreement, Licensee shall not: (a) copy, modify, or create
+     Derivative Works of the Licensed Software; (b) reverse engineer,
+     decompile, disassemble, or otherwise attempt to derive source code
+     from the Licensed Software, except to the extent such restriction
+     is prohibited by applicable law; (c) remove, alter, or obscure any
+     proprietary notices; (d) permit any third party to access or use
+     the Licensed Software except Developers and contractors acting on
+     Licensee's behalf who are bound by written obligations no less
+     protective than this Agreement; (e) use the Licensed Software to
+     develop a competing product; or (f) distribute, rent, lease,
+     sublicense, or provide the Licensed Software to third parties.
+3.2 Open Source. The Licensed Software is not provided under the GNU
+     Affero General Public License (AGPL-3.0) when used pursuant to
+     this Agreement. Licensee shall not combine the Licensed Software
+     with code governed by copyleft licenses in a manner that would
+     require disclosure of the Licensed Software or Licensee's
+     proprietary code.
+3.3 Usage Limits. Licensee's use of the Licensed Software is subject
+     to the scope, metrics, and other limitations set forth in the
+     Order Form. Licensee shall promptly notify Licensor of any
+     material change in usage that requires additional licensing.
+
+4. OWNERSHIP
+4.1 Rights Reserved. The Licensed Software is licensed, not sold.
+     Licensor and its licensors retain all rights, title, and interest
+     in and to the Licensed Software, Documentation, and related
+     intellectual property, including all Updates and Derivative Works
+     created by Licensor.
+4.2 Feedback. If Licensee provides feedback, suggestions, or
+     enhancements regarding the Licensed Software, Licensor may use
+     such feedback without obligation, and Licensee hereby grants
+     Licensor a perpetual, irrevocable, royalty-free license to do so.
+4.3 Derivative Works. Licensee shall own Derivative Works created by
+     Licensee, subject to Licensor's underlying rights in the Licensed
+     Software. Licensee hereby grants Licensor a non-exclusive,
+     perpetual, royalty-free license to use any Derivative Works solely
+     for developing, supporting, and improving the Licensed Software,
+     provided that Licensor does not disclose Licensee Confidential
+     Information in violation of Section 8.
+
+5. FEES AND PAYMENT
+5.1 Fees. Licensee shall pay the fees specified in the Order Form.
+     Unless otherwise stated, fees are due within thirty (30) days of
+     invoice date and are non-refundable except as expressly provided
+     in this Agreement.
+5.2 Taxes. Fees are exclusive of taxes. Licensee is responsible for all
+     sales, use, value-added, and similar taxes, excluding taxes based
+     on Licensor's net income. If Licensor is required to collect
+     taxes, Licensee shall pay such amounts in addition to the fees.
+5.3 Late Payments. Overdue amounts may accrue interest at the lesser
+     of 1.5% per month or the maximum rate permitted by law. Licensee
+     shall be responsible for reasonable costs of collection.
+
+6. TERM AND TERMINATION
+6.1 Term. This Agreement commences on the Effective Date and continues
+     for the initial term specified in the Order Form. Thereafter, the
+     Agreement renews as stated in the Order Form unless either Party
+     provides written notice of non-renewal at least thirty (30) days
+     prior to the end of the then-current term.
+6.2 Termination for Cause. Either Party may terminate this Agreement
+     upon written notice if the other Party materially breaches this
+     Agreement and fails to cure such breach within thirty (30) days of
+     receiving written notice. Licensor may suspend Licensee's access
+     to the Licensed Software for non-payment or breach of Section 3.
+6.3 Effect of Termination. Upon expiration or termination, all rights
+     granted to Licensee shall immediately cease and Licensee shall
+     promptly cease use of the Licensed Software and destroy or return
+     all copies. Within ten (10) days, Licensee shall certify in writing
+     that it has complied with this requirement.
+6.4 Survival. Sections 1, 3.1, 3.2, 4, 5.2, 6.3, 6.4, 7.4, 8, 9, 10,
+     11, 12, 13, 14, 15, 16, 17, and 18 shall survive any termination
+     or expiration of this Agreement.
+
+7. SUPPORT SERVICES
+7.1 Support Tiers. Licensor will provide Support Services in accordance
+     with the support level identified in the Order Form. Support may
+     include access to a dedicated support portal, email support, and
+     knowledge base materials.
+7.2 Response Targets. Licensor will use commercially reasonable
+     efforts to meet the response and resolution targets associated
+     with the purchased support tier. Response targets are goals and
+     not guarantees.
+7.3 Updates. During the Term, Licensor will provide Licensee with
+     Updates that it makes generally available to similarly situated
+     commercial customers. Updates are deemed part of the Licensed
+     Software and subject to this Agreement.
+7.4 Exclusions. Support Services do not include custom development,
+     on-site services, third-party integrations, or support for
+     modifications not authorized by Licensor. Such services may be
+     provided under a separate statement of work.
+
+8. CONFIDENTIALITY
+8.1 Definition. "Confidential Information" means any non-public
+     information disclosed by a Party ("Disclosing Party") to the other
+     Party ("Receiving Party") that is marked or identified as
+     confidential or that reasonably should be understood to be
+     confidential given the nature of the information and the
+     circumstances of disclosure.
+8.2 Obligations. The Receiving Party shall: (a) use the Confidential
+     Information solely to perform its obligations under this
+     Agreement; (b) restrict disclosure to employees, contractors, and
+     advisors who have a need to know and are bound by confidentiality
+     obligations at least as protective as those herein; and (c)
+     protect the Confidential Information using the same degree of care
+     it uses to protect its own confidential information, but no less
+     than reasonable care.
+8.3 Exceptions. Confidential Information does not include information
+     that: (a) is or becomes publicly available through no fault of the
+     Receiving Party; (b) is rightfully received from a third party
+     without restriction; (c) is independently developed without use of
+     the Confidential Information; or (d) is approved for release in
+     writing by the Disclosing Party.
+8.4 Required Disclosure. The Receiving Party may disclose Confidential
+     Information as required by law or court order, provided it gives
+     prompt notice (to the extent legally permissible) and cooperates
+     with the Disclosing Party's reasonable efforts to seek protective
+     treatment.
+
+9. DATA SECURITY AND PRIVACY
+9.1 Security Practices. Licensor shall maintain commercially reasonable
+     administrative, physical, and technical safeguards designed to
+     protect the security and integrity of Licensee Confidential
+     Information.
+9.2 Data Processing. To the extent Licensor processes personal data on
+     Licensee's behalf, the Parties shall execute a data processing
+     agreement as required by applicable law. Licensee is responsible
+     for obtaining all consents necessary for such processing.
+9.3 Incident Notification. Licensor shall notify Licensee without
+     undue delay after confirming any unauthorized access to Licensee
+     Confidential Information in Licensor's possession.
+
+10. WARRANTIES AND DISCLAIMERS
+10.1 Limited Warranty. Licensor warrants that, for ninety (90) days
+      after delivery, the Licensed Software will substantially conform
+      to the Documentation. Licensee must notify Licensor of any breach
+      of this warranty within the warranty period; Licensor's sole
+      obligation and Licensee's exclusive remedy will be for Licensor
+      to use commercially reasonable efforts to remedy the
+      non-conformity.
+10.2 Malware Warranty. Licensor warrants that it will use commercially
+      reasonable measures to scan the Licensed Software for known
+      viruses, worms, or other malicious code prior to delivery.
+10.3 Disclaimer. Except as expressly set forth in this Section 10,
+      the Licensed Software and Support Services are provided "AS IS"
+      without warranty of any kind. Licensor disclaims all implied
+      warranties, including without limitation warranties of
+      merchantability, fitness for a particular purpose, and
+      non-infringement. Licensor does not warrant that the Licensed
+      Software will meet Licensee's requirements, operate
+      uninterrupted, or be error-free.
+
+11. INDEMNIFICATION
+11.1 Licensor Indemnity. Licensor shall defend, indemnify, and hold
+      harmless Licensee from any third-party claim alleging that the
+      Licensed Software infringes any United States patent, trademark,
+      or copyright, or misappropriates any trade secret, and shall pay
+      damages and reasonable attorneys' fees awarded in final judgment
+      (or amounts agreed in settlement) arising from such claim.
+11.2 Conditions. Licensor's obligations in Section 11.1 are contingent
+      upon Licensee: (a) promptly notifying Licensor in writing of the
+      claim; (b) granting Licensor sole control of the defense and
+      settlement; and (c) providing reasonable cooperation at
+      Licensor's expense.
+11.3 Remedies. If the Licensed Software is, or in Licensor's opinion
+      is likely to become, the subject of an infringement claim,
+      Licensor may, at its option and expense: (a) procure for Licensee
+      the right to continue using the Licensed Software; (b) modify the
+      Licensed Software so that it becomes non-infringing; or (c)
+      terminate this Agreement and refund prepaid fees for the
+      remaining term.
+11.4 Exclusions. Licensor shall have no obligation under this Section
+      11 to the extent the claim arises from: (a) modifications made by
+      Licensee or third parties; (b) combination of the Licensed
+      Software with materials not provided by Licensor; (c) use of the
+      Licensed Software in violation of this Agreement; or (d) use of a
+      version other than the most current release, if the claim would
+      have been avoided by use of such release.
+11.5 Licensee Indemnity. Licensee shall defend, indemnify, and hold
+      harmless Licensor from claims arising out of Licensee's use of
+      the Licensed Software in violation of this Agreement or
+      applicable law.
+
+12. LIMITATION OF LIABILITY
+12.1 Exclusion of Damages. Except for liability arising from a Party's
+      gross negligence, willful misconduct, breach of Section 8, or
+      indemnification obligations, neither Party shall be liable for
+      any indirect, incidental, consequential, special, exemplary, or
+      punitive damages, or for lost profits, revenue, or business
+      opportunities, even if advised of the possibility of such
+      damages.
+12.2 Cap. Licensor's aggregate liability arising out of or related to
+      this Agreement shall not exceed the total fees paid by Licensee
+      to Licensor under the applicable Order Form during the twelve
+      (12) months preceding the event giving rise to liability.
+
+13. COMPLIANCE AND AUDIT
+13.1 Compliance. Licensee shall use the Licensed Software in
+      compliance with all applicable laws, including export control and
+      anti-corruption regulations.
+13.2 Audit Rights. Upon ten (10) days' prior written notice, Licensor
+      may audit Licensee's use of the Licensed Software no more than
+      once per twelve (12) month period. Audits shall occur during
+      normal business hours and not unreasonably interfere with
+      Licensee's operations. If an audit reveals unauthorized use,
+      Licensee shall promptly pay additional fees and reimburse Licensor
+      for the reasonable costs of the audit.
+13.3 Records. Licensee shall maintain complete and accurate records
+      sufficient to verify compliance with this Agreement for three (3)
+      years following the expiration or termination of the Term.
+
+14. VERIFICATION OF OPEN SOURCE COMPLIANCE
+14.1 Attribution. Licensee shall include the notices provided in
+      `SOURCE-FILE-HEADER.txt` in any Derivative Works or files that
+      incorporate portions of the Licensed Software.
+14.2 Dual Licensing Notice. Licensee shall ensure that its user-facing
+      documentation references the dual licensing options and directs
+      recipients to `LICENSE`, `LICENSE-AGPL.txt`, and `LICENSE-
+      COMMERCIAL.txt`.
+
+15. PUBLICITY AND TRADEMARKS
+15.1 Publicity. Neither Party may issue public statements referencing
+      the other Party without prior written consent, except that
+      Licensee authorizes Licensor to identify Licensee as a customer
+      in accordance with the Trademark Policy in `TRADEMARK-POLICY.md`.
+15.2 Trademark Use. Any use of Artagon marks shall comply with the
+      Trademark Policy and shall inure solely to the benefit of
+      Licensor.
+
+16. GOVERNING LAW; VENUE
+16.1 Governing Law. This Agreement is governed by the laws of the
+      State of Delaware, without regard to its conflict of law rules.
+16.2 Venue. The Parties consent to the exclusive jurisdiction and
+      venue of the state and federal courts located in New Castle
+      County, Delaware, for any disputes arising out of or relating to
+      this Agreement. The Parties waive any objection to venue or forum
+      non conveniens.
+
+17. NOTICES
+17.1 Notices. All notices shall be in writing and deemed given when
+      delivered by hand, sent by certified mail (return receipt
+      requested), or sent by nationally recognized overnight courier to
+      the addresses specified below, or to such other address as a
+      Party may designate in writing.
+      For Licensor:
+      Artagon LLC
+      Attn: Legal Department
+      1201 N. Market Street, Suite 111
+      Wilmington, DE 19801
+      legal@artagon.com
+      For Licensee:
+      The address and email specified in the applicable Order Form.
+
+18. GENERAL PROVISIONS
+18.1 Entire Agreement. This Agreement, together with the Order Form
+      and any incorporated policies, constitutes the entire agreement
+      between the Parties and supersedes all prior discussions,
+      proposals, or agreements regarding its subject matter.
+18.2 Amendments. Any amendment must be in writing and signed by both
+      Parties. Purchase orders or other documents issued by Licensee
+      are for administrative convenience only and do not modify this
+      Agreement.
+18.3 Assignment. Licensee may not assign this Agreement without
+      Licensor's prior written consent, except to a successor in
+      connection with a merger, acquisition, or sale of substantially
+      all assets, provided the successor is not a competitor of
+      Licensor and agrees in writing to be bound by this Agreement.
+      Licensor may assign this Agreement without consent to an
+      affiliate or in connection with a corporate transaction.
+18.4 Independent Contractors. The Parties are independent contractors.
+      This Agreement does not create any partnership, joint venture,
+      employment, or agency relationship.
+18.5 Force Majeure. Neither Party shall be liable for delays or failure
+      to perform due to causes beyond its reasonable control, provided
+      that the affected Party promptly notifies the other Party and
+      uses reasonable efforts to resume performance.
+18.6 Export Compliance. Licensee represents that neither it nor any
+      of its controlled affiliates is listed on any U.S. government
+      denied-party list. Licensee shall not export or re-export the
+      Licensed Software in violation of U.S. export laws.
+18.7 Severability. If any provision of this Agreement is held
+      unenforceable, the remaining provisions shall remain in full
+      force and effect, and the unenforceable provision shall be deemed
+      modified to the extent necessary to make it enforceable while
+      preserving its intent.
+18.8 Waiver. No failure or delay by either Party in exercising any
+      right shall constitute a waiver of that right.
+18.9 Counterparts and Electronic Signatures. This Agreement may be
+      executed in counterparts and by electronic signature, each of
+      which will be deemed an original and together constitute one
+      instrument.
+
+19. ORDER OF PRECEDENCE
+    In the event of a conflict between this Agreement and an Order
+    Form, the Order Form shall govern solely with respect to the
+    conflicting term. In the event of a conflict between this Agreement
+    and any incorporated policy, this Agreement shall control unless
+    the policy expressly states otherwise.
+
+20. SIGNATURES
+    The Parties have caused this Agreement to be executed by their duly
+    authorized representatives as of the Effective Date.
+
+    ARTAGON LLC ("Licensor")                LICENSEE ("Licensee")
+
+    By: ______________________________      By: ___________________________
+    Name: ____________________________      Name: _________________________
+    Title: ___________________________      Title: ________________________
+    Date: ____________________________      Date: _________________________
+
+For questions about this Agreement or to request changes, contact
+sales@artagon.com or legal@artagon.com. Current pricing information is
+available at https://www.artagon.com/pricing.

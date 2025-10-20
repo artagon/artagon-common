@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
 # Release artifacts from Nexus staging to Maven Central
 # Usage: ./artagon-common/scripts/nexus-release.sh

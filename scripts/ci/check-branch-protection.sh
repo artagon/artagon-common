@@ -7,7 +7,7 @@
 #   ./check-branch-protection.sh --all
 #
 
-set -e
+set -euo pipefail
 
 # Colors
 RED='\033[0;31m'
