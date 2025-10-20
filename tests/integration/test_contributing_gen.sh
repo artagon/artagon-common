@@ -44,14 +44,12 @@ test_basic_substitution() {
   cp -r "$ROOT_DIR/scripts" .common/artagon-common/
 
   # Run script with explicit parameters
-  set +e
-  "$SETUP_SCRIPT" \
+  run_and_capture_exit "$SETUP_SCRIPT" \
       --repo-name "test-project" \
       --repo-owner "test-org" \
       --repo-desc "Test description" \
       --force 2>&1
   local exit_code=$?
-  set -e
 
   if [[ $exit_code -eq 0 ]]; then
     assert_file_exists "CONTRIBUTING.md"

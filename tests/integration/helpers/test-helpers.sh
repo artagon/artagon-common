@@ -139,48 +139,13 @@ cleanup_test_env() {
   fi
 }
 
-# Mock artagon-common structure
-create_mock_artagon_common() {
-  local base_dir="$1"
-  mkdir -p "$base_dir/templates"
-  mkdir -p "$base_dir/scripts"
-  mkdir -p "$base_dir/.agents-shared"
-
-  # Create minimal template
-  cat > "$base_dir/templates/CONTRIBUTING.md.template" <<'EOF'
-# Contributing to {{ repository.name }}
-
-Thank you for your interest in contributing to **{{ repository.name }}**! This project follows Artagon's standardized development workflow.
-
-> {{ repository.description }}
-
-## Quick Links
-
-- **Repository**: https://github.com/{{ repository.owner }}/{{ repository.name }}
-
-## Getting Started
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
-
-## Code of Conduct
-
-Be respectful and collaborative.
-EOF
-
-  # Create minimal preferences
-  cat > "$base_dir/.agents-shared/preferences.md" <<'EOF'
-# Shared Preferences
-
-Test preferences content.
-EOF
-
-  # Create minimal project context
-  cat > "$base_dir/.agents-shared/project-context.md" <<'EOF'
-# Project Context
-
-Test context content.
-EOF
+# Run command and capture exit code safely
+# Usage: run_and_capture_exit <command> [args...]
+# Returns: exit code of the command
+run_and_capture_exit() {
+  set +e
+  "$@"
+  local exit_code=$?
+  set -e
+  return $exit_code
 }
