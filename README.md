@@ -9,7 +9,7 @@ This repository serves as a centralized collection of common tooling used across
 ### What's Included
 
 - **Scripts**: Automation for builds, deployments, CI/CD, and development workflows
-  - 🆕 **setup-repo.sh**: Unified project setup for Java, C, C++, and Rust
+  - 🆕 **repo_setup.sh**: Unified project setup for Java, C, C++, and Rust
   - Deployment automation for Maven Central and GitHub Packages
   - Branch protection and CI/CD management
 - **Templates**: Standardized project files for multiple languages
@@ -31,7 +31,7 @@ The recommended way to use `artagon-common` is as a git submodule:
 
 ```bash
 # Quick setup (installs to .common/artagon-common)
-bash <(curl -fsSL https://raw.githubusercontent.com/artagon/artagon-common/main/scripts/setup-artagon-common.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/artagon/artagon-common/main/scripts/repo_add_artagon_common.sh)
 
 # Or manually
 git submodule add git@github.com:artagon/artagon-common.git .common/artagon-common
@@ -51,21 +51,21 @@ git clone git@github.com:artagon/artagon-common.git
 ```
 artagon-common/
 ├── scripts/                      # Automation scripts
-│   ├── setup-repo.sh            # 🆕 Unified project setup (all languages)
-│   ├── auto_create_and_push.sh  # GitHub repository creation and setup
-│   ├── setup-artagon-common.sh  # Bootstrap this repo into projects
+│   ├── repo_setup.sh            # 🆕 Unified project setup (all languages)
+│   ├── gh_auto_create_and_push.sh  # GitHub repository creation and setup
+│   ├── repo_add_artagon_common.sh  # Bootstrap this repo into projects
 │   ├── deploy/                  # Deployment automation
-│   │   ├── check-deploy-ready.sh    # Pre-deployment validation
-│   │   ├── deploy-snapshot.sh       # Deploy snapshot to OSSRH
-│   │   ├── nexus-release.sh         # Release from Nexus staging
-│   │   └── release.sh               # Full release automation
+│   │   ├── mvn_check_ready.sh       # Pre-deployment validation
+│   │   ├── mvn_deploy_snapshot.sh   # Deploy snapshot to OSSRH
+│   │   ├── mvn_release_nexus.sh     # Release from Nexus staging
+│   │   └── mvn_release.sh           # Full release automation
 │   ├── ci/                      # CI/CD and branch protection
-│   │   ├── branch-protection-common.sh  # Shared protection functions
-│   │   ├── check-branch-protection.sh   # View protection status
-│   │   ├── protect-main-branch.sh       # Solo developer protection
-│   │   ├── protect-main-branch-strict.sh # Maximum protection
-│   │   ├── protect-main-branch-team.sh  # Team collaboration
-│   │   └── remove-branch-protection.sh  # Remove protection
+│   │   ├── gh_branch_protection_common.sh  # Shared protection functions
+│   │   ├── gh_check_branch_protection.sh   # View protection status
+│   │   ├── gh_protect_main.sh       # Solo developer protection
+│   │   ├── gh_protect_main_strict.sh # Maximum protection
+│   │   ├── gh_protect_main_team.sh  # Team collaboration
+│   │   └── gh_remove_branch_protection.sh  # Remove protection
 │   ├── build/                   # Build-related scripts (future use)
 │   └── dev/                     # Development tools (future use)
 ├── nix/                         # 🆕 Nix flakes for reproducible builds
@@ -115,7 +115,7 @@ artagon-common/
 
 ### 🆕 Unified Project Setup
 
-#### `setup-repo.sh`
+#### `repo_setup.sh`
 ### 🧰 Artagon CLI
 
 A Python-based command line interface consolidates release and deployment tasks. It lives at `scripts/artagon` and supports a dry-run mode for safe experimentation.
@@ -177,25 +177,25 @@ Override values to match your GitHub organisation or preferred language; environ
 
 ```bash
 # Java project with Nix
-./scripts/setup-repo.sh --type java --name my-api --with-nix
+./scripts/repo_setup.sh --type java --name my-api --with-nix
 
 # Private Rust project
-./scripts/setup-repo.sh --type rust --name secret-lib --private
+./scripts/repo_setup.sh --type rust --name secret-lib --private
 
 # C++ project with branch protection
-    ./scripts/setup-repo.sh --type cpp --name game-engine --branch-protection
+    ./scripts/repo_setup.sh --type cpp --name game-engine --branch-protection
 
     # C project for different organization
-    ./scripts/setup-repo.sh --type c --name firmware --owner embedded-team
+    ./scripts/repo_setup.sh --type c --name firmware --owner embedded-team
 ```
 
-### `sync-codex.sh`
+### `gh_sync_codex.sh`
 
 Keeps `codex/` overlays aligned with the shared Codex guidance distributed with `artagon-common`.
 
 - The script links `codex/shared/` to the shared preferences, stubs local overlays, and wires `.codex/` for tools that rely on it.
-- Git hooks (`pre-commit`, `post-checkout`, `post-merge`) run it automatically, and `setup-repo.sh` invokes it when bootstrapping a new repository.
-- Run manually with `./scripts/sync-codex.sh --ensure` to repair links or `--check` to validate structure.
+- Git hooks (`pre-commit`, `post-checkout`, `post-merge`) run it automatically, and `repo_setup.sh` invokes it when bootstrapping a new repository.
+- Run manually with `./scripts/gh_sync_codex.sh --ensure` to repair links or `--check` to validate structure.
 
 **Options:**
 - `--type <java|c|cpp|rust>` - Project language (required)
@@ -214,7 +214,7 @@ Keeps `codex/` overlays aligned with the shared Codex guidance distributed with 
 
 ### Repository Management
 
-#### `auto_create_and_push.sh`
+#### `gh_auto_create_and_push.sh`
 
 Automated script to create GitHub repositories, initialize git, and push initial commit.
 
@@ -229,17 +229,17 @@ Automated script to create GitHub repositories, initialize git, and push initial
 
 ```bash
 # Basic usage
-./scripts/auto_create_and_push.sh --repo my-project --public
+./scripts/gh_auto_create_and_push.sh --repo my-project --public
 
 # With description and custom message
-./scripts/auto_create_and_push.sh \
+./scripts/gh_auto_create_and_push.sh \
   --repo api-server \
   --private \
   --description "REST API for Artagon platform" \
   --message "Initial commit"
 
 # For organization
-./scripts/auto_create_and_push.sh \
+./scripts/gh_auto_create_and_push.sh \
   --owner artagon \
   --repo new-service \
   --private
@@ -257,7 +257,7 @@ Automated script to create GitHub repositories, initialize git, and push initial
 - `--force` - Skip repo creation if exists
 - `--no-prompt` - Non-interactive mode
 
-#### `setup-artagon-common.sh`
+#### `repo_add_artagon_common.sh`
 
 Bootstrap script to add artagon-common as a submodule to any project.
 
@@ -265,13 +265,13 @@ Bootstrap script to add artagon-common as a submodule to any project.
 
 ```bash
 # Default installation (.common/artagon-common)
-./scripts/setup-artagon-common.sh
+./scripts/repo_add_artagon_common.sh
 
 # Custom path
-./scripts/setup-artagon-common.sh tools/common
+./scripts/repo_add_artagon_common.sh tools/common
 
 # Specific branch
-./scripts/setup-artagon-common.sh .common/artagon-common develop
+./scripts/repo_add_artagon_common.sh .common/artagon-common develop
 ```
 
 ### Branch Protection
@@ -282,16 +282,16 @@ Protect your `main` branch across repositories with flexible, parameterized scri
 
 ```bash
 # Protect a single repository
-./scripts/ci/protect-main-branch.sh --repo artagon-common
+./scripts/ci/gh_protect_main.sh --repo artagon-common
 
 # Protect all default repositories
-./scripts/ci/protect-main-branch.sh --all
+./scripts/ci/gh_protect_main.sh --all
 
 # Protect repository in different organization
-./scripts/ci/protect-main-branch.sh --repo my-app --owner mycompany
+./scripts/ci/gh_protect_main.sh --repo my-app --owner mycompany
 
 # Protect custom branch
-./scripts/ci/protect-main-branch.sh --repo my-app --branch develop
+./scripts/ci/gh_protect_main.sh --repo my-app --branch develop
 ```
 
 #### Common Parameters
@@ -311,74 +311,74 @@ All branch protection scripts support:
 
 #### Available Scripts
 
-**`ci/protect-main-branch.sh` - Solo Development ⭐**
+**`ci/gh_protect_main.sh` - Solo Development ⭐**
 Basic protection for solo developers - blocks accidents but allows direct pushes.
 
 ```bash
 # Single repo
-./scripts/ci/protect-main-branch.sh --repo artagon-common
+./scripts/ci/gh_protect_main.sh --repo artagon-common
 
 # Multiple repos in your org
-./scripts/ci/protect-main-branch.sh --owner myorg --repo app1 --repo app2
+./scripts/ci/gh_protect_main.sh --owner myorg --repo app1 --repo app2
 ```
 
 **Protection:** Blocks force pushes & deletions | Allows direct pushes & admin overrides
 
-**`ci/protect-main-branch-team.sh` - Team Collaboration ⭐**
+**`ci/gh_protect_main_team.sh` - Team Collaboration ⭐**
 Balanced protection for teams - requires PR reviews but allows admin emergency access.
 
 ```bash
-./scripts/ci/protect-main-branch-team.sh --repo artagon-bom
+./scripts/ci/gh_protect_main_team.sh --repo artagon-bom
 ```
 
 **Protection:** Requires 1 PR approval & conversation resolution | Allows admin emergency access
 
-**`ci/protect-main-branch-strict.sh` - Maximum Protection**
+**`ci/gh_protect_main_strict.sh` - Maximum Protection**
 Strict protection for compliance environments - enforced for everyone including admins.
 
 ```bash
-./scripts/ci/protect-main-branch-strict.sh --all
+./scripts/ci/gh_protect_main_strict.sh --all
 ```
 
 **Protection:** Requires PR approval, status checks & linear history | Enforced for admins
 
-**`ci/check-branch-protection.sh` - Status Check**
+**`ci/gh_check_branch_protection.sh` - Status Check**
 View current protection settings for all repositories.
 
 ```bash
 # Check all default repos
-./scripts/ci/check-branch-protection.sh --all
+./scripts/ci/gh_check_branch_protection.sh --all
 
 # Check specific repo
-./scripts/ci/check-branch-protection.sh --repo artagon-common
+./scripts/ci/gh_check_branch_protection.sh --repo artagon-common
 ```
 
-**`remove-branch-protection.sh` - Remove Protection**
+**`gh_remove_branch_protection.sh` - Remove Protection**
 Remove all branch protection (use with caution).
 
 ```bash
-./scripts/ci/remove-branch-protection.sh --repo artagon-common --force
+./scripts/ci/gh_remove_branch_protection.sh --repo artagon-common --force
 ```
 
 #### Advanced Examples
 
 ```bash
 # Protect multiple repos at once
-./scripts/ci/protect-main-branch.sh \
+./scripts/ci/gh_protect_main.sh \
   --repo artagon-common \
   --repo artagon-license \
   --repo artagon-bom
 
 # Work across different organizations
-./scripts/ci/protect-main-branch.sh --repo shared-lib --owner org1
-./scripts/ci/protect-main-branch.sh --repo shared-lib --owner org2
+./scripts/ci/gh_protect_main.sh --repo shared-lib --owner org1
+./scripts/ci/gh_protect_main.sh --repo shared-lib --owner org2
 
 # Protect non-main branches
-./scripts/ci/protect-main-branch.sh --repo api-server --branch develop
-./scripts/ci/protect-main-branch.sh --repo api-server --branch release/v1.0
+./scripts/ci/gh_protect_main.sh --repo api-server --branch develop
+./scripts/ci/gh_protect_main.sh --repo api-server --branch release/v1.0
 
 # Automation-friendly (no prompts)
-./scripts/ci/protect-main-branch.sh --all --force
+./scripts/ci/gh_protect_main.sh --all --force
 ```
 
 **📚 Documentation:**
@@ -412,7 +412,7 @@ Artagon Common provides production-ready, reusable GitHub Actions workflows for 
 
 #### Quick Start
 
-Projects using `setup-repo.sh` automatically get example workflows configured. To use manually:
+Projects using `repo_setup.sh` automatically get example workflows configured. To use manually:
 
 **C Project CI** (`.github/workflows/ci.yml`):
 ```yaml
@@ -521,7 +521,7 @@ Artagon Common now supports Bazel as an alternative build system for C and C++ p
 
 ```bash
 # Create C++ project with Bazel
-./scripts/setup-repo.sh --type cpp --name my-app --build-system bazel --with-nix
+./scripts/repo_setup.sh --type cpp --name my-app --build-system bazel --with-nix
 
 cd my-app
 
@@ -684,7 +684,7 @@ curl -L https://nixos.org/nix/install | sh
 experimental-features = nix-command flakes
 
 # Create a project with Nix support
-./scripts/setup-repo.sh --type rust --name my-project --with-nix
+./scripts/repo_setup.sh --type rust --name my-project --with-nix
 
 # Enter development shell
 cd my-project
@@ -770,10 +770,10 @@ Add as a submodule and reference scripts:
 git submodule add git@github.com:artagon/artagon-common.git .common/artagon-common
 
 # Use scripts
-.common/artagon-common/scripts/auto_create_and_push.sh --help
+.common/artagon-common/scripts/gh_auto_create_and_push.sh --help
 
 # Or symlink to project root
-ln -s .common/artagon-common/scripts/auto_create_and_push.sh ./scripts/
+ln -s .common/artagon-common/scripts/gh_auto_create_and_push.sh ./scripts/
 ```
 
 ### Option 2: Copy Scripts
@@ -781,7 +781,7 @@ ln -s .common/artagon-common/scripts/auto_create_and_push.sh ./scripts/
 Copy individual scripts to your project:
 
 ```bash
-cp .common/artagon-common/scripts/auto_create_and_push.sh ./scripts/
+cp .common/artagon-common/scripts/gh_auto_create_and_push.sh ./scripts/
 ```
 
 ### Option 3: Add to PATH
@@ -789,7 +789,7 @@ cp .common/artagon-common/scripts/auto_create_and_push.sh ./scripts/
 For personal use, symlink to your ~/bin:
 
 ```bash
-ln -s ~/Projects/Artagon/artagon-common/scripts/auto_create_and_push.sh ~/bin/
+ln -s ~/Projects/Artagon/artagon-common/scripts/gh_auto_create_and_push.sh ~/bin/
 ```
 
 ## Updating
@@ -881,57 +881,93 @@ git commit -m "Pin artagon-common to v1.2.3"
 
 ## Contributing
 
-### Adding New Scripts
+We use an **issue-driven development workflow** with semantic commits and automated branch management. All contributions must follow this process.
 
-1. Create script in appropriate subdirectory (`scripts/build/`, `scripts/ci/`, etc.)
-2. Make executable: `chmod +x scripts/your-script.sh`
-3. Add documentation to this README
-4. Test thoroughly
-5. Submit pull request
+### Quick Start
+
+```bash
+# 1. Create or find an issue
+gh issue create --title "Add feature X" --label "enhancement"
+# Returns: Issue #42
+
+# 2. Create semantic branch
+./scripts/gh_create_issue_branch.sh 42
+# Creates: feat/42-add-feature-x
+
+# 3. Make changes and commit (semantic format)
+git commit -m "feat(scope): add feature X
+
+Detailed description of changes.
+
+Closes #42"
+
+# 4. Create pull request
+./scripts/gh_create_pr.sh
+```
+
+### Semantic Commits
+
+All commits must follow semantic format:
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+**Types:**
+- `feat` - New feature
+- `fix` - Bug fix
+- `docs` - Documentation
+- `style` - Formatting
+- `refactor` - Code refactoring
+- `perf` - Performance
+- `test` - Tests
+- `build` - Build system
+- `ci` - CI/CD
+- `chore` - Maintenance
+
+**Examples:**
+```
+feat(bazel): add C++26 support
+fix(workflows): correct matrix syntax
+docs: update API reference
+```
+
+### Branch Naming
+
+Format: `<type>/<issue>-<description>`
+
+**Examples:**
+- `feat/42-add-cpp26-support` ✓
+- `fix/38-workflow-matrix` ✓
+- `docs/45-api-examples` ✓
+
+### Automation Scripts
+
+- `./scripts/gh_create_issue_branch.sh <issue>` - Create semantic branch
+- `./scripts/gh_create_pr.sh` - Create pull request with template
+
+### Complete Documentation
+
+For full workflow details, see:
+- **[CONTRIBUTING.md](docs/CONTRIBUTING.md)** - Complete contribution guide
+- **[SEMANTIC-COMMITS.md](docs/SEMANTIC-COMMITS.md)** - Commit message format
+- **[Issue Templates](.github/ISSUE_TEMPLATE/)** - Feature/bug/chore templates
+- **[PR Template](.github/PULL_REQUEST_TEMPLATE.md)** - Pull request template
 
 ### Script Guidelines
 
+When adding new scripts:
 - Use `#!/usr/bin/env bash` shebang
 - Include `set -euo pipefail` for safety
 - Add help text and usage examples
 - Handle errors gracefully
 - Support `--help` flag
-- Document all options and flags
-
-### Example Script Template
-
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
-
-# Script description
-#
-# Usage:
-#   ./script-name.sh [options]
-#
-# Options:
-#   --option1 <value>  Description
-#   --option2          Description
-#   -h, --help         Show help
-
-# Help text
-if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
-  cat << 'EOF'
-Usage: script-name.sh [options]
-
-Description of what this script does.
-
-Options:
-  --option1 <value>  Description
-  --option2          Description
-  -h, --help         Show this help
-EOF
-  exit 0
-fi
-
-# Script logic here
-echo "Script running..."
-```
+- Pass shellcheck validation
+- Follow semantic commit for changes
 
 ## FAQ
 
@@ -984,7 +1020,7 @@ See [LICENSE](LICENSE) for details.
 - 🆕 Nix flakes for reproducible builds with Bazel support
 - 🆕 Bazel build system support for C/C++ projects
 - 🆕 Reusable Bazel CI/CD workflows with Nix integration
-- 🆕 Unified setup-repo.sh script with build system selection
+- 🆕 Unified repo_setup.sh script with build system selection
 - 🆕 Language-specific templates and configs (CMake + Bazel)
 - 🆕 Reusable GitHub Actions workflows for C/C++
 - 🆕 Multi-platform packaging (DEB, RPM, AppImage, DMG, ZIP)
