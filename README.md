@@ -200,13 +200,40 @@ Override values to match your GitHub organisation or preferred language; environ
     ./scripts/repo_setup.sh --type c --name firmware --owner embedded-team
 ```
 
-### `gh_sync_codex.sh`
+### `gh_sync_agents.sh`
 
-Keeps `codex/` overlays aligned with the shared Codex guidance distributed with `artagon-common`.
+Unified script that manages AI agent configurations (Claude, Codex, etc.) with shared guidance from `artagon-common`.
 
-- The script links `codex/shared/` to the shared preferences, stubs local overlays, and wires `.codex/` for tools that rely on it.
+- Copies agent directories (`.agents-claude`, `.agents-codex`, `.agents-shared`) from artagon-common
+- Creates root-level convenience symlinks (`.agents`, `.claude`, `.codex`)
+- Generates project.md files with YAML pointers to shared content
+- Creates project-specific overlay files with references to shared preferences
 - Git hooks (`pre-commit`, `post-checkout`, `post-merge`) run it automatically, and `repo_setup.sh` invokes it when bootstrapping a new repository.
-- Run manually with `./scripts/gh_sync_codex.sh --ensure` to repair links or `--check` to validate structure.
+- Run manually with `./scripts/gh_sync_agents.sh --ensure` to repair or `--check` to validate structure.
+
+**Options:**
+- `--ensure` - Create/update directories, files, and symlinks (default)
+- `--check` - Verify structure only; fail if invariants are broken
+- `--dry-run` - Preview changes without making modifications
+- `--models <models>` - Sync specific models only (default: "claude codex")
+- `-q, --quiet` - Suppress informational output
+- `-h, --help` - Show help
+
+**Examples:**
+```bash
+# Full bootstrap for all models
+./scripts/gh_sync_agents.sh
+
+# Sync only Claude configuration
+./scripts/gh_sync_agents.sh --models claude
+
+# Check structure without changes
+./scripts/gh_sync_agents.sh --check
+```
+
+---
+
+### `repo_setup.sh` Options
 
 **Options:**
 - `--type <java|c|cpp|rust>` - Project language (required)
