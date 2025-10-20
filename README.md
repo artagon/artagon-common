@@ -126,6 +126,8 @@ scripts/artagon --help
 
 # Run a Java release
 scripts/artagon java release run --version 1.2.3
+# When running outside a release-* branch
+scripts/artagon java release run --version 1.2.3 --allow-branch-mismatch
 
 # Publish a SNAPSHOT build
 scripts/artagon java snapshot publish

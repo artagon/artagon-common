@@ -16,6 +16,8 @@ scripts/artagon --help
 
 # Release workflows
 scripts/artagon java release run --version 1.2.3
+# Running from a non release-* branch
+scripts/artagon java release run --version 1.2.3 --allow-branch-mismatch
 scripts/artagon java release tag 1.2.3
 scripts/artagon java release branch cut 1.2.3
 scripts/artagon java release branch stage [--deploy]

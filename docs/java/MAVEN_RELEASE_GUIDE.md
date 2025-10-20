@@ -218,6 +218,8 @@ Usage in downstream projects:
 _One-liner:_
 ```bash
 scripts/artagon java release run --version 1.0.0
+# When working from a non release-* branch
+scripts/artagon java release run --version 1.0.0 --allow-branch-mismatch
 ```
 
 _Manual flow:_

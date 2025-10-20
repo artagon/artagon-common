@@ -1,3 +1,4 @@
 [defaults]
+language = "java"
 owner = "artagon"
 repo = "artagon-common"

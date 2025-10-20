@@ -120,11 +120,11 @@ class CommandContext:
         capture_output: bool = False,
         text: bool = True,
         cwd: Optional[Path] = None,
+        read_only: bool = False,
     ) -> subprocess.CompletedProcess[str]:
-        """
-        Execute a subprocess respecting the context configuration.
-        """
-        if self.dry_run:
+        """Execute a subprocess respecting the context configuration."""
+
+        if self.dry_run and not read_only:
             print(f"[dry-run] {' '.join(command)}")
             return subprocess.CompletedProcess(command, 0, "", "")
 

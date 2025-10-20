@@ -1,19 +1,21 @@
 """
 Java-specific commands for the Artagon CLI.
 
-The current implementation focuses on providing a robust, extensible structure
-using advanced Python features (dataclasses, enums, functional pipelines) so
-it can easily absorb the legacy shell behaviours in subsequent iterations.
+Implements release management, snapshot deployments, dependency security
+automation, and GitHub branch protection using the shared CLI infrastructure.
 """
 
 from __future__ import annotations
 
 import argparse
+import re
+import shutil
 from dataclasses import dataclass
 from enum import Enum, auto
+from pathlib import Path
 from typing import Sequence
 
-from ..core import CommandContext, registry, pipeline, step
+from ..core import CommandContext, registry, pipeline
 
 
 class ReleaseAction(Enum):
@@ -28,6 +30,9 @@ class ReleaseOptions:
     action: ReleaseAction
     version: str | None = None
     deploy: bool = False
+    allow_mismatch: bool = False
+    branch: str | None = None
+    next_version: str | None = None
 
 
 @dataclass
@@ -41,59 +46,222 @@ class SecurityOptions:
     verify: bool = False
 
 
-def ensure_repository_clean() -> PipelineFn[None]:
+def ensure_repository_clean() -> callable:
     def _inner(ctx: CommandContext) -> None:
-        result = ctx.run(["git", "status", "--porcelain"], capture_output=True)
+        if ctx.env.get("ARTAGON_SKIP_GIT_CLEAN") == "1":
+            return
+        result = ctx.run(["git", "status", "--porcelain"], capture_output=True, read_only=True)
         if result.stdout.strip():
             raise RuntimeError("Working tree is not clean. Commit or stash changes.")
 
     return _inner
 
 
-def infer_version_from_branch(ctx: CommandContext) -> str | None:
-    """Infer release version from branch naming convention release-x.y.z."""
-    result = ctx.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], capture_output=True)
-    branch = result.stdout.strip()
-    if branch.startswith("release-"):
-        return branch.removeprefix("release-")
-    return None
+def ensure_release_branch(options: ReleaseOptions) -> callable:
+    def _inner(ctx: CommandContext) -> None:
+        result = ctx.run(["git", "symbolic-ref", "--short", "HEAD"], capture_output=True, read_only=True)
+        branch = result.stdout.strip()
+        if not branch:
+            raise RuntimeError("Unable to determine current branch.")
+        options.branch = branch
+
+        if options.action in {ReleaseAction.RUN, ReleaseAction.TAG, ReleaseAction.BRANCH_STAGE}:
+            if not branch.startswith("release-"):
+                if not options.allow_mismatch:
+                    raise RuntimeError(
+                        f"Release commands must run from a release-* branch. Current: {branch}"
+                    )
+            else:
+                branch_version = branch.removeprefix("release-")
+                if options.version is None:
+                    options.version = branch_version
+                elif options.version != branch_version and not options.allow_mismatch:
+                    raise RuntimeError(
+                        f"Branch ({branch}) does not match version {options.version}. "
+                        "Use --allow-branch-mismatch to override."
+                    )
+
+    return _inner
 
 
-def log_release_plan(options: ReleaseOptions) -> PipelineFn[None]:
+def log_release_plan(options: ReleaseOptions) -> callable:
     def _inner(ctx: CommandContext) -> None:
         print(f"[PLAN] Java release action={options.action.name}, version={options.version}, deploy={options.deploy}")
 
     return _inner
 
 
-def execute_release(options: ReleaseOptions) -> PipelineFn[None]:
-    """Invoke the legacy release pipeline until full migration is complete."""
-
+def validate_build() -> callable:
     def _inner(ctx: CommandContext) -> None:
-        match options.action:
-            case ReleaseAction.RUN:
-                if not options.version:
-                    inferred = infer_version_from_branch(ctx)
-                    if not inferred:
-                        raise RuntimeError("Unable to infer release version. Provide --version.")
-                    options.version = inferred
-                ctx.run(["bash", str(ctx.cwd / "scripts/deploy/release.sh"), options.version])
-            case ReleaseAction.TAG:
-                if not options.version:
-                    raise RuntimeError("Version is required for tagging.")
-                ctx.run(["git", "tag", f"v{options.version}"])
-                ctx.run(["git", "push", "origin", f"v{options.version}"])
-            case ReleaseAction.BRANCH_CUT:
-                if not options.version:
-                    raise RuntimeError("Version required to cut release branch.")
-                branch_name = f"release-{options.version}"
-                ctx.run(["git", "fetch", "origin", "main"])
-                ctx.run(["git", "checkout", "-b", branch_name, "origin/main"])
-                ctx.run(["git", "push", "--set-upstream", "origin", branch_name])
-            case ReleaseAction.BRANCH_STAGE:
-                ctx.run(["bash", str(ctx.cwd / "scripts/deploy/check-deploy-ready.sh")])
-                if options.deploy:
-                    ctx.run(["bash", str(ctx.cwd / "scripts/deploy/deploy-snapshot.sh")])
+        if ctx.env.get("ARTAGON_SKIP_RELEASE_STEPS") == "1":
+            print("[skip] validate build")
+            return
+        ctx.run(["mvn", "clean", "verify"])
+
+    return _inner
+
+
+def calculate_next_snapshot(version: str) -> str:
+    parts = version.split(".")
+    if not parts:
+        raise ValueError("Invalid version string")
+    try:
+        parts[-1] = str(int(parts[-1]) + 1)
+    except ValueError as exc:
+        raise ValueError(f"Unable to increment version component in '{version}'") from exc
+    return ".".join(parts) + "-SNAPSHOT"
+
+
+def update_versions_to_release(options: ReleaseOptions) -> callable:
+    def _inner(ctx: CommandContext) -> None:
+        if not options.version:
+            raise RuntimeError("Release version is not set.")
+        if ctx.env.get("ARTAGON_SKIP_RELEASE_STEPS") == "1":
+            print("[skip] update versions to release")
+            return
+        bom_dir = ctx.cwd / "artagon-bom"
+        parent_dir = ctx.cwd / "artagon-parent"
+        ctx.run(["mvn", "versions:set", f"-DnewVersion={options.version}"], cwd=bom_dir)
+        ctx.run(["mvn", "versions:commit"], cwd=bom_dir)
+        ctx.run(["mvn", "versions:set", f"-DnewVersion={options.version}"], cwd=parent_dir)
+        ctx.run(["mvn", "versions:commit"], cwd=parent_dir)
+
+        parent_pom = parent_dir / "pom.xml"
+        text = parent_pom.read_text()
+        updated = re.sub(r"<version>.*-SNAPSHOT</version>", f"<version>{options.version}</version>", text, count=1)
+        parent_pom.write_text(updated)
+
+    return _inner
+
+
+def update_checksums(options: ReleaseOptions) -> callable:
+    def _inner(ctx: CommandContext) -> None:
+        if ctx.env.get("ARTAGON_SKIP_RELEASE_STEPS") == "1":
+            print("[skip] update checksums")
+            return
+        bom_dir = ctx.cwd / "artagon-bom"
+        parent_dir = ctx.cwd / "artagon-parent"
+        ctx.run(["mvn", "clean", "verify"], cwd=bom_dir)
+        src = bom_dir / "security" / "artagon-bom-checksums.csv"
+        dest_dir = parent_dir / "security"
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        dest = dest_dir / "bom-checksums.csv"
+        shutil.copy2(src, dest)
+
+    return _inner
+
+
+def commit_release(options: ReleaseOptions) -> callable:
+    def _inner(ctx: CommandContext) -> None:
+        if not options.version:
+            raise RuntimeError("Release version is not set")
+        if ctx.env.get("ARTAGON_SKIP_RELEASE_STEPS") == "1":
+            print("[skip] commit release")
+            return
+        ctx.run(["git", "add", "."])
+        ctx.run(["git", "commit", "-m", f"Release version {options.version}"])
+        ctx.run(["git", "tag", "-a", f"v{options.version}", "-m", f"Release {options.version}"])
+
+    return _inner
+
+
+def deploy_release() -> callable:
+    def _inner(ctx: CommandContext) -> None:
+        if ctx.env.get("ARTAGON_SKIP_RELEASE_STEPS") == "1":
+            print("[skip] deploy release")
+            return
+        ctx.run(["mvn", "clean", "deploy", "-Possrh-deploy,artagon-oss-release"])
+
+    return _inner
+
+
+def bump_to_next_snapshot(options: ReleaseOptions) -> callable:
+    def _inner(ctx: CommandContext) -> None:
+        if not options.version:
+            raise RuntimeError("Release version is not set")
+        options.next_version = calculate_next_snapshot(options.version)
+        if ctx.env.get("ARTAGON_SKIP_RELEASE_STEPS") == "1":
+            print("[skip] bump to next snapshot")
+            return
+        bom_dir = ctx.cwd / "artagon-bom"
+        parent_dir = ctx.cwd / "artagon-parent"
+        ctx.run(["mvn", "versions:set", f"-DnewVersion={options.next_version}"], cwd=bom_dir)
+        ctx.run(["mvn", "versions:commit"], cwd=bom_dir)
+        ctx.run(["mvn", "versions:set", f"-DnewVersion={options.next_version}"], cwd=parent_dir)
+        ctx.run(["mvn", "versions:commit"], cwd=parent_dir)
+        parent_pom = parent_dir / "pom.xml"
+        text = parent_pom.read_text()
+        updated = re.sub(
+            rf"<version>{re.escape(options.version)}</version>",
+            f"<version>{options.next_version}</version>",
+            text,
+            count=1,
+        )
+        parent_pom.write_text(updated)
+
+    return _inner
+
+
+def commit_next_iteration(options: ReleaseOptions) -> callable:
+    def _inner(ctx: CommandContext) -> None:
+        if ctx.env.get("ARTAGON_SKIP_RELEASE_STEPS") == "1":
+            print("[skip] commit next iteration")
+            return
+        ctx.run(["git", "add", "."])
+        ctx.run(["git", "commit", "-m", "Prepare for next development iteration"])
+
+    return _inner
+
+
+def summarize_release(options: ReleaseOptions) -> callable:
+    def _inner(ctx: CommandContext) -> None:
+        version = options.version or "<unknown>"
+        branch = options.branch or "<release-branch>"
+        print("==========================================")
+        print(f"Release {version} complete!")
+        print("==========================================")
+        print("Next steps:")
+        print(f"1. Push to remote: git push origin {branch} --tags")
+        print(f"2. Open a pull request from {branch} back to main")
+        print("3. Release staging repo at: https://s01.oss.sonatype.org/")
+        print(f"4. Create GitHub release for tag v{version}")
+        if options.next_version:
+            print(f"Next development version: {options.next_version}")
+
+    return _inner
+
+
+def create_release_tag(options: ReleaseOptions) -> callable:
+    def _inner(ctx: CommandContext) -> None:
+        if not options.version:
+            raise RuntimeError("Version is required for tagging.")
+        ctx.run(["git", "tag", "-a", f"v{options.version}", "-m", f"Release {options.version}"])
+        ctx.run(["git", "push", "origin", f"v{options.version}"])
+
+    return _inner
+
+
+def create_release_branch(options: ReleaseOptions) -> callable:
+    def _inner(ctx: CommandContext) -> None:
+        if not options.version:
+            raise RuntimeError("Version required to cut release branch.")
+        branch_name = f"release-{options.version}"
+        ctx.run(["git", "fetch", "origin", "main"])
+        ctx.run(["git", "checkout", "-b", branch_name, "origin/main"])
+        ctx.run(["git", "push", "--set-upstream", "origin", branch_name])
+        options.branch = branch_name
+
+    return _inner
+
+
+def summarize_stage(options: ReleaseOptions) -> callable:
+    def _inner(ctx: CommandContext) -> None:
+        branch = options.branch or "<release-branch>"
+        print(f"Stage validation completed for {branch}.")
+        if options.deploy:
+            print("Artifacts deployed to OSSRH staging. Review and release when ready.")
+        else:
+            print("Run with --deploy to publish staging artifacts once validation passes.")
 
     return _inner
 
@@ -103,7 +271,12 @@ def _parse_release_args(args: Sequence[str]) -> ReleaseOptions:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     run_parser = subparsers.add_parser("run", help="Execute the full release pipeline for the current branch.")
-    run_parser.add_argument("--version", help="Explicit release version (defaults to inferred value).")
+    run_parser.add_argument("--version", help="Explicit release version (defaults to branch inference).")
+    run_parser.add_argument(
+        "--allow-branch-mismatch",
+        action="store_true",
+        help="Allow release version to differ from release-* branch name.",
+    )
 
     tag_parser = subparsers.add_parser("tag", help="Create and publish a release tag.")
     tag_parser.add_argument("version", help="Version string to tag (e.g. 1.2.3).")
@@ -116,16 +289,29 @@ def _parse_release_args(args: Sequence[str]) -> ReleaseOptions:
 
     stage_parser = branch_sub.add_parser("stage", help="Validate a release branch and optionally deploy to staging.")
     stage_parser.add_argument("--deploy", action="store_true", help="Deploy artefacts to staging after validation.")
+    stage_parser.add_argument(
+        "--allow-branch-mismatch",
+        action="store_true",
+        help="Allow branch naming mismatch when staging.",
+    )
 
     parsed = parser.parse_args(list(args))
     if parsed.command == "run":
-        return ReleaseOptions(action=ReleaseAction.RUN, version=parsed.version)
+        return ReleaseOptions(
+            action=ReleaseAction.RUN,
+            version=parsed.version,
+            allow_mismatch=parsed.allow_branch_mismatch,
+        )
     if parsed.command == "tag":
         return ReleaseOptions(action=ReleaseAction.TAG, version=parsed.version)
     if parsed.command == "branch" and parsed.branch_cmd == "cut":
         return ReleaseOptions(action=ReleaseAction.BRANCH_CUT, version=parsed.version)
     if parsed.command == "branch" and parsed.branch_cmd == "stage":
-        return ReleaseOptions(action=ReleaseAction.BRANCH_STAGE, deploy=parsed.deploy)
+        return ReleaseOptions(
+            action=ReleaseAction.BRANCH_STAGE,
+            deploy=parsed.deploy,
+            allow_mismatch=parsed.allow_branch_mismatch,
+        )
     raise ValueError("Unhandled release command")
 
 
@@ -133,11 +319,35 @@ def _parse_release_args(args: Sequence[str]) -> ReleaseOptions:
 def handle_release(ctx: CommandContext, args: Sequence[str]) -> int:
     options = _parse_release_args(args)
     try:
-        pipeline(
-            ensure_repository_clean(),
-            log_release_plan(options),
-            execute_release(options),
-        )(ctx)
+        steps = [ensure_repository_clean()]
+        if options.action not in {ReleaseAction.BRANCH_CUT}:
+            steps.append(ensure_release_branch(options))
+        steps.append(log_release_plan(options))
+
+        if options.action == ReleaseAction.RUN:
+            steps.extend(
+                [
+                    validate_build(),
+                    update_versions_to_release(options),
+                    update_checksums(options),
+                    commit_release(options),
+                    deploy_release(),
+                    bump_to_next_snapshot(options),
+                    commit_next_iteration(options),
+                    summarize_release(options),
+                ]
+            )
+        elif options.action == ReleaseAction.TAG:
+            steps.append(create_release_tag(options))
+        elif options.action == ReleaseAction.BRANCH_CUT:
+            steps.append(create_release_branch(options))
+        elif options.action == ReleaseAction.BRANCH_STAGE:
+            steps.append(validate_build())
+            if options.deploy:
+                steps.append(deploy_release())
+            steps.append(summarize_stage(options))
+
+        pipeline(*steps)(ctx)
         return 0
     except RuntimeError as err:
         print(f"Error: {err}")
@@ -154,7 +364,7 @@ def _parse_snapshot_args(args: Sequence[str]) -> SnapshotOptions:
 @registry.command("java snapshot", "Publish Java SNAPSHOT builds.")
 def handle_snapshot(ctx: CommandContext, args: Sequence[str]) -> int:
     _ = _parse_snapshot_args(args)
-    ctx.run(["bash", str(ctx.cwd / "scripts/deploy/deploy-snapshot.sh")])
+    ctx.run(["mvn", "clean", "deploy", "-Possrh-deploy,artagon-oss-release"])
     return 0
 
 
@@ -170,10 +380,11 @@ def _parse_security_args(args: Sequence[str]) -> SecurityOptions:
 @registry.command("java security", "Maintain Java dependency security baselines.")
 def handle_security(ctx: CommandContext, args: Sequence[str]) -> int:
     options = _parse_security_args(args)
+    security_script = ctx.cwd / "scripts/security/mvn-update-dep-security.sh"
     if options.update:
-        ctx.run(["bash", str(ctx.cwd / "scripts/security/mvn-update-dep-security.sh"), "--update"])
+        ctx.run(["bash", str(security_script), "--update"])
     elif options.verify:
-        ctx.run(["bash", str(ctx.cwd / "scripts/security/mvn-update-dep-security.sh"), "--verify"])
+        ctx.run(["bash", str(security_script), "--verify"])
     return 0
 
 
@@ -190,16 +401,16 @@ def handle_github(ctx: CommandContext, args: Sequence[str]) -> int:
     if parsed.command == "protect":
         repo = ctx.config.repo or ctx.cwd.name
         owner = ctx.config.owner
-        ctx.run(
-            [
-                "bash",
-                str(ctx.cwd / "scripts/ci/protect-main-branch-team.sh"),
-                "--repo",
-                repo,
-                *( ["--owner", owner] if owner else [] ),
-                "--branch",
-                parsed.branch,
-                "--force",
-            ]
-        )
+        command = [
+            "bash",
+            str(ctx.cwd / "scripts/ci/protect-main-branch-team.sh"),
+            "--repo",
+            repo,
+            "--branch",
+            parsed.branch,
+            "--force",
+        ]
+        if owner:
+            command.extend(["--owner", owner])
+        ctx.run(command)
     return 0

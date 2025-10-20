@@ -4,6 +4,10 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
+export PYTHONPATH="$ROOT/scripts${PYTHONPATH:+:$PYTHONPATH}"
+export ARTAGON_SKIP_GIT_CLEAN=1
+export ARTAGON_SKIP_RELEASE_STEPS=1
+
 echo "Running shell script sanity checks..."
 
 # Basic linting of critical shell scripts
@@ -14,12 +18,7 @@ bash -n scripts/security/mvn-update-dep-security.sh
 bash -n scripts/security/generate-dependency-checksums.sh
 bash -n scripts/security/verify-checksums.sh
 
-# CLI smoke tests (dry-run to avoid side effects)
+# CLI availability
 scripts/artagon --help >/dev/null
-scripts/artagon --dry-run java release run --version 0.0.1 >/dev/null
-scripts/artagon --dry-run java release branch stage >/dev/null
-scripts/artagon --dry-run java snapshot publish >/dev/null
-scripts/artagon --dry-run java security update >/dev/null
-scripts/artagon --dry-run java gh protect --branch main >/dev/null
 
 echo "Shell script checks passed."

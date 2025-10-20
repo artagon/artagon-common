@@ -23,7 +23,11 @@ jobs:
         run: pip install pytest
 
       - name: Run Python tests
+        env:
+          PYTHONPATH: scripts
         run: pytest
 
       - name: Run shell script tests
+        env:
+          PYTHONPATH: scripts
         run: tests/shell/test_shell_scripts.sh
