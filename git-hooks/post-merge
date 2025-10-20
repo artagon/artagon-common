@@ -33,10 +33,10 @@ if [[ -x "${EXPORT_SCRIPT}" ]]; then
     fi
 fi
 
-# Refresh Codex overlays after merges to pick up shared updates
-if [[ -x scripts/gh_sync_codex.sh ]]; then
-    scripts/gh_sync_codex.sh --ensure --quiet || \
-        echo "⚠️  Warning: Codex sync reported an issue" >&2
+# Refresh agent configurations after merges to pick up shared updates
+if [[ -x scripts/gh_sync_agents.sh ]]; then
+    scripts/gh_sync_agents.sh --ensure --quiet || \
+        echo "⚠️  Warning: Agent sync reported an issue" >&2
 fi
 
 exit 0

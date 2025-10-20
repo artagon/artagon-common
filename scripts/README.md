@@ -56,7 +56,7 @@ point at a different file.
 scripts/
 ├── gh_auto_create_and_push.sh      # GitHub repository creation
 ├── repo_add_artagon_common.sh      # Submodule setup
-├── gh_sync_codex.sh                # Sync Codex overlays with shared guidance
+├── gh_sync_agents.sh               # Unified agent configuration sync (Claude, Codex, etc.)
 ├── deploy/                      # Deployment automation
 │   ├── check-deploy-ready.sh    # Pre-deployment validation
 │   ├── mvn_deploy_snapshot.sh       # Deploy snapshot to OSSRH
@@ -164,17 +164,31 @@ For branch protection and CI/CD automation, see the `ci/` directory and the main
 
 ## Repository Tooling
 
-### gh_sync_codex.sh
+### gh_sync_agents.sh
 
-Keeps `codex/` and `.codex/` overlays aligned with the shared guidance shipped in `.common/artagon-common/.agents/codex`. The script creates symlinks, scaffolds project-specific overlays, and validates that local files still reference the shared defaults.
+Unified script that manages AI agent configurations (Claude, Codex, etc.) with shared guidance from artagon-common. The script:
+- Copies agent directories from `.common/artagon-common`
+- Creates root-level symlinks (`.agents`, `.claude`, `.codex`)
+- Generates project.md files with YAML pointers to shared content
+- Creates project-specific overlay files with references to shared preferences
 
 **Usage**:
 ```bash
-./scripts/gh_sync_codex.sh --ensure   # repair links and stub overlays (default)
-./scripts/gh_sync_codex.sh --check    # verify structure only
+./scripts/gh_sync_agents.sh --ensure     # Create/update all agents (default)
+./scripts/gh_sync_agents.sh --check      # Verify structure only
+./scripts/gh_sync_agents.sh --models claude  # Sync only Claude
+./scripts/gh_sync_agents.sh --dry-run    # Preview changes
 ```
 
-The git hooks (`pre-commit`, `post-checkout`, `post-merge`) invoke the script automatically so Codex preferences stay synchronized after branch switches or merges.
+**Options:**
+- `--ensure` - Create/update directories, files, and symlinks (default)
+- `--check` - Verify structure only; fail if invariants are broken
+- `--dry-run` - Preview changes without making modifications
+- `--models <models>` - Sync specific models (default: "claude codex")
+- `-q, --quiet` - Suppress informational output
+- `-h, --help` - Show help
+
+The git hooks (`pre-commit`, `post-checkout`, `post-merge`) invoke the script automatically so agent configurations stay synchronized after branch switches or merges.
 
 ## Quick Start
 

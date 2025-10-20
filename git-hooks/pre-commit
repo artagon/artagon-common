@@ -84,11 +84,11 @@ if [[ -d "${LEGAL_SUBMODULE}" ]]; then
     fi
 fi
 
-# Ensure Codex overlays stay in sync with shared guidance
-if [[ -x scripts/gh_sync_codex.sh ]]; then
-    if ! scripts/gh_sync_codex.sh --check --quiet; then
-        echo "❌ ERROR: Codex preferences are out of sync." >&2
-        echo "Run scripts/gh_sync_codex.sh --ensure to repair." >&2
+# Ensure agent configurations stay in sync with shared guidance
+if [[ -x scripts/gh_sync_agents.sh ]]; then
+    if ! scripts/gh_sync_agents.sh --check --quiet; then
+        echo "❌ ERROR: Agent configurations are out of sync." >&2
+        echo "Run scripts/gh_sync_agents.sh --ensure to repair." >&2
         exit 1
     fi
 fi
