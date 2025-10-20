@@ -32,6 +32,7 @@ jobs:
             ci
             chore
             revert
+            merge
           scopes: |
             workflows
             scripts
@@ -44,6 +45,7 @@ jobs:
             deploy
             templates
             hooks
+            agents
           requireScope: false
           subjectPattern: ^[a-z].+$
           subjectPatternError: |
@@ -106,7 +108,7 @@ jobs:
             fi
 
             # Check semantic format
-            if [[ "$MSG" =~ ^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?!?:\ .+ ]]; then
+            if [[ "$MSG" =~ ^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert|merge)(\(.+\))?!?:\ .+ ]]; then
               echo "✓ $commit: $MSG"
             else
               echo "✗ $commit: $MSG"
