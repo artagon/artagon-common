@@ -18,7 +18,7 @@ bash -n scripts/security/mvn_update_security.sh
 bash -n scripts/security/mvn_generate_checksums.sh
 bash -n scripts/security/mvn_verify_checksums.sh
 bash -n scripts/gh_sync_agents.sh
-bash -n scripts/gh_sync_claude.sh
+bash -n scripts/repo_validate.sh
 
 # CLI availability
 scripts/artagon --help >/dev/null

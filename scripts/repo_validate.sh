@@ -997,7 +997,7 @@ main() {
             success "Repository is now compliant!"
 
             # Check if there are changes to commit
-            if ! git diff --quiet || ! git diff --cached --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then
+            if ! git diff --quiet || ! git diff --cached --quiet || [[ -n "$(git ls-files --others --exclude-standard)" ]]; then
                 echo ""
                 info "Changes have been made to your repository."
                 info "Review the changes and commit them:"

@@ -91,7 +91,13 @@ get_repo_description() {
 
 # Find template
 find_template() {
-  # Check for template in artagon-common submodule
+  # Check for template in .common/artagon-common submodule (new location)
+  if [[ -f .common/artagon-common/templates/CONTRIBUTING.md.template ]]; then
+    echo ".common/artagon-common/templates/CONTRIBUTING.md.template"
+    return 0
+  fi
+
+  # Check for template in artagon-common submodule (legacy location)
   if [[ -f artagon-common/templates/CONTRIBUTING.md.template ]]; then
     echo "artagon-common/templates/CONTRIBUTING.md.template"
     return 0
@@ -140,6 +146,7 @@ main() {
   if ! TEMPLATE_PATH="$(find_template)"; then
     err "Could not find CONTRIBUTING.md.template"
     err "Expected locations:"
+    err "  - .common/artagon-common/templates/CONTRIBUTING.md.template"
     err "  - artagon-common/templates/CONTRIBUTING.md.template"
     err "  - templates/CONTRIBUTING.md.template"
     exit 1

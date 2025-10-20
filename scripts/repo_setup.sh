@@ -317,17 +317,17 @@ info "Configuring git hooks"
 git config core.hooksPath .common/artagon-common/git-hooks
 success "Git hooks configured for automatic license management"
 
-# Publish Codex agent references for tooling
-CODEX_SYNC_SCRIPT=".common/artagon-common/scripts/gh_sync_codex.sh"
-if [[ -x "${CODEX_SYNC_SCRIPT}" ]]; then
-    info "Syncing Codex preferences"
-    if "${CODEX_SYNC_SCRIPT}" --ensure --quiet; then
-        success "Codex references initialized"
+# Setup agent directories and symlinks (unified script)
+AGENTS_SYNC_SCRIPT=".common/artagon-common/scripts/gh_sync_agents.sh"
+if [[ -x "${AGENTS_SYNC_SCRIPT}" ]]; then
+    info "Setting up agent directories and symlinks"
+    if "${AGENTS_SYNC_SCRIPT}" --ensure --quiet; then
+        success "Agent directories and symlinks configured"
     else
-        warn "Codex sync script reported an issue"
+        warn "Agent sync script reported an issue"
     fi
 else
-    warn "Codex sync script not found; skipping Codex setup"
+    warn "Agent sync script not found; skipping agent setup"
 fi
 
 # Setup CONTRIBUTING.md from template

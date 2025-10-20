@@ -17,7 +17,12 @@ ROOT_DIR="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 
 # Paths to shared content
 SHARED_BASE=".agents-shared"             # For artagon-common itself
-SUBMODULE_SHARED="artagon-common/.agents-shared"  # For repos using artagon-common as submodule
+SUBMODULE_SHARED_LEGACY="artagon-common/.agents-shared"  # Legacy submodule path
+SUBMODULE_SHARED=".common/artagon-common/.agents-shared" # Current submodule path
+
+# Global variables set by resolve_shared_path
+SHARED_PATH=""
+AGENTS_BASE_DIR=""
 
 usage() {
   cat <<'USAGE'
@@ -68,16 +73,26 @@ resolve_shared_path() {
   # Check if we're in artagon-common itself
   if [[ -d "$SHARED_BASE" ]]; then
     echo "$SHARED_BASE"
+    AGENTS_BASE_DIR="."
     return 0
   fi
 
-  # Check for artagon-common submodule
+  # Check for current submodule structure
   if [[ -d "$SUBMODULE_SHARED" ]]; then
     echo "$SUBMODULE_SHARED"
+    AGENTS_BASE_DIR=".common/artagon-common"
+    return 0
+  fi
+
+  # Check for legacy submodule structure
+  if [[ -d "$SUBMODULE_SHARED_LEGACY" ]]; then
+    echo "$SUBMODULE_SHARED_LEGACY"
+    AGENTS_BASE_DIR="artagon-common"
     return 0
   fi
 
   # Not found
+  AGENTS_BASE_DIR=""
   return 1
 }
 
@@ -86,10 +101,91 @@ init_submodule() {
   if [[ -f .gitmodules ]] && grep -q 'artagon-common' .gitmodules 2>/dev/null; then
     log "Initializing artagon-common submodule..."
     if ! $DRY_RUN; then
-      if ! git submodule update --init --recursive artagon-common 2>&1; then
+      # Try to initialize the submodule at either location
+      if ! git submodule update --init --recursive .common/artagon-common 2>/dev/null && \
+         ! git submodule update --init --recursive artagon-common 2>/dev/null; then
         warn "Failed to initialize artagon-common submodule. Some features may not work correctly."
       fi
     fi
+  fi
+}
+
+# Copy agent directories from artagon-common if needed
+copy_agent_directories() {
+  local model="$1"
+  local source_dir="${AGENTS_BASE_DIR}/.agents-${model}"
+  local target_dir=".agents-${model}"
+
+  # Skip if we're in artagon-common itself
+  if [[ "$AGENTS_BASE_DIR" == "." ]]; then
+    return 0
+  fi
+
+  # Skip if target already exists
+  if [[ -d "$target_dir" ]]; then
+    return 0
+  fi
+
+  # Skip if source doesn't exist
+  if [[ ! -d "$source_dir" ]]; then
+    return 0
+  fi
+
+  if $DRY_RUN; then
+    log "[DRY RUN] Would copy $source_dir to $target_dir"
+    return 0
+  fi
+
+  # Copy the directory
+  cp -r "$source_dir" "$target_dir"
+  log "Copied agent directory: $target_dir from $source_dir"
+}
+
+# Copy shared directory if needed
+copy_shared_directory() {
+  local source_dir="${AGENTS_BASE_DIR}/.agents-shared"
+  local target_dir=".agents-shared"
+
+  # Skip if we're in artagon-common itself
+  if [[ "$AGENTS_BASE_DIR" == "." ]]; then
+    return 0
+  fi
+
+  # Skip if target already exists
+  if [[ -d "$target_dir" ]]; then
+    return 0
+  fi
+
+  # Skip if source doesn't exist
+  if [[ ! -d "$source_dir" ]]; then
+    return 0
+  fi
+
+  if $DRY_RUN; then
+    log "[DRY RUN] Would copy $source_dir to $target_dir"
+    return 0
+  fi
+
+  # Copy the directory
+  cp -r "$source_dir" "$target_dir"
+  log "Copied shared agent directory: $target_dir from $source_dir"
+}
+
+# Create root-level symlinks for agent directories
+create_root_symlinks() {
+  # Create .agents -> .agents-codex (backward compatibility)
+  if [[ -d ".agents-codex" ]]; then
+    ensure_symlink ".agents-codex" ".agents" "root symlink"
+  fi
+
+  # Create .claude -> .agents-claude
+  if [[ -d ".agents-claude" ]]; then
+    ensure_symlink ".agents-claude" ".claude" "root symlink"
+  fi
+
+  # Create .codex -> .agents-codex
+  if [[ -d ".agents-codex" ]]; then
+    ensure_symlink ".agents-codex" ".codex" "root symlink"
   fi
 }
 
@@ -229,20 +325,6 @@ EOF
   log "Generated $project_file with pointers to shared content"
 }
 
-# Create convenience symlinks for model directories
-setup_model_directory_links() {
-  local model="$1"
-  local agent_dir=".agents-$model"
-
-  # Top-level convenience link (.claude -> .agents-claude)
-  ensure_symlink "$agent_dir" ".$model" "directory link"
-
-  # Backward compatibility link for Codex
-  if [[ "$model" == "codex" ]]; then
-    ensure_symlink "$agent_dir" ".agents" "backward compatibility link"
-  fi
-}
-
 # Create project-specific files with semantic references to shared content
 setup_project_files() {
   local model="$1"
@@ -345,8 +427,8 @@ bootstrap_model() {
   # 2. Create project-specific files with semantic references
   setup_project_files "$model"
 
-  # 3. Create directory-level convenience links
-  setup_model_directory_links "$model"
+  # Note: Root-level symlinks (.agents, .claude, .codex) are created by
+  # create_root_symlinks() after all models are bootstrapped
 }
 
 # Check structure for a single model
@@ -354,6 +436,13 @@ check_model() {
   local model="$1"
   local agent_dir=".agents-$model"
   local status=0
+
+  # Check agent directory exists
+  if [[ ! -d "$agent_dir" ]]; then
+    err "Missing agent directory: $agent_dir"
+    status=1
+    return $status
+  fi
 
   # Check project.md exists with pointers
   if [[ ! -f "$agent_dir/project.md" ]]; then
@@ -383,9 +472,20 @@ check_model() {
     warn "$agent_dir/project-context.md is a symlink (should be a real file with reference)"
   fi
 
-  # Check convenience directory symlinks
+  # Check root-level convenience symlinks
   if [[ ! -L ".$model" ]]; then
-    warn "Missing convenience symlink: .$model"
+    warn "Missing root symlink: .$model -> $agent_dir"
+  elif [[ "$(readlink .$model 2>/dev/null)" != "$agent_dir" ]]; then
+    warn "Root symlink .$model points to wrong target (expected: $agent_dir)"
+  fi
+
+  # Check special symlinks for codex
+  if [[ "$model" == "codex" ]]; then
+    if [[ ! -L ".agents" ]]; then
+      warn "Missing backward compatibility symlink: .agents -> $agent_dir"
+    elif [[ "$(readlink .agents 2>/dev/null)" != "$agent_dir" ]]; then
+      warn "Symlink .agents points to wrong target (expected: $agent_dir)"
+    fi
   fi
 
   return $status
@@ -401,11 +501,11 @@ run_ensure() {
   # Resolve shared content location
   if ! shared_path="$(resolve_shared_path)"; then
     warn "Shared agent content not found"
-    warn "Expected: $SHARED_BASE or $SUBMODULE_SHARED"
+    warn "Expected: $SHARED_BASE, $SUBMODULE_SHARED, or $SUBMODULE_SHARED_LEGACY"
     log ""
     log "This is normal for non-Artagon repositories."
     log "If this IS an Artagon repo, ensure artagon-common is properly set up as a submodule:"
-    log "  git submodule add git@github.com:artagon/artagon-common.git"
+    log "  git submodule add git@github.com:artagon/artagon-common.git .common/artagon-common"
     log ""
     log "Skipping agent bootstrap."
     return 2  # Exit code 2 indicates "skipped" (distinct from success=0 or failure=1)
@@ -413,11 +513,19 @@ run_ensure() {
 
   SHARED_PATH="$shared_path"
   log "Found shared content at: $shared_path"
+  log "Agents base directory: $AGENTS_BASE_DIR"
 
-  # Bootstrap each model
+  # Copy shared directory if needed
+  copy_shared_directory
+
+  # Copy agent directories and bootstrap each model
   for model in $MODELS; do
+    copy_agent_directories "$model"
     bootstrap_model "$model"
   done
+
+  # Create root-level symlinks
+  create_root_symlinks
 
   log ""
   log "✓ Agent configuration bootstrap complete"
