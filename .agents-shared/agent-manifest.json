@@ -1,0 +1,43 @@
+{
+  "shared": {
+    "context_include": [
+      "../.agents-shared/project-context.md",
+      "../.agents-shared/preferences.md",
+      "../docs/CONTRIBUTING.md",
+      "../docs/SEMANTIC-COMMITS.md",
+      "../CHANGELOG.md",
+      "../.github/PULL_REQUEST_TEMPLATE.md"
+    ],
+    "snippets": [
+      ".agents-shared/project-guidelines.md"
+    ]
+  },
+  "agents": {
+    "claude": {
+      "output": ".agents-claude/project.md",
+      "title": "Claude Code Agent Configuration",
+      "description": "This file contains Claude-specific settings and references shared context",
+      "heading": "Claude Code Agent for Artagon Common",
+      "inherits_from": "../.agents-shared/preferences.md#model_overrides/claude",
+      "specific_sections": [
+        {
+          "heading": "Claude-Specific Settings",
+          "body": "### Extended Thinking Mode\n- Use extended thinking for complex refactoring and architectural decisions\n- Document reasoning in commit messages when helpful for reviewers\n\n### Tool Usage\n- Prefer using Claude Code native tools (Read, Edit, Write, Bash)\n- Use TodoWrite for task tracking and progress visualization\n- Use Task tool for complex multi-step operations\n\n### Communication Style\n- Maintain concise, technical communication\n- Provide context in commit messages and PR descriptions\n- Explain trade-offs when multiple approaches exist"
+        }
+      ]
+    },
+    "codex": {
+      "output": ".agents-codex/project.md",
+      "title": "Codex Agent Configuration",
+      "description": "This file contains Codex-specific settings and references shared context",
+      "heading": "Codex Agent for Artagon Common",
+      "inherits_from": "../.agents-shared/preferences.md#model_overrides/codex",
+      "specific_sections": [
+        {
+          "heading": "Codex-Specific Settings",
+          "body": "### Code Completion Focus\n- Prioritize clean, idiomatic code\n- Follow established patterns in the codebase\n- Use type hints and documentation strings where applicable\n\n### Shell Script Standards\n- Always use `#!/usr/bin/env bash`\n- Include `set -euo pipefail` at the start\n- Pass shellcheck validation\n- Provide clear error messages\n\n### Multi-Language Support\n- Respect language-specific conventions in `configs/`\n- Follow formatter/linter configurations\n- Maintain consistency with existing templates"
+        }
+      ]
+    }
+  }
+}

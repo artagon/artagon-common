@@ -9,7 +9,9 @@ The agent configuration has been refactored to eliminate duplication between Cla
 ```
 .agents-shared/              # Canonical shared content
   ├── preferences.md         # Unified workflow preferences
-  └── project-context.md     # Project structure and history
+  ├── project-context.md     # Project structure and history
+  ├── project-guidelines.md  # Shared agent identity, reminders, and quick reference
+  └── agent-manifest.json    # Machine-readable configuration manifest
 
 .agents-claude/              # Claude-specific configuration
   ├── project.md             # Claude model settings
@@ -25,6 +27,7 @@ The agent configuration has been refactored to eliminate duplication between Cla
 .claude                      -> .agents-claude
 .codex                       -> .agents-codex
 .agents                      -> .agents-codex (backward compatibility)
+codex                        -> .agents-codex (workspace convenience)
 
 # Old structure (preserved for reference)
 .agents-old/                 # Original .agents/ directory
@@ -42,12 +45,19 @@ The agent configuration has been refactored to eliminate duplication between Cla
 All content that is common between Claude and Codex is stored in `.agents-shared/`:
 - **preferences.md**: Unified workflow preferences including semantic commits, issue-driven workflow, and quality standards
 - **project-context.md**: Project structure, recent changes, and maintenance notes
+- **project-guidelines.md**: Shared identity, reminders, quick reference, and quality checklist rendered into each model file
+- **agent-manifest.json**: Machine-readable metadata used to generate `project.md` files for each agent
 
 ### Model-Specific Content
 
 Each agent has its own directory (`.agents-claude/`, `.agents-codex/`) containing:
 - **project.md**: Model-specific configuration and settings
 - **Symlinks** to shared content (preferences.md, project-context.md)
+
+### Automation
+
+- `scripts/agents/generate_agent_configs.py` renders model configs from `agent-manifest.json` and shared guidelines
+- `scripts/verify_agent_layout.sh` validates symlinks and ensures generated files stay in sync (used by integration tests)
 
 ### Agent Compatibility Symlinks
 

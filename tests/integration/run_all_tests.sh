@@ -91,14 +91,15 @@ else
   ((FAILED++)) || true
 fi
 
-# Test 6: Agent sync scripts exist
-echo "Test: Agent configuration scripts exist"
+# Test 6: Agent automation scripts exist
+echo "Test: Agent automation scripts exist"
 if [[ -x "$ROOT_DIR/scripts/gh_sync_agents.sh" ]] && \
-   [[ -x "$ROOT_DIR/scripts/gh_sync_claude.sh" ]]; then
-  echo "✓ Agent scripts exist"
+   [[ -x "$ROOT_DIR/scripts/agents/generate_agent_configs.py" ]] && \
+   [[ -x "$ROOT_DIR/scripts/verify_agent_layout.sh" ]]; then
+  echo "✓ Agent automation scripts exist"
   ((PASSED++)) || true
 else
-  echo "✗ Agent scripts missing"
+  echo "✗ Agent automation scripts missing"
   ((FAILED++)) || true
 fi
 
@@ -142,6 +143,16 @@ if [[ -L "$ROOT_DIR/.github/PULL_REQUEST_TEMPLATE.md" ]] && \
   ((PASSED++)) || true
 else
   echo "✗ GitHub config symlinks missing"
+  ((FAILED++)) || true
+fi
+
+# Test 11: Agent layout verification
+echo "Test: Agent layout verification script"
+if "$ROOT_DIR/scripts/verify_agent_layout.sh" >/dev/null 2>&1; then
+  echo "✓ Agent layout passes verification"
+  ((PASSED++)) || true
+else
+  echo "✗ Agent layout verification failed"
   ((FAILED++)) || true
 fi
 
