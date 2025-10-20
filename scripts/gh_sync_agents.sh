@@ -125,10 +125,17 @@ ensure_symlink() {
     case "$OSTYPE" in
       msys*|mingw*|cygwin*)
         if [[ -d "$target" ]]; then
-          cmd //c "mklink /J \"$(cygpath -w "$link")\" \"$(cygpath -w "$target")\"" 2>/dev/null || \
+          local mklink_err
+          mklink_err=$(cmd //c "mklink /J \"$(cygpath -w "$link")\" \"$(cygpath -w "$target")\"" 2>&1)
+          if [[ $? -ne 0 ]]; then
             warn "Failed to create junction: $link"
+            warn "Reason: $mklink_err"
+            warn "You may need to run this script as Administrator on Windows or enable Developer Mode"
+          else
+            log "Created junction: $link -> $target"
+          fi
         else
-          warn "Cannot create symlink on Windows: $link"
+          warn "Cannot create symlink on Windows: $link (file-level symlinks require admin privileges)"
         fi
         ;;
       *)
@@ -395,8 +402,13 @@ run_ensure() {
   if ! shared_path="$(resolve_shared_path)"; then
     warn "Shared agent content not found"
     warn "Expected: $SHARED_BASE or $SUBMODULE_SHARED"
-    log "Skipping agent bootstrap (this is OK for non-Artagon repos)"
-    return 0
+    log ""
+    log "This is normal for non-Artagon repositories."
+    log "If this IS an Artagon repo, ensure artagon-common is properly set up as a submodule:"
+    log "  git submodule add git@github.com:artagon/artagon-common.git"
+    log ""
+    log "Skipping agent bootstrap."
+    return 2  # Exit code 2 indicates "skipped" (distinct from success=0 or failure=1)
   fi
 
   SHARED_PATH="$shared_path"
@@ -418,8 +430,9 @@ run_check() {
 
   # Resolve shared content location
   if ! shared_path="$(resolve_shared_path)"; then
-    warn "Shared agent content not found"
-    return 0
+    warn "Shared agent content not found - cannot verify configuration"
+    log "For Artagon repos, ensure artagon-common submodule is initialized"
+    return 2  # Exit code 2 indicates "skipped"
   fi
 
   SHARED_PATH="$shared_path"
@@ -474,14 +487,33 @@ done
 cd "$ROOT_DIR"
 
 # Run requested mode
-if [[ "$MODE" == "ensure" ]]; then
-  run_ensure
-fi
-
-if [[ "$MODE" == "check" ]] || [[ "$MODE" == "ensure" ]]; then
-  if ! run_check; then
-    exit 1
-  fi
-fi
+case "$MODE" in
+  ensure)
+    run_ensure
+    exit_code=$?
+    if [[ $exit_code -eq 2 ]]; then
+      # Skipped - shared content not found (normal for non-Artagon repos)
+      exit 0
+    elif [[ $exit_code -ne 0 ]]; then
+      # Error during ensure
+      exit $exit_code
+    fi
+    # Success - now verify with check
+    if ! run_check; then
+      exit 1
+    fi
+    ;;
+  check)
+    run_check
+    exit_code=$?
+    if [[ $exit_code -eq 2 ]]; then
+      # Skipped - shared content not found
+      exit 0
+    elif [[ $exit_code -ne 0 ]]; then
+      # Check failures
+      exit $exit_code
+    fi
+    ;;
+esac
 
 exit 0
