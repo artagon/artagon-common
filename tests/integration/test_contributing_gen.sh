@@ -86,8 +86,10 @@ test_special_characters() {
   cp -r "$ROOT_DIR/templates" .common/artagon-common/
   cp -r "$ROOT_DIR/scripts" .common/artagon-common/
 
-  # Test with special sed characters: & | / \
-  local desc="Project with & ampersand | pipe / slash \\ backslash"
+  # Test with special sed characters: & | / and backslash
+  # Use printf to ensure literal backslash is included
+  local desc
+  desc=$(printf 'Project with & ampersand | pipe / slash \\ backslash')
 
   if "$SETUP_SCRIPT" \
       --repo-name "test-project" \
@@ -100,6 +102,7 @@ test_special_characters() {
     assert_file_contains "CONTRIBUTING.md" "ampersand"
     assert_file_contains "CONTRIBUTING.md" "pipe"
     assert_file_contains "CONTRIBUTING.md" "slash"
+    assert_file_contains "CONTRIBUTING.md" "backslash"
   else
     echo "✗ Script failed with special characters"
     ((FAILED_TESTS++))
