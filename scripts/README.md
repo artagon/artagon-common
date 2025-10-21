@@ -2,6 +2,18 @@
 
 Automation scripts for deployment, CI/CD, and repository management.
 
+## Release Strategy
+
+Artagon projects use a **release branch strategy**:
+
+- **`main` branch**: Always has SNAPSHOT versions (e.g., `1.0.9-SNAPSHOT`)
+- **`release-X.Y.Z` branches**: Have release versions without SNAPSHOT (e.g., `1.0.8`)
+- **Tags**: Created on release branches (e.g., `v1.0.8`)
+
+**Key principle**: Main branch versions MUST end with `-SNAPSHOT`. Release branches remove the suffix to create release versions.
+
+For complete documentation, see [artagon-workflows/RELEASE.md](https://github.com/artagon/artagon-workflows/blob/main/RELEASE.md).
+
 ## Artagon CLI
 
 The preferred entry point is the Python CLI located at `scripts/artagon`.
@@ -108,39 +120,51 @@ Deploys SNAPSHOT versions to Sonatype OSSRH snapshots repository.
 - GPG key configured
 - OSSRH credentials in `~/.m2/settings.xml`
 
-### deploy/mvn_mvn_release.sh *(invoked via `artagon java release run`)*
+### deploy/mvn_release.sh *(invoked via `artagon java release run`)*
 
-Creates and deploys a release version to Maven Central.
+Creates and deploys a release version to Maven Central using the **release branch strategy**.
+
+**IMPORTANT**: This script must be run from a `release-*` branch that has a SNAPSHOT version.
 
 **Usage**:
 ```bash
-./scripts/deploy/mvn_mvn_release.sh <version>
+./scripts/deploy/mvn_release.sh
 ```
 
-**Example**:
-```bash
-./scripts/deploy/mvn_mvn_release.sh 1.0.0
-```
+**Prerequisites**:
+1. Main branch is at next SNAPSHOT version (e.g., `1.0.9-SNAPSHOT`)
+2. Create release branch from commit at desired SNAPSHOT:
+   ```bash
+   git checkout -b release-1.0.8 <commit-at-1.0.8-SNAPSHOT>
+   ```
+3. Run script from release branch
 
 **Process**:
-1. Updates version numbers
-2. Updates BOM checksums
-3. Commits and tags release
-4. Deploys to OSSRH staging
-5. Updates to next SNAPSHOT version
-6. Commits next development iteration
+1. Validates you're on a `release-*` branch
+2. Validates version is SNAPSHOT
+3. Removes `-SNAPSHOT` suffix (e.g., `1.0.8-SNAPSHOT` → `1.0.8`)
+4. Updates BOM checksums
+5. Commits and tags release (`v1.0.8`)
+6. Deploys to OSSRH staging
 
 **Post-release steps**:
 ```bash
-# Push to remote
-git push origin main --tags
+# Push release branch and tag
+git push origin release-1.0.8 --tags
 
-# Release from staging (see nexus-mvn_release.sh)
+# Release from staging
 ./scripts/deploy/mvn_release_nexus.sh
 
 # Create GitHub release
-gh release create v1.0.0 --title "Release 1.0.0" --notes "..."
+gh release create v1.0.8 --generate-notes
 ```
+
+**Release Branch Strategy**:
+- Main branch: Always SNAPSHOT (e.g., `1.0.9-SNAPSHOT`)
+- Release branch: Release version without SNAPSHOT (e.g., `1.0.8`)
+- Release branches are kept for hotfixes (not deleted)
+
+See [artagon-workflows/RELEASE.md](https://github.com/artagon/artagon-workflows/blob/main/RELEASE.md) for complete documentation.
 
 ### deploy/mvn_release_nexus.sh
 
@@ -246,15 +270,33 @@ scripts/artagon java snapshot publish
 
 ### Release to Maven Central
 
+**Using Release Branch Strategy:**
+
 ```bash
-scripts/artagon java release run --version 1.0.0
+# 1. Ensure main is at next SNAPSHOT version
+# artagon-bom should be at 1.0.9-SNAPSHOT
+# artagon-parent should be at next SNAPSHOT
 
-# Push tags
-git push origin main --tags
+# 2. Create release branch from commit at desired SNAPSHOT
+git checkout -b release-1.0.8 <commit-at-1.0.8-SNAPSHOT>
 
-# Promote staging release if required
-scripts/artagon java release branch stage --deploy
+# 3. Run release script from release branch
+./scripts/deploy/mvn_release.sh
+
+# 4. Push release branch and tags
+git push origin release-1.0.8 --tags
+
+# 5. Release from Nexus staging
+./scripts/deploy/mvn_release_nexus.sh
+
+# 6. Create GitHub release
+gh release create v1.0.8 --generate-notes
 ```
+
+**Key Points:**
+- Main branch stays at SNAPSHOT version (unchanged)
+- Release branch has release version without SNAPSHOT
+- Release branches are kept for hotfixes
 
 ## Troubleshooting
 
