@@ -12,7 +12,14 @@ Artagon projects use a **release branch strategy**:
 
 **Key principle**: Main branch versions MUST end with `-SNAPSHOT`. Release branches remove the suffix to create release versions.
 
-For complete documentation, see [artagon-workflows/RELEASE.md](https://github.com/artagon/artagon-workflows/blob/main/RELEASE.md).
+### Documentation
+
+For complete release documentation:
+- [artagon-workflows/RELEASE.md](https://github.com/artagon/artagon-workflows/blob/main/RELEASE.md) - General release process
+- [Java Release Strategy](https://github.com/artagon/artagon-workflows/blob/main/docs/RELEASE_JAVA.md) - Maven, Gradle, SNAPSHOT versions
+- [C Release Strategy](https://github.com/artagon/artagon-workflows/blob/main/docs/RELEASE_C.md) - CMake, Autotools, tag-based releases
+- [C++ Release Strategy](https://github.com/artagon/artagon-workflows/blob/main/docs/RELEASE_CPP.md) - CMake, Bazel, LTS support
+- [Rust Release Strategy](https://github.com/artagon/artagon-workflows/blob/main/docs/RELEASE_RUST.md) - Cargo, crates.io, MSRV policy
 
 ## Artagon CLI
 
